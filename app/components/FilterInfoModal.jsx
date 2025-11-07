@@ -221,11 +221,60 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
           border-radius: var(--radius-md);
           max-width: 500px;
           width: 90vw;
-          max-height: calc(100vh - 120px);
           overflow-y: auto;
+          overflow-x: hidden;
           box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
           animation: popoverSlideIn 0.2s ease-out;
           position: absolute;
+        }
+        
+        .popover-arrow {
+          position: absolute;
+          width: 0;
+          height: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 1;
+        }
+        
+        .popover-arrow-left {
+          left: -8px;
+          border-style: solid;
+          border-width: 8px 8px 8px 0;
+          border-color: transparent rgba(0, 0, 0, 0.95) transparent transparent;
+          filter: drop-shadow(-2px 0 2px rgba(0, 0, 0, 0.3));
+        }
+        
+        .popover-arrow-left::after {
+          content: '';
+          position: absolute;
+          left: -1px;
+          top: -8px;
+          width: 0;
+          height: 0;
+          border-style: solid;
+          border-width: 8px 8px 8px 0;
+          border-color: transparent rgba(255, 255, 255, 0.2) transparent transparent;
+        }
+        
+        .popover-arrow-right {
+          right: -8px;
+          border-style: solid;
+          border-width: 8px 0 8px 8px;
+          border-color: transparent transparent transparent rgba(0, 0, 0, 0.95);
+          filter: drop-shadow(2px 0 2px rgba(0, 0, 0, 0.3));
+        }
+        
+        .popover-arrow-right::after {
+          content: '';
+          position: absolute;
+          right: -1px;
+          top: -8px;
+          width: 0;
+          height: 0;
+          border-style: solid;
+          border-width: 8px 0 8px 8px;
+          border-color: transparent transparent transparent rgba(255, 255, 255, 0.2);
         }
         
         @keyframes popoverSlideIn {
