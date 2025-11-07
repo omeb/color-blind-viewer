@@ -518,6 +518,18 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
                   <span className="btn-icon">{isSplitView ? '◫' : '◧'}</span>
                 </button>
                 
+                {isSplitView && (
+                  <button
+                    onClick={handleDownloadSnapshot}
+                    className="control-btn"
+                    aria-label="Download snapshot"
+                    title="Download Snapshot"
+                    disabled={loading || iframeLoading || !iframeLoaded}
+                  >
+                    <span className="btn-icon">📥</span>
+                  </button>
+                )}
+                
                 <button
                   onClick={onFilterRemove}
                   className="control-btn remove-filter-btn"
@@ -689,7 +701,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
       {proxyUrl && !loading && !error && (
         <div className={`iframe-content ${iframeLoading ? 'loading' : ''}`}>
           {isSplitView && activeFilter !== 'none' ? (
-            <div className="split-container">
+            <div className="split-container" ref={splitContainerRef}>
               <div className="split-pane split-pane-left">
                 {!iframeLoading && <div className="split-label">Original</div>}
                 <iframe
