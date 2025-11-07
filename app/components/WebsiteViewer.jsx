@@ -445,7 +445,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         
         .website-viewer-container {
           width: 100%;
-          height: 600px;
+          flex: 1;
           min-height: 600px;
           background: rgba(255, 255, 255, 0.05);
           border-radius: var(--radius-md);
@@ -1285,13 +1285,13 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         
         @media (max-width: 768px) {
           .website-viewer-container {
-            height: 500px;
+            min-height: 500px;
           }
         }
         
         @media (max-width: 480px) {
           .website-viewer-container {
-            height: 400px;
+            min-height: 400px;
           }
           
           .empty-state,
