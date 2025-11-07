@@ -1062,6 +1062,10 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           gap: 8px;
           min-width: 0;
         }
+        
+        .url-edit-input {
+          flex: 1;
+          min-width: 0;
           background: rgba(255, 255, 255, 0.95);
           backdrop-filter: blur(10px);
           -webkit-backdrop-filter: blur(10px);
