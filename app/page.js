@@ -179,18 +179,14 @@ export default function Home() {
                   onFilterInfo={setSelectedFilterInfo}
                 />
                 
-                {history.length > 0 && (
-                  <div className="mt-lg">
+                <div className="mt-lg">
+                  {history.length > 0 && (
                     <HistorySection
                       history={history}
                       onSelectUrl={handleUrlSubmit}
                       onRemoveUrl={removeFromHistory}
                     />
-                  </div>
-                )}
-                
-                <div className="mt-lg">
-                  <InfoPanel activeFilter={activeFilter} />
+                  )}
                 </div>
               </aside>
               
@@ -210,6 +206,11 @@ export default function Home() {
                       </div>
                     )}
                   </div>
+                  {activeFilter !== 'none' && (
+                    <div className="viewer-info-section">
+                      <InfoPanel activeFilter={activeFilter} />
+                    </div>
+                  )}
                   <WebsiteViewer
                     url={loadedUrl}
                     activeFilter={activeFilter}
