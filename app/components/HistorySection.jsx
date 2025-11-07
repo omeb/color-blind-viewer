@@ -144,7 +144,7 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
         .history-item {
           position: relative;
           display: inline-flex;
-          align-items: center;
+          align-items: stretch;
           background: rgba(255, 255, 255, 0.15);
           backdrop-filter: blur(10px);
           -webkit-backdrop-filter: blur(10px);
@@ -163,6 +163,7 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
         .history-button {
           display: flex;
           align-items: center;
+          justify-content: flex-start;
           gap: 6px;
           background: none;
           border: none;
@@ -172,6 +173,8 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
           cursor: pointer;
           font-family: inherit;
           transition: all 0.2s ease;
+          flex: 1;
+          min-width: 0;
         }
         
         .history-button:hover {
@@ -194,6 +197,8 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
           font-size: 0.9rem;
           line-height: 1;
           flex-shrink: 0;
+          display: inline-flex;
+          align-items: center;
         }
 
         .history-url {
@@ -201,6 +206,8 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+          flex-shrink: 1;
+          min-width: 0;
         }
 
         .history-remove {
@@ -211,13 +218,19 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
           background: rgba(239, 68, 68, 0.9);
           border: none;
           color: white;
-          padding: 0 10px;
+          padding: 0 12px;
           font-size: 0.9rem;
+          font-weight: 600;
           cursor: pointer;
           opacity: 0;
           transform: translateX(100%);
           transition: all 0.2s ease;
           border-radius: 0 20px 20px 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 36px;
+          z-index: 10;
         }
 
         .history-item:hover .history-remove {
