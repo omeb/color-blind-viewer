@@ -375,12 +375,12 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         </div>
       )}
       
-      {proxyUrl && !loading && !iframeLoading && !error && (
-        <div className="iframe-content">
+      {proxyUrl && !loading && !error && (
+        <div className={`iframe-content ${iframeLoading ? 'loading' : ''}`}>
           {isSplitView && activeFilter !== 'none' ? (
             <div className="split-container">
               <div className="split-pane split-pane-left">
-                <div className="split-label">Original</div>
+                {!iframeLoading && <div className="split-label">Original</div>}
                 <iframe
                   key={`${iframeKey}-original`}
                   src={proxyUrl}
@@ -395,7 +395,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
               <div className="split-divider"></div>
               
               <div className="split-pane split-pane-right">
-                <div className="split-label">With Filter</div>
+                {!iframeLoading && <div className="split-label">With Filter</div>}
                 <div 
                   className="iframe-wrapper filtered"
                   style={{ filter: getFilterStyle(activeFilter) }}
