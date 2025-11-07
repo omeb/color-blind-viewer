@@ -1556,14 +1556,14 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         .filter-info-card {
           margin-top: var(--spacing-sm);
           margin-bottom: var(--spacing-sm);
-          background: rgba(0, 0, 0, 0.6);
+          background: rgba(0, 0, 0, 0.5);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          border-radius: var(--radius-md);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 12px;
           overflow: hidden;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
         
         .filter-info-card-header {
@@ -1571,8 +1571,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           display: flex;
           align-items: flex-start;
           justify-content: space-between;
-          gap: var(--spacing-sm);
-          padding: var(--spacing-sm) var(--spacing-md);
+          gap: var(--spacing-md);
+          padding: var(--spacing-md);
           background: transparent;
           border: none;
           cursor: pointer;
@@ -1581,11 +1581,11 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         }
         
         .filter-info-card-header:hover {
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(255, 255, 255, 0.03);
         }
         
         .filter-info-card-header:active {
-          background: rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.05);
         }
         
         .filter-info-card-summary {
@@ -1596,62 +1596,63 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         .filter-info-card-title-row {
           display: flex;
           align-items: center;
-          gap: var(--spacing-xs);
-          margin-bottom: 4px;
+          gap: var(--spacing-sm);
+          margin-bottom: var(--spacing-sm);
           flex-wrap: wrap;
         }
         
         .filter-info-card-title {
           margin: 0;
-          font-size: 0.95rem;
+          font-size: 1rem;
           font-weight: 700;
           color: rgba(255, 255, 255, 1);
+          letter-spacing: -0.3px;
         }
         
         .filter-info-card-severity {
-          padding: 1px 6px;
-          background: rgba(110, 198, 255, 0.2);
-          border: 1px solid rgba(110, 198, 255, 0.4);
-          border-radius: 10px;
-          font-size: 0.65rem;
+          padding: 3px 10px;
+          background: rgba(110, 198, 255, 0.15);
+          border: 1px solid rgba(110, 198, 255, 0.3);
+          border-radius: 12px;
+          font-size: 0.7rem;
           font-weight: 600;
           color: rgba(110, 198, 255, 1);
           text-transform: uppercase;
-          letter-spacing: 0.5px;
-          line-height: 1.4;
+          letter-spacing: 0.8px;
+          line-height: 1.2;
         }
         
         .filter-info-card-description {
-          margin: 4px 0;
-          font-size: 0.8rem;
-          color: rgba(255, 255, 255, 0.85);
-          line-height: 1.4;
+          margin: 0 0 var(--spacing-md) 0;
+          font-size: 0.875rem;
+          color: rgba(255, 255, 255, 0.75);
+          line-height: 1.5;
         }
         
         .filter-info-card-stats {
           display: flex;
-          gap: var(--spacing-md);
-          margin-top: 6px;
+          gap: var(--spacing-lg);
           flex-wrap: wrap;
         }
         
         .filter-info-card-stat {
           display: flex;
           flex-direction: column;
-          gap: 1px;
+          gap: 4px;
         }
         
         .filter-info-card-stat .stat-label {
           font-size: 0.7rem;
-          color: rgba(255, 255, 255, 0.6);
+          color: rgba(255, 255, 255, 0.5);
           text-transform: uppercase;
-          letter-spacing: 0.5px;
+          letter-spacing: 0.8px;
+          font-weight: 500;
         }
         
         .filter-info-card-stat .stat-value {
-          font-size: 0.8rem;
+          font-size: 0.875rem;
           font-weight: 600;
-          color: rgba(255, 255, 255, 0.9);
+          color: rgba(255, 255, 255, 0.95);
         }
         
         .filter-info-card-toggle {
@@ -1659,20 +1660,20 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.1);
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          width: 32px;
+          height: 32px;
+          border-radius: 8px;
+          background: rgba(255, 255, 255, 0.08);
+          transition: all 0.2s ease;
         }
         
         .filter-info-card-header:hover .filter-info-card-toggle {
-          background: rgba(255, 255, 255, 0.15);
+          background: rgba(255, 255, 255, 0.12);
         }
         
         .toggle-icon {
-          font-size: 0.65rem;
-          color: rgba(255, 255, 255, 0.8);
+          font-size: 0.7rem;
+          color: rgba(255, 255, 255, 0.7);
           transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           display: inline-block;
         }
@@ -1682,8 +1683,9 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         }
         
         .filter-info-card-content {
-          padding: 0 var(--spacing-md) var(--spacing-sm);
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
+          padding: var(--spacing-md);
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(0, 0, 0, 0.2);
           animation: expandContent 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
@@ -1697,13 +1699,13 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           to {
             opacity: 1;
             max-height: 2000px;
-            padding-top: var(--spacing-sm);
-            padding-bottom: var(--spacing-sm);
+            padding-top: var(--spacing-md);
+            padding-bottom: var(--spacing-md);
           }
         }
         
         .filter-info-card-section {
-          margin-bottom: var(--spacing-sm);
+          margin-bottom: var(--spacing-lg);
         }
         
         .filter-info-card-section:last-child {
@@ -1711,43 +1713,44 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         }
         
         .filter-info-card-section h4 {
-          margin: 0 0 6px 0;
-          font-size: 0.85rem;
+          margin: 0 0 var(--spacing-sm) 0;
+          font-size: 0.8rem;
           font-weight: 700;
-          color: rgba(255, 255, 255, 1);
+          color: rgba(255, 255, 255, 0.9);
           text-transform: uppercase;
-          letter-spacing: 0.5px;
+          letter-spacing: 1px;
         }
         
         .filter-info-card-section p {
           margin: 0;
-          font-size: 0.8rem;
-          color: rgba(255, 255, 255, 0.85);
-          line-height: 1.5;
+          font-size: 0.875rem;
+          color: rgba(255, 255, 255, 0.8);
+          line-height: 1.6;
         }
         
         .filter-info-card-section ul {
           margin: 0;
-          padding-left: var(--spacing-md);
+          padding: 0;
           list-style: none;
         }
         
         .filter-info-card-section ul li {
           position: relative;
-          padding-left: var(--spacing-sm);
-          margin-bottom: 4px;
-          font-size: 0.8rem;
-          color: rgba(255, 255, 255, 0.85);
-          line-height: 1.5;
+          padding-left: 24px;
+          margin-bottom: var(--spacing-sm);
+          font-size: 0.875rem;
+          color: rgba(255, 255, 255, 0.8);
+          line-height: 1.6;
         }
         
         .filter-info-card-section ul li:before {
           content: '✓';
           position: absolute;
           left: 0;
+          top: 0;
           color: rgba(110, 198, 255, 1);
-          font-weight: bold;
-          font-size: 0.75rem;
+          font-weight: 600;
+          font-size: 0.875rem;
         }
         
         .filter-info-card-section ul li:last-child {
@@ -1758,23 +1761,25 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           .filter-info-card {
             margin-top: var(--spacing-xs);
             margin-bottom: var(--spacing-xs);
+            border-radius: 10px;
           }
           
           .filter-info-card-header {
-            padding: var(--spacing-xs) var(--spacing-sm);
+            padding: var(--spacing-sm);
+            gap: var(--spacing-sm);
           }
           
           .filter-info-card-title {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
           }
           
           .filter-info-card-description {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
+            margin-bottom: var(--spacing-sm);
           }
           
           .filter-info-card-stats {
-            gap: var(--spacing-sm);
-            margin-top: 4px;
+            gap: var(--spacing-md);
           }
           
           .filter-info-card-stat .stat-label {
@@ -1782,30 +1787,30 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           }
           
           .filter-info-card-stat .stat-value {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
           }
           
           .filter-info-card-content {
-            padding: 0 var(--spacing-sm) var(--spacing-xs);
+            padding: var(--spacing-sm);
           }
           
           .filter-info-card-section {
-            margin-bottom: var(--spacing-xs);
+            margin-bottom: var(--spacing-md);
           }
           
           .filter-info-card-section h4 {
-            font-size: 0.8rem;
-            margin-bottom: 4px;
+            font-size: 0.75rem;
+            margin-bottom: var(--spacing-xs);
           }
           
           .filter-info-card-section p,
           .filter-info-card-section ul li {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
           }
           
           .filter-info-card-section ul li {
-            margin-bottom: 3px;
-            padding-left: var(--spacing-xs);
+            padding-left: 20px;
+            margin-bottom: var(--spacing-xs);
           }
         }
         
