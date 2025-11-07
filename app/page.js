@@ -526,57 +526,57 @@ export default function Home() {
         }
         
         .footer-content {
-          padding: var(--spacing-xl) var(--spacing-lg);
+          padding: var(--spacing-lg) var(--spacing-md);
           display: flex;
           flex-direction: column;
-          gap: var(--spacing-md);
+          gap: var(--spacing-sm);
         }
         
         .footer-main {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: var(--spacing-md);
+          gap: var(--spacing-sm);
         }
         
         .footer-title {
-          font-size: 1.4rem;
-          font-weight: 700;
+          font-size: 1.2rem;
+          font-weight: 600;
           margin: 0;
           color: rgba(255, 255, 255, 0.95);
-          letter-spacing: -0.02em;
+          letter-spacing: -0.01em;
         }
         
         .footer-link {
           display: inline-flex;
           align-items: center;
-          gap: 8px;
+          gap: 6px;
           color: #6EC6FF;
           text-decoration: none;
-          font-size: 1rem;
-          font-weight: 600;
-          padding: var(--spacing-xs) var(--spacing-md);
-          border-radius: 8px;
-          background: rgba(110, 198, 255, 0.1);
-          border: 1px solid rgba(110, 198, 255, 0.2);
+          font-size: 0.9rem;
+          font-weight: 500;
+          padding: var(--spacing-xs) var(--spacing-sm);
+          border-radius: 6px;
+          background: rgba(110, 198, 255, 0.08);
+          border: 1px solid rgba(110, 198, 255, 0.15);
           transition: all var(--transition-fast);
         }
         
         .footer-link:hover {
-          background: rgba(110, 198, 255, 0.2);
-          border-color: rgba(110, 198, 255, 0.4);
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(110, 198, 255, 0.3);
+          background: rgba(110, 198, 255, 0.15);
+          border-color: rgba(110, 198, 255, 0.3);
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(110, 198, 255, 0.2);
         }
         
         .footer-link-icon {
-          font-size: 1.1rem;
+          font-size: 0.7rem;
         }
         
         .footer-divider {
-          width: 60px;
-          height: 2px;
-          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+          width: 50px;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
           margin: var(--spacing-xs) auto;
         }
         
@@ -584,40 +584,37 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: var(--spacing-sm);
-          opacity: 0.75;
+          gap: var(--spacing-xs);
+          opacity: 0.7;
         }
         
         .footer-note {
-          font-size: 0.875rem;
+          font-size: 0.8rem;
           margin: 0;
-          color: rgba(255, 255, 255, 0.85);
-          line-height: 1.5;
+          color: rgba(255, 255, 255, 0.8);
+          line-height: 1.4;
         }
         
         .footer-love {
-          font-size: 0.9rem;
+          font-size: 0.85rem;
           margin: 0;
-          color: rgba(255, 255, 255, 0.9);
+          color: rgba(255, 255, 255, 0.85);
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 4px;
         }
         
         .footer-love .heart {
           display: inline-block;
-          animation: heartbeat 2s ease-in-out infinite;
+          animation: heartbeat 3s ease-in-out infinite;
         }
         
         @keyframes heartbeat {
           0%, 100% {
             transform: scale(1);
           }
-          10%, 30% {
-            transform: scale(1.1);
-          }
-          20%, 40% {
-            transform: scale(1);
+          50% {
+            transform: scale(1.05);
           }
         }
         
