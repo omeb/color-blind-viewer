@@ -56,7 +56,7 @@ export default function UrlInput({ onSubmit, loading = false }) {
         </label>
         <input
           id="website-url"
-          type="url"
+          type="text"
           value={url}
           onChange={handleChange}
           placeholder="Enter website URL (e.g., example.com)"
