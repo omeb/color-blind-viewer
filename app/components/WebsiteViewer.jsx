@@ -16,13 +16,15 @@ import { getCategorizedFilters } from '../lib/filters'
  * @param {boolean} props.loading - Whether the website is loading
  * @param {string} props.error - Error message if loading failed
  */
-export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemove, onFilterChange, onFilterInfo, onChangeUrl, loading = false, error = null, onUrlChange }) {
+export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemove, onFilterChange, onFilterInfo, onChangeUrl, loading = false, error = null, onUrlChange, history = [], onSelectUrl, onRemoveUrl }) {
   const [iframeKey, setIframeKey] = React.useState(0)
   const [isSplitView, setIsSplitView] = React.useState(false)
   const [iframeLoading, setIframeLoading] = React.useState(false)
   const [iframeLoaded, setIframeLoaded] = React.useState(false)
   const [isEditingUrl, setIsEditingUrl] = React.useState(false)
   const [editedUrl, setEditedUrl] = React.useState(url)
+  const [showHistoryDropdown, setShowHistoryDropdown] = React.useState(false)
+  const historyDropdownRef = React.useRef(null)
   const iframeRef = React.useRef(null)
   const containerRef = React.useRef(null)
   const urlInputRef = React.useRef(null)
@@ -40,8 +42,31 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
     if (isEditingUrl && urlInputRef.current) {
       urlInputRef.current.focus()
       urlInputRef.current.select()
+      // Show history dropdown when input is focused
+      if (history && history.length > 0) {
+        setShowHistoryDropdown(true)
+      }
+    } else {
+      setShowHistoryDropdown(false)
     }
-  }, [isEditingUrl])
+  }, [isEditingUrl, history])
+  
+  // Close history dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (historyDropdownRef.current && !historyDropdownRef.current.contains(event.target)) {
+        // Don't close if clicking on the URL input
+        if (!event.target.closest('.url-edit-input') && !event.target.closest('.url-edit-form')) {
+          setShowHistoryDropdown(false)
+        }
+      }
+    }
+    
+    if (showHistoryDropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showHistoryDropdown])
   
   // Reload iframe when URL changes
   React.useEffect(() => {
@@ -120,16 +145,62 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         <div className="viewer-header">
           {isEditingUrl ? (
             <form onSubmit={handleUrlSubmit} className={`url-edit-form ${isEditingUrl ? 'editing' : ''}`}>
-              <input
-                ref={urlInputRef}
-                type="text"
-                value={editedUrl}
-                onChange={handleUrlInputChange}
-                onKeyDown={handleUrlKeyDown}
-                className="url-edit-input"
-                placeholder="Enter website URL"
-                aria-label="Edit website URL"
-              />
+              <div className="url-input-wrapper" ref={historyDropdownRef}>
+                <input
+                  ref={urlInputRef}
+                  type="text"
+                  value={editedUrl}
+                  onChange={handleUrlInputChange}
+                  onKeyDown={handleUrlKeyDown}
+                  onFocus={() => {
+                    if (history && history.length > 0) {
+                      setShowHistoryDropdown(true)
+                    }
+                  }}
+                  className="url-edit-input"
+                  placeholder="Enter website URL"
+                  aria-label="Edit website URL"
+                />
+                {showHistoryDropdown && history && history.length > 0 && (
+                  <div className="history-dropdown">
+                    <div className="history-dropdown-header">
+                      <span>Recent Sites</span>
+                    </div>
+                    <div className="history-dropdown-list">
+                      {history.slice(0, 5).map((historyUrl, index) => (
+                        <button
+                          key={`${historyUrl}-${index}`}
+                          onClick={() => {
+                            if (onSelectUrl) {
+                              onSelectUrl(historyUrl)
+                            }
+                            setShowHistoryDropdown(false)
+                            setIsEditingUrl(false)
+                          }}
+                          className="history-dropdown-item"
+                          title={`Load ${historyUrl}`}
+                        >
+                          <span className="history-item-icon">🌐</span>
+                          <span className="history-item-url">{historyUrl}</span>
+                          {onRemoveUrl && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                onRemoveUrl(historyUrl)
+                              }}
+                              className="history-item-remove"
+                              aria-label={`Remove ${historyUrl}`}
+                              title="Remove"
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
               <div className="url-edit-actions">
                 <button
                   type="submit"
@@ -423,6 +494,105 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           padding: 10px 14px;
           box-shadow: 0 6px 20px rgba(74, 144, 226, 0.3);
           animation: expandIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+        }
+        
+        .url-input-wrapper {
+          flex: 1;
+          position: relative;
+        }
+        
+        .history-dropdown {
+          position: absolute;
+          top: calc(100% + 8px);
+          left: 0;
+          right: 0;
+          z-index: 1000;
+          background: rgba(0, 0, 0, 0.95);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: var(--radius-md);
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+          animation: popoverFadeIn 0.2s ease-out;
+          overflow: hidden;
+        }
+        
+        @keyframes popoverFadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .history-dropdown-header {
+          padding: var(--spacing-sm) var(--spacing-md);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .history-dropdown-list {
+          max-height: 300px;
+          overflow-y: auto;
+        }
+        
+        .history-dropdown-item {
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-sm);
+          width: 100%;
+          padding: var(--spacing-sm) var(--spacing-md);
+          background: transparent;
+          border: none;
+          color: rgba(255, 255, 255, 0.9);
+          cursor: pointer;
+          transition: background var(--transition-fast);
+          text-align: left;
+          font-size: 0.9rem;
+        }
+        
+        .history-dropdown-item:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .history-item-icon {
+          font-size: 1rem;
+          flex-shrink: 0;
+        }
+        
+        .history-item-url {
+          flex: 1;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        
+        .history-item-remove {
+          flex-shrink: 0;
+          background: transparent;
+          border: none;
+          color: rgba(255, 255, 255, 0.5);
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 4px;
+          transition: all var(--transition-fast);
+          font-size: 0.9rem;
+          opacity: 0;
+        }
+        
+        .history-dropdown-item:hover .history-item-remove {
+          opacity: 1;
+        }
+        
+        .history-item-remove:hover {
+          background: rgba(255, 0, 0, 0.2);
+          color: rgba(255, 255, 255, 0.9);
         }
         
         @keyframes expandIn {

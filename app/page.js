@@ -38,8 +38,6 @@ export default function Home() {
   const [selectedFilterInfo, setSelectedFilterInfo] = React.useState(null)
   const [showFilterPopover, setShowFilterPopover] = React.useState(false)
   const filterPopoverRef = React.useRef(null)
-  const [showHistoryDropdown, setShowHistoryDropdown] = React.useState(false)
-  const historyDropdownRef = React.useRef(null)
   
   // Close popover when clicking outside
   React.useEffect(() => {
@@ -50,19 +48,13 @@ export default function Home() {
           setShowFilterPopover(false)
         }
       }
-      if (historyDropdownRef.current && !historyDropdownRef.current.contains(event.target)) {
-        // Check if click is not on the history button
-        if (!event.target.closest('.history-dropdown-btn')) {
-          setShowHistoryDropdown(false)
-        }
-      }
     }
     
-    if (showFilterPopover || showHistoryDropdown) {
+    if (showFilterPopover) {
       document.addEventListener('mousedown', handleClickOutside)
       return () => document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [showFilterPopover, showHistoryDropdown])
+  }, [showFilterPopover])
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -212,53 +204,6 @@ export default function Home() {
                   <div className="viewer-header">
                     <h2>Preview</h2>
                     <div className="viewer-header-actions">
-                      {history.length > 0 && (
-                        <div className="history-dropdown-wrapper" ref={historyDropdownRef}>
-                          <button
-                            className="history-dropdown-btn"
-                            onClick={() => setShowHistoryDropdown(!showHistoryDropdown)}
-                            aria-label="Recent sites"
-                            title="Recent sites"
-                          >
-                            <span className="history-icon-small">🕒</span>
-                            <span className="history-count">{history.length}</span>
-                          </button>
-                          {showHistoryDropdown && (
-                            <div className="history-dropdown">
-                              <div className="history-dropdown-header">
-                                <span>Recent Sites</span>
-                              </div>
-                              <div className="history-dropdown-list">
-                                {history.slice(0, 5).map((url, index) => (
-                                  <button
-                                    key={`${url}-${index}`}
-                                    onClick={() => {
-                                      handleUrlSubmit(url)
-                                      setShowHistoryDropdown(false)
-                                    }}
-                                    className="history-dropdown-item"
-                                    title={`Load ${url}`}
-                                  >
-                                    <span className="history-item-icon">🌐</span>
-                                    <span className="history-item-url">{url}</span>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        removeFromHistory(url)
-                                      }}
-                                      className="history-item-remove"
-                                      aria-label={`Remove ${url}`}
-                                      title="Remove"
-                                    >
-                                      ✕
-                                    </button>
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
                       {activeFilter !== 'none' && (
                         <div className="active-filter-info">
                           <div className="filter-badge-wrapper" ref={filterPopoverRef}>
@@ -301,6 +246,9 @@ export default function Home() {
                     onFilterInfo={setSelectedFilterInfo}
                     onChangeUrl={() => setHasLoadedSite(false)}
                     onUrlChange={handleUrlSubmit}
+                    history={history}
+                    onSelectUrl={handleUrlSubmit}
+                    onRemoveUrl={removeFromHistory}
                     loading={loading}
                     error={error}
                   />
