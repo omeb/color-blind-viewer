@@ -148,10 +148,11 @@ export default function Home() {
         {!hasLoadedSite && (
           <section className="hero-section">
             <div className="glass-card-lg hero-content">
-              <h1>Colorblind Viewer</h1>
+              <h1>See What Others See</h1>
               <p className="hero-subtitle">
-                Experience the web through the eyes of people with vision impairments.
-                Test your designs for accessibility.
+                1 in 12 people experience color vision differences. 
+                <br />
+                <span className="highlight">Test your website's accessibility instantly.</span>
               </p>
               
               <div className="url-input-section">
@@ -230,18 +231,18 @@ export default function Home() {
         <footer className="footer">
           <div className="glass-card footer-content">
             <p>
-              Built to promote web accessibility and inclusive design.{' '}
+              Making the web accessible for everyone.{' '}
               <a 
                 href="https://github.com/omeb/color-blind-viewer" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="footer-link"
               >
-                View on GitHub
+                Open Source on GitHub
               </a>
             </p>
             <p className="footer-note">
-              Note: Some websites may block iframe embedding for security reasons.
+              Some sites may restrict embedding for security. Try different URLs if needed.
             </p>
           </div>
         </footer>
