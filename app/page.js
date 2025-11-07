@@ -7,6 +7,7 @@ import ImpairmentControls from './components/ImpairmentControls'
 import InfoPanel from './components/InfoPanel'
 import HistorySection from './components/HistorySection'
 import FilterInfoPopover from './components/FilterInfoModal'
+import DarkModeToggle from './components/DarkModeToggle'
 import { generateSVGFilters, getFilter, getCategorizedFilters } from './lib/filters'
 
 function getFilterName(filterId) {
@@ -42,6 +43,7 @@ export default function Home() {
   const [targetUrl, setTargetUrl] = React.useState('')
   const [loadedUrl, setLoadedUrl] = React.useState('')
   const [activeFilter, setActiveFilter] = React.useState('none')
+  const [isSplitView, setIsSplitView] = React.useState(false)
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState(null)
   const [hasLoadedSite, setHasLoadedSite] = React.useState(false)
@@ -50,6 +52,17 @@ export default function Home() {
   const [filterPopoverPosition, setFilterPopoverPosition] = React.useState(null)
   const [showFilterPopover, setShowFilterPopover] = React.useState(false)
   const filterPopoverRef = React.useRef(null)
+  const isInitialMount = React.useRef(true)
+  const [isInitialDelayComplete, setIsInitialDelayComplete] = React.useState(false)
+  
+  // Hide all content for 0.7 seconds on initial load
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialDelayComplete(true)
+    }, 700)
+    
+    return () => clearTimeout(timer)
+  }, [])
   
   // Close popover when clicking outside
   React.useEffect(() => {
@@ -67,6 +80,7 @@ export default function Home() {
       return () => document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [showFilterPopover])
+  
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -139,6 +153,63 @@ export default function Home() {
     })
   }
   
+  // Read query parameters on mount (after addToHistory is defined)
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return
+    
+    const params = new URLSearchParams(window.location.search)
+    const urlParam = params.get('url')
+    const filterParam = params.get('filter')
+    const splitParam = params.get('split')
+    
+    if (urlParam) {
+      // URL is in query params - skip hero screen and load it
+      setLoadedUrl(urlParam)
+      setHasLoadedSite(true)
+      addToHistory(urlParam)
+    }
+    
+    if (filterParam) {
+      setActiveFilter(filterParam)
+    }
+    
+    if (splitParam === 'true' || splitParam === '1') {
+      setIsSplitView(true)
+    }
+  }, []) // Run once on mount
+  
+  // Update URL query parameters when state changes
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return
+    
+    // Skip initial mount to avoid overwriting query params
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
+    
+    const newParams = new URLSearchParams()
+    
+    if (loadedUrl) {
+      newParams.set('url', loadedUrl)
+    }
+    
+    if (activeFilter && activeFilter !== 'none') {
+      newParams.set('filter', activeFilter)
+    }
+    
+    if (isSplitView) {
+      newParams.set('split', 'true')
+    }
+    
+    const newUrl = newParams.toString() 
+      ? `${window.location.pathname}?${newParams.toString()}`
+      : window.location.pathname
+    
+    // Update URL without page reload
+    window.history.replaceState({}, '', newUrl)
+  }, [loadedUrl, activeFilter, isSplitView])
+  
   const removeFromHistory = (url) => {
     setHistory(prevHistory => prevHistory.filter(item => item !== url))
   }
@@ -163,16 +234,72 @@ export default function Home() {
     setActiveFilter(filterId)
   }
   
+  const handleClearQueryParams = () => {
+    // Clear all state
+    setLoadedUrl('')
+    setHasLoadedSite(false)
+    setActiveFilter('none')
+    setIsSplitView(false)
+    setTargetUrl('')
+    setError(null)
+    
+    // Clear URL query params
+    if (typeof window !== 'undefined') {
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }
+  
+  // Check if there are query params
+  const [hasQueryParams, setHasQueryParams] = React.useState(false)
+  
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return
+    const checkParams = () => {
+      const params = new URLSearchParams(window.location.search)
+      setHasQueryParams(params.toString().length > 0)
+    }
+    checkParams()
+  }, [loadedUrl, activeFilter, isSplitView])
+  
+  // Also check on mount
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    setHasQueryParams(params.toString().length > 0)
+  }, [])
+  
   return (
     <>
-      <a href="#main-content" className="skip-link" style={{display: 'none'}}>
-        Skip to main content
-      </a>
-      
-      {/* SVG filters for colorblindness simulation */}
-      <div dangerouslySetInnerHTML={{ __html: generateSVGFilters() }} />
-      
-      <main id="main-content" className={`app-container ${hasLoadedSite ? 'has-content' : 'initial-view'}`}>
+      {!isInitialDelayComplete ? null : (
+        <div className="initial-content-wrapper">
+          <a href="#main-content" className="skip-link" style={{display: 'none'}}>
+            Skip to main content
+          </a>
+          
+          {/* SVG filters for colorblindness simulation */}
+          <div dangerouslySetInnerHTML={{ __html: generateSVGFilters() }} />
+          
+          {/* Home button to clear query params */}
+          {hasQueryParams && (
+            <button
+              onClick={handleClearQueryParams}
+              className="home-button"
+              aria-label="Return to home"
+              title="Return to home"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+            </button>
+          )}
+          
+          {/* Dark mode toggle */}
+          <div className="dark-mode-toggle-wrapper">
+            <DarkModeToggle />
+          </div>
+          
+          <main id="main-content" className={`app-container ${hasLoadedSite ? 'has-content' : 'initial-view'}`}>
         {/* Hero Section - Only shown initially */}
         {!hasLoadedSite && (
           <section className="hero-section">
@@ -297,6 +424,8 @@ export default function Home() {
                   <WebsiteViewer
                     url={loadedUrl}
                     activeFilter={activeFilter}
+                    isSplitView={isSplitView}
+                    onSplitViewChange={setIsSplitView}
                     onFilterRemove={() => setActiveFilter('none')}
                     onFilterChange={handleFilterChange}
                     onFilterInfo={setSelectedFilterInfo}
@@ -318,29 +447,34 @@ export default function Home() {
         <footer className="footer">
           <div className="glass-card footer-content">
             <div className="footer-main">
-              <h3 className="footer-title">Making the web accessible for everyone</h3>
-              <p className="footer-note">
-                Some sites may restrict embedding for security. Try different URLs if needed.
-              </p>
-            </div>
-            
-            <div className="footer-divider"></div>
-            
-            <div className="footer-secondary">
-              <p className="footer-love">
-                Made with <span className="heart">❤️</span> by the Wix Accessibility team
-                {' · '}
+              <h3 className="footer-title">Making the web accessible for everyone ✨</h3>
+              <div className="footer-links">
+                <a 
+                  href="https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="footer-link"
+                >
+                  ♿ WCAG Guidelines
+                </a>
+                <span className="footer-separator">·</span>
                 <a 
                   href="https://github.com/omeb/color-blind-viewer" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="footer-link-inline"
+                  className="footer-link"
                 >
-                  <svg className="footer-github-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg className="footer-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
                   </svg>
-                  View on GitHub
+                  GitHub
                 </a>
+              </div>
+            </div>
+            
+            <div className="footer-bottom">
+              <p className="footer-note">
+                🌐 Some sites may restrict embedding for security. Try different URLs if needed.
               </p>
             </div>
           </div>
@@ -358,8 +492,92 @@ export default function Home() {
           position={filterPopoverPosition}
         />
       </main>
+        </div>
+      )}
       
       <style jsx>{`
+        .initial-content-wrapper {
+          animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .home-button {
+          position: fixed;
+          top: 20px;
+          left: 20px;
+          z-index: 1000;
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          background: rgba(0, 0, 0, 0.25);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          color: rgba(255, 255, 255, 0.9);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .home-button:hover {
+          background: rgba(0, 0, 0, 0.3);
+          border-color: rgba(255, 255, 255, 0.25);
+          color: rgba(255, 255, 255, 1);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .home-button:active {
+          transform: translateY(0);
+        }
+        
+        .home-button svg {
+          width: 18px;
+          height: 18px;
+        }
+        
+        @media (max-width: 968px) {
+          .home-button {
+            top: 16px;
+            left: 16px;
+            width: 40px;
+            height: 40px;
+          }
+          
+          .home-button svg {
+            width: 16px;
+            height: 16px;
+          }
+        }
+        
+        .dark-mode-toggle-wrapper {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          z-index: 1000;
+        }
+        
+        @media (max-width: 968px) {
+          .dark-mode-toggle-wrapper {
+            top: 16px;
+            right: 16px;
+          }
+        }
+        
         .app-container {
           min-height: 100vh;
           padding: var(--spacing-lg);
@@ -426,7 +644,7 @@ export default function Home() {
         @keyframes slideIn {
           from {
             opacity: 0;
-            transform: translateY(40px);
+            transform: translateY(20px);
           }
           to {
             opacity: 1;
@@ -436,7 +654,7 @@ export default function Home() {
         
         .content-grid {
           display: grid;
-          grid-template-columns: 350px 1fr;
+          grid-template-columns: 420px 1fr;
           gap: var(--spacing-lg);
         }
         
@@ -648,7 +866,7 @@ export default function Home() {
         }
         
         .footer-content {
-          padding: var(--spacing-lg) var(--spacing-md);
+          padding: var(--spacing-sm) var(--spacing-md);
           display: flex;
           flex-direction: column;
           gap: var(--spacing-sm);
@@ -659,71 +877,82 @@ export default function Home() {
           flex-direction: column;
           align-items: center;
           gap: var(--spacing-xs);
+          text-align: center;
         }
         
         .footer-title {
-          font-size: 1.1rem;
+          font-size: 0.9rem;
           font-weight: 600;
           margin: 0;
           color: rgba(255, 255, 255, 0.95);
           letter-spacing: -0.01em;
+          line-height: 1.3;
         }
         
-        .footer-note {
-          font-size: 0.8rem;
-          margin: 0;
-          color: rgba(255, 255, 255, 0.8);
-          line-height: 1.4;
+        .footer-links {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: var(--spacing-xs);
+          flex-wrap: wrap;
         }
         
-        .footer-divider {
-          width: 40px;
-          height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-          margin: var(--spacing-xs) auto;
+        .footer-link {
+          color: rgba(255, 255, 255, 0.7);
+          text-decoration: none;
+          font-size: 0.75rem;
+          transition: all var(--transition-fast);
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 2px 0;
         }
         
-        .footer-secondary {
+        .footer-link:hover {
+          color: rgba(110, 198, 255, 0.9);
+        }
+        
+        .footer-separator {
+          color: rgba(255, 255, 255, 0.25);
+          font-size: 0.75rem;
+          margin: 0 4px;
+        }
+        
+        .footer-icon {
+          width: 11px;
+          height: 11px;
+          opacity: 0.8;
+        }
+        
+        .footer-bottom {
           display: flex;
           flex-direction: column;
           align-items: center;
           gap: var(--spacing-xs);
-          opacity: 0.7;
+          padding-top: var(--spacing-sm);
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .footer-link-inline {
-          color: rgba(110, 198, 255, 0.9);
-          text-decoration: none;
-          font-size: 0.85rem;
-          transition: opacity var(--transition-fast);
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-        }
-        
-        .footer-link-inline:hover {
-          opacity: 0.7;
-        }
-        
-        .footer-github-icon {
-          width: 14px;
-          height: 14px;
-          opacity: 0.9;
-        }
-        
-        .footer-love {
-          font-size: 0.85rem;
+        .footer-credit {
+          font-size: 0.75rem;
           margin: 0;
-          color: rgba(255, 255, 255, 0.85);
+          color: rgba(255, 255, 255, 0.7);
           display: flex;
           align-items: center;
-          justify-content: center;
           gap: 4px;
         }
         
-        .footer-love .heart {
+        .footer-credit .heart {
           display: inline-block;
-          animation: heartbeat 3s ease-in-out infinite;
+          animation: heartbeat 2.5s ease-in-out infinite;
+        }
+        
+        .footer-note {
+          font-size: 0.7rem;
+          margin: 0;
+          color: rgba(255, 255, 255, 0.85);
+          line-height: 1.4;
+          text-align: center;
         }
         
         @keyframes heartbeat {
@@ -731,13 +960,13 @@ export default function Home() {
             transform: scale(1);
           }
           50% {
-            transform: scale(1.05);
+            transform: scale(1.1);
           }
         }
         
         @media (max-width: 1200px) {
           .content-grid {
-            grid-template-columns: 300px 1fr;
+            grid-template-columns: 380px 1fr;
           }
         }
         
