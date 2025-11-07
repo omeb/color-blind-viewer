@@ -5,6 +5,7 @@ import UrlInput from './components/UrlInput'
 import WebsiteViewer from './components/WebsiteViewer'
 import ImpairmentControls from './components/ImpairmentControls'
 import InfoPanel from './components/InfoPanel'
+import HistorySection from './components/HistorySection'
 import { generateSVGFilters, getFilter } from './lib/filters'
 
 function getFilterName(filterId) {
@@ -32,11 +33,73 @@ export default function Home() {
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState(null)
   const [hasLoadedSite, setHasLoadedSite] = React.useState(false)
+  const [history, setHistory] = React.useState([])
+  
+  // Load history from localStorage on mount
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const savedHistory = localStorage.getItem('colorblind-viewer-history')
+        if (savedHistory) {
+          const parsed = JSON.parse(savedHistory)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setHistory(parsed)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load history from localStorage:', error)
+      }
+    }
+  }, [])
+  
+  // Save history to localStorage whenever it changes
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('colorblind-viewer-history', JSON.stringify(history))
+      } catch (error) {
+        console.error('Failed to save history to localStorage:', error)
+      }
+    }
+  }, [history])
+  
+  const addToHistory = (url) => {
+    if (!url) return
+    
+    setHistory(prevHistory => {
+      // Remove the URL if it already exists
+      const filtered = prevHistory.filter(item => item !== url)
+      // Add to the beginning and limit to 10 items
+      const newHistory = [url, ...filtered].slice(0, 10)
+      
+      // Save immediately to localStorage
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('colorblind-viewer-history', JSON.stringify(newHistory))
+        } catch (error) {
+          console.error('Failed to save history:', error)
+        }
+      }
+      
+      return newHistory
+    })
+  }
+  
+  const removeFromHistory = (url) => {
+    setHistory(prevHistory => prevHistory.filter(item => item !== url))
+  }
+  
+  const clearAllHistory = () => {
+    setHistory([])
+  }
   
   const handleUrlSubmit = async (url) => {
     setLoading(true)
     setError(null)
     setTargetUrl(url)
+    
+    // Add to history
+    addToHistory(url)
     
     // Simulate a brief delay to show loading state
     setTimeout(() => {
@@ -60,20 +123,28 @@ export default function Home() {
       <div dangerouslySetInnerHTML={{ __html: generateSVGFilters() }} />
       
       <main id="main-content" className={`app-container ${hasLoadedSite ? 'has-content' : 'initial-view'}`}>
-        {/* Hero Section */}
-        <section className={`hero-section ${hasLoadedSite ? 'compact' : ''}`}>
-          <div className="glass-card-lg hero-content">
-            <h1>Colorblind Viewer</h1>
-            <p className="hero-subtitle">
-              Experience the web through the eyes of people with vision impairments.
-              Test your designs for accessibility.
-            </p>
-            
-            <div className="url-input-section">
-              <UrlInput onSubmit={handleUrlSubmit} loading={loading} />
+        {/* Hero Section - Only shown initially */}
+        {!hasLoadedSite && (
+          <section className="hero-section">
+            <div className="glass-card-lg hero-content">
+              <h1>Colorblind Viewer</h1>
+              <p className="hero-subtitle">
+                Experience the web through the eyes of people with vision impairments.
+                Test your designs for accessibility.
+              </p>
+              
+              <div className="url-input-section">
+                <UrlInput onSubmit={handleUrlSubmit} loading={loading} />
+                <HistorySection
+                  history={history}
+                  onSelectUrl={handleUrlSubmit}
+                  onRemoveUrl={removeFromHistory}
+                  onClearAll={clearAllHistory}
+                />
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
         
         {/* Main Content - Only shown after first site load */}
         {hasLoadedSite && (
@@ -85,6 +156,17 @@ export default function Home() {
                   activeFilter={activeFilter}
                   onFilterChange={handleFilterChange}
                 />
+                
+                {history.length > 0 && (
+                  <div className="mt-lg">
+                    <HistorySection
+                      history={history}
+                      onSelectUrl={handleUrlSubmit}
+                      onRemoveUrl={removeFromHistory}
+                      onClearAll={clearAllHistory}
+                    />
+                  </div>
+                )}
                 
                 <div className="mt-lg">
                   <InfoPanel activeFilter={activeFilter} />
@@ -111,6 +193,8 @@ export default function Home() {
                     url={loadedUrl}
                     activeFilter={activeFilter}
                     onFilterRemove={() => setActiveFilter('none')}
+                    onChangeUrl={() => setHasLoadedSite(false)}
+                    onUrlChange={handleUrlSubmit}
                     loading={loading}
                     error={error}
                   />
@@ -160,65 +244,28 @@ export default function Home() {
         }
         
         .hero-section {
-          transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-          opacity: 1;
-          transform: scale(1);
-        }
-        
-        .app-container.initial-view .hero-section {
-          margin-bottom: 0;
           width: 100%;
           max-width: 900px;
-        }
-        
-        .app-container.has-content .hero-section {
-          margin-bottom: var(--spacing-lg);
-        }
-        
-        .hero-section.compact {
-          transform: scale(0.85);
+          opacity: 1;
+          transform: scale(1);
         }
         
         .hero-content {
           max-width: 900px;
           margin: 0 auto;
           text-align: center;
-          transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .app-container.initial-view .hero-content {
           padding: var(--spacing-xl) var(--spacing-lg);
         }
         
-        .app-container.has-content .hero-content {
-          padding: var(--spacing-md) var(--spacing-lg);
-        }
-        
-        .app-container.initial-view h1 {
+        h1 {
           font-size: 3.5rem;
           margin-bottom: var(--spacing-lg);
         }
         
-        .app-container.has-content h1 {
-          font-size: 1.5rem;
-          margin-bottom: var(--spacing-xs);
-        }
-        
         .hero-subtitle {
-          font-size: 1.15rem;
-          margin-bottom: var(--spacing-xl);
-          opacity: 0.95;
-          transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .app-container.initial-view .hero-subtitle {
           font-size: 1.25rem;
           margin-bottom: calc(var(--spacing-xl) * 1.5);
-        }
-        
-        .app-container.has-content .hero-subtitle {
-          font-size: 0.9rem;
-          margin-bottom: var(--spacing-md);
+          opacity: 0.95;
         }
         
         .url-input-section {
@@ -349,12 +396,8 @@ export default function Home() {
             max-height: none;
           }
           
-          .app-container.initial-view h1 {
+          h1 {
             font-size: 2.5rem;
-          }
-          
-          .app-container.has-content h1 {
-            font-size: 2rem;
           }
         }
         
@@ -364,18 +407,10 @@ export default function Home() {
           }
           
           h1 {
-            font-size: 2rem;
-          }
-          
-          .app-container.initial-view h1 {
             font-size: 2.25rem;
           }
           
           .hero-subtitle {
-            font-size: 1rem;
-          }
-          
-          .app-container.initial-view .hero-subtitle {
             font-size: 1.1rem;
           }
         }
