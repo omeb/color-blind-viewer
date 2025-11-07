@@ -47,7 +47,7 @@ function validateUrl(urlString) {
 }
 
 /**
- * Injects base tag and CSS to hide skip links into HTML
+ * Removes skip navigation links and injects base tag into HTML
  * @param {string} html - Original HTML
  * @param {string} baseUrl - Base URL to inject
  * @returns {string} Modified HTML
@@ -55,39 +55,44 @@ function validateUrl(urlString) {
 function injectBaseTag(html, baseUrl) {
   const baseTag = `<base href="${baseUrl}" target="_parent">`
   
-  // CSS to hide skip links and accessibility elements that shouldn't be visible
+  // Remove skip navigation links entirely from HTML
+  let cleanedHtml = html
+  
+  // Remove common skip link patterns
+  cleanedHtml = cleanedHtml.replace(/<a[^>]*href\s*=\s*["'][#]?(main|content|main-content|skip)[^"']*["'][^>]*>.*?<\/a>/gi, '')
+  cleanedHtml = cleanedHtml.replace(/<a[^>]*class\s*=\s*["'][^"']*skip[^"']*["'][^>]*>.*?<\/a>/gi, '')
+  cleanedHtml = cleanedHtml.replace(/<a[^>]*class\s*=\s*["'][^"']*sr-only[^"']*["'][^>]*>.*?<\/a>/gi, '')
+  cleanedHtml = cleanedHtml.replace(/<a[^>]*aria-label\s*=\s*["'][^"']*skip[^"']*["'][^>]*>.*?<\/a>/gi, '')
+  
+  // Remove elements with skip-related classes
+  cleanedHtml = cleanedHtml.replace(/<[^>]*class\s*=\s*["'][^"']*skip-link[^"']*["'][^>]*>.*?<\/[^>]*>/gi, '')
+  cleanedHtml = cleanedHtml.replace(/<[^>]*class\s*=\s*["'][^"']*screen-reader[^"']*["'][^>]*>.*?<\/[^>]*>/gi, '')
+  cleanedHtml = cleanedHtml.replace(/<[^>]*class\s*=\s*["'][^"']*visually-hidden[^"']*["'][^>]*>.*?<\/[^>]*>/gi, '')
+  
+  // Aggressive CSS to hide any remaining skip elements
   const hideSkipLinksCSS = `
     <style>
-      /* Hide skip navigation links */
-      a[href="#main"],
-      a[href="#content"], 
-      a[href="#main-content"],
-      a[class*="skip"],
-      a[class*="sr-only"]:not(:focus),
-      .skip-link:not(:focus),
-      .screen-reader-text:not(:focus),
-      .visually-hidden:not(:focus),
-      .sr-only:not(:focus) {
+      /* Aggressively hide all skip navigation elements */
+      a[href="#main"], a[href="#content"], a[href="#main-content"], 
+      a[class*="skip"], a[aria-label*="skip"], a[title*="skip"],
+      .skip-link, .skip-nav, .skip-to-content, .sr-only, .screen-reader-text, 
+      .visually-hidden, .screenreader, [class*="skip"]:not(button):not(input) {
+        display: none !important;
+        visibility: hidden !important;
         position: absolute !important;
         left: -10000px !important;
         top: -10000px !important;
-        width: 1px !important;
-        height: 1px !important;
+        width: 0 !important;
+        height: 0 !important;
         overflow: hidden !important;
-        clip: rect(1px, 1px, 1px, 1px) !important;
-        clip-path: inset(50%) !important;
+        opacity: 0 !important;
+        z-index: -9999 !important;
       }
       
-      /* Specifically target common skip link patterns */
-      a[href*="skip"]:not(:focus),
-      a[aria-label*="skip"]:not(:focus),
-      a[title*="skip"]:not(:focus) {
-        position: absolute !important;
-        left: -10000px !important;
-        top: -10000px !important;
-        width: 1px !important;
-        height: 1px !important;
-        overflow: hidden !important;
+      /* Hide elements that contain text about skipping */
+      *:contains("Skip to main"), *:contains("Skip to content"), 
+      *:contains("Skip navigation"), *:contains("Skip to") {
+        display: none !important;
       }
     </style>
   `
@@ -95,17 +100,17 @@ function injectBaseTag(html, baseUrl) {
   const injectionContent = baseTag + hideSkipLinksCSS
   
   // Try to inject after <head> tag
-  if (html.includes('<head>')) {
-    return html.replace('<head>', `<head>${injectionContent}`)
+  if (cleanedHtml.includes('<head>')) {
+    return cleanedHtml.replace('<head>', `<head>${injectionContent}`)
   }
   
   // Try to inject after <head ...> tag with attributes
-  if (html.match(/<head[^>]*>/i)) {
-    return html.replace(/<head[^>]*>/i, match => `${match}${injectionContent}`)
+  if (cleanedHtml.match(/<head[^>]*>/i)) {
+    return cleanedHtml.replace(/<head[^>]*>/i, match => `${match}${injectionContent}`)
   }
   
   // If no head tag, inject at the beginning
-  return injectionContent + html
+  return injectionContent + cleanedHtml
 }
 
 /**
