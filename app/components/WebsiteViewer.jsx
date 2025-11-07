@@ -25,6 +25,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
   const [isEditingUrl, setIsEditingUrl] = React.useState(false)
   const [editedUrl, setEditedUrl] = React.useState(url)
   const [showHistoryDropdown, setShowHistoryDropdown] = React.useState(false)
+  const [isInfoExpanded, setIsInfoExpanded] = React.useState(false)
   const historyDropdownRef = React.useRef(null)
   const iframeRef = React.useRef(null)
   const originalIframeRef = React.useRef(null)
@@ -40,6 +41,11 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
       setIsSplitView(isSplitViewProp)
     }
   }, [isSplitViewProp])
+  
+  // Reset expanded state when filter changes
+  React.useEffect(() => {
+    setIsInfoExpanded(false)
+  }, [activeFilter])
   
   // Synchronize scrolling between split view iframes
   React.useEffect(() => {
@@ -828,6 +834,107 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         </div>
       )}
       
+      {/* Expandable Filter Info Card */}
+      {url && activeFilter !== 'none' && (() => {
+        const filter = getFilter(activeFilter)
+        if (!filter) return null
+        
+        // Helper function to get "What this means" content
+        const getWhatThisMeans = (filterId) => {
+          const explanations = {
+            protanopia: 'People with protanopia cannot distinguish between red and green colors. Red appears darker and may be confused with black or dark gray. This affects how they perceive traffic lights, color-coded information, and design elements that rely on red-green differentiation.',
+            deuteranopia: 'Deuteranopia is the most common form of color blindness. People with this condition cannot distinguish between red and green colors, similar to protanopia but caused by different cone cells. Green appears more like beige or gray, making it difficult to see green elements against certain backgrounds.',
+            protanomaly: 'Protanomaly is a milder form of red colorblindness. People with this condition have reduced sensitivity to red light, making it harder to distinguish between red and green, though not as severely as protanopia.',
+            deuteranomaly: 'Deuteranomaly is the most common color vision deficiency. People with this condition have reduced sensitivity to green light, making it difficult to distinguish between red and green colors, though the effect is milder than deuteranopia.',
+            tritanopia: 'Tritanopia is a rare form of color blindness affecting blue-yellow color vision. People with tritanopia have difficulty distinguishing between blue and green, and between yellow and violet. Blue appears greenish, and yellow may appear pink or light gray.',
+            achromatopsia: 'Achromatopsia is complete color blindness, where people see only in shades of gray. This is a rare condition that significantly impacts daily life, as all color information is lost. Designers should ensure that color is never the only way to convey important information.',
+            cataracts: 'Cataracts cause clouding of the eye\'s lens, resulting in blurred, dimmed vision. Colors appear less vibrant, and there\'s reduced contrast sensitivity. This condition is common in older adults and can make text harder to read, especially with low contrast.',
+            lowVision: 'Low vision refers to significantly reduced visual clarity that cannot be fully corrected with glasses or contact lenses. This includes blurred vision, making it difficult to read small text, see details, or distinguish between similar elements.',
+            lowContrast: 'Low contrast sensitivity makes it difficult to distinguish between similar shades and colors. Text and elements with low contrast ratios become hard to see, which is why WCAG guidelines recommend minimum contrast ratios of 4.5:1 for text.',
+            glaucoma: 'Glaucoma causes progressive vision loss, typically starting with peripheral vision. People with glaucoma experience tunnel vision, making it difficult to see content at the edges of the screen. Important information should be placed centrally.',
+            macularDegeneration: 'Macular degeneration affects central vision, causing blurred or dark spots in the center of the visual field. People with this condition may have difficulty reading text and seeing fine details, especially in the center of their vision.',
+            diabeticRetinopathy: 'Diabetic retinopathy can cause blurred vision, floaters, and reduced contrast sensitivity. Fluctuating vision and difficulty seeing in low light are common. High contrast and clear typography are essential.'
+          }
+          return explanations[filterId] || ''
+        }
+        
+        // Helper function to get design tips
+        const getDesignTips = (filterId) => {
+          const isColorblind = ['protanopia', 'deuteranopia', 'protanomaly', 'deuteranomaly', 'tritanopia', 'achromatopsia'].includes(filterId)
+          if (isColorblind) {
+            return [
+              'Never rely on color alone to convey information',
+              'Use icons, patterns, or labels alongside colors',
+              'Ensure sufficient contrast (minimum 4.5:1 for text)',
+              'Test your designs with colorblind simulators',
+              'Provide alternative ways to identify important elements'
+            ]
+          } else {
+            return [
+              'Use high contrast ratios (minimum 4.5:1 for text)',
+              'Make text resizable without breaking layout',
+              'Avoid small font sizes',
+              'Use clear, bold typography',
+              'Provide sufficient spacing between elements'
+            ]
+          }
+        }
+        
+        return (
+          <div className={`filter-info-card ${isInfoExpanded ? 'expanded' : ''}`}>
+            <button
+              className="filter-info-card-header"
+              onClick={() => setIsInfoExpanded(!isInfoExpanded)}
+              aria-expanded={isInfoExpanded}
+              aria-label={isInfoExpanded ? 'Collapse filter information' : 'Expand filter information'}
+            >
+              <div className="filter-info-card-summary">
+                <div className="filter-info-card-title-row">
+                  <h3 className="filter-info-card-title">{filter.name}</h3>
+                  {filter.severity && (
+                    <span className="filter-info-card-severity">{filter.severity}</span>
+                  )}
+                </div>
+                <p className="filter-info-card-description">{filter.description}</p>
+                <div className="filter-info-card-stats">
+                  <div className="filter-info-card-stat">
+                    <span className="stat-label">Prevalence</span>
+                    <span className="stat-value">{filter.prevalence}</span>
+                  </div>
+                  {filter.severity && (
+                    <div className="filter-info-card-stat">
+                      <span className="stat-label">Severity</span>
+                      <span className="stat-value">{filter.severity}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="filter-info-card-toggle">
+                <span className={`toggle-icon ${isInfoExpanded ? 'expanded' : ''}`}>▼</span>
+              </div>
+            </button>
+            
+            {isInfoExpanded && (
+              <div className="filter-info-card-content">
+                <div className="filter-info-card-section">
+                  <h4>What this means</h4>
+                  <p>{getWhatThisMeans(filter.id)}</p>
+                </div>
+                
+                <div className="filter-info-card-section">
+                  <h4>Design Tips</h4>
+                  <ul>
+                    {getDesignTips(filter.id).map((tip, index) => (
+                      <li key={index}>{tip}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      })()}
+      
       
       <div 
         ref={containerRef}
@@ -1443,6 +1550,245 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           .quick-filter-btn {
             padding: 5px 10px;
             font-size: 0.7rem;
+          }
+        }
+        
+        .filter-info-card {
+          margin-top: var(--spacing-sm);
+          margin-bottom: var(--spacing-sm);
+          background: rgba(0, 0, 0, 0.6);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          border-radius: var(--radius-md);
+          overflow: hidden;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .filter-info-card-header {
+          width: 100%;
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: var(--spacing-md);
+          padding: var(--spacing-md);
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          text-align: left;
+          transition: background-color 0.2s ease;
+        }
+        
+        .filter-info-card-header:hover {
+          background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .filter-info-card-header:active {
+          background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .filter-info-card-summary {
+          flex: 1;
+          min-width: 0;
+        }
+        
+        .filter-info-card-title-row {
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-sm);
+          margin-bottom: var(--spacing-xs);
+          flex-wrap: wrap;
+        }
+        
+        .filter-info-card-title {
+          margin: 0;
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: rgba(255, 255, 255, 1);
+        }
+        
+        .filter-info-card-severity {
+          padding: 2px 8px;
+          background: rgba(110, 198, 255, 0.2);
+          border: 1px solid rgba(110, 198, 255, 0.4);
+          border-radius: 12px;
+          font-size: 0.7rem;
+          font-weight: 600;
+          color: rgba(110, 198, 255, 1);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        
+        .filter-info-card-description {
+          margin: var(--spacing-xs) 0;
+          font-size: 0.9rem;
+          color: rgba(255, 255, 255, 0.85);
+          line-height: 1.5;
+        }
+        
+        .filter-info-card-stats {
+          display: flex;
+          gap: var(--spacing-md);
+          margin-top: var(--spacing-xs);
+          flex-wrap: wrap;
+        }
+        
+        .filter-info-card-stat {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        
+        .filter-info-card-stat .stat-label {
+          font-size: 0.75rem;
+          color: rgba(255, 255, 255, 0.6);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        
+        .filter-info-card-stat .stat-value {
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .filter-info-card-toggle {
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.1);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .filter-info-card-header:hover .filter-info-card-toggle {
+          background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .toggle-icon {
+          font-size: 0.7rem;
+          color: rgba(255, 255, 255, 0.8);
+          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          display: inline-block;
+        }
+        
+        .toggle-icon.expanded {
+          transform: rotate(180deg);
+        }
+        
+        .filter-info-card-content {
+          padding: 0 var(--spacing-md) var(--spacing-md);
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+          animation: expandContent 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes expandContent {
+          from {
+            opacity: 0;
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+          }
+          to {
+            opacity: 1;
+            max-height: 2000px;
+            padding-top: var(--spacing-md);
+            padding-bottom: var(--spacing-md);
+          }
+        }
+        
+        .filter-info-card-section {
+          margin-bottom: var(--spacing-md);
+        }
+        
+        .filter-info-card-section:last-child {
+          margin-bottom: 0;
+        }
+        
+        .filter-info-card-section h4 {
+          margin: 0 0 var(--spacing-sm) 0;
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: rgba(255, 255, 255, 1);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        
+        .filter-info-card-section p {
+          margin: 0;
+          font-size: 0.9rem;
+          color: rgba(255, 255, 255, 0.85);
+          line-height: 1.6;
+        }
+        
+        .filter-info-card-section ul {
+          margin: 0;
+          padding-left: var(--spacing-md);
+          list-style: none;
+        }
+        
+        .filter-info-card-section ul li {
+          position: relative;
+          padding-left: var(--spacing-md);
+          margin-bottom: var(--spacing-xs);
+          font-size: 0.9rem;
+          color: rgba(255, 255, 255, 0.85);
+          line-height: 1.6;
+        }
+        
+        .filter-info-card-section ul li:before {
+          content: '✓';
+          position: absolute;
+          left: 0;
+          color: rgba(110, 198, 255, 1);
+          font-weight: bold;
+        }
+        
+        .filter-info-card-section ul li:last-child {
+          margin-bottom: 0;
+        }
+        
+        @media (max-width: 768px) {
+          .filter-info-card {
+            margin-top: var(--spacing-xs);
+            margin-bottom: var(--spacing-xs);
+          }
+          
+          .filter-info-card-header {
+            padding: var(--spacing-sm);
+          }
+          
+          .filter-info-card-title {
+            font-size: 1rem;
+          }
+          
+          .filter-info-card-description {
+            font-size: 0.85rem;
+          }
+          
+          .filter-info-card-stats {
+            gap: var(--spacing-sm);
+          }
+          
+          .filter-info-card-content {
+            padding: 0 var(--spacing-sm) var(--spacing-sm);
+          }
+          
+          .filter-info-card-section {
+            margin-bottom: var(--spacing-sm);
+          }
+          
+          .filter-info-card-section h4 {
+            font-size: 0.9rem;
+          }
+          
+          .filter-info-card-section p,
+          .filter-info-card-section ul li {
+            font-size: 0.85rem;
           }
         }
         
