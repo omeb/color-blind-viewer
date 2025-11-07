@@ -172,11 +172,11 @@ export default function Home() {
         }
         
         .app-container.has-content .hero-section {
-          margin-bottom: var(--spacing-xl);
+          margin-bottom: var(--spacing-lg);
         }
         
         .hero-section.compact {
-          transform: scale(0.95);
+          transform: scale(0.85);
         }
         
         .hero-content {
@@ -191,7 +191,7 @@ export default function Home() {
         }
         
         .app-container.has-content .hero-content {
-          padding: var(--spacing-lg);
+          padding: var(--spacing-md) var(--spacing-lg);
         }
         
         .app-container.initial-view h1 {
@@ -200,8 +200,8 @@ export default function Home() {
         }
         
         .app-container.has-content h1 {
-          font-size: 2.5rem;
-          margin-bottom: var(--spacing-md);
+          font-size: 1.5rem;
+          margin-bottom: var(--spacing-xs);
         }
         
         .hero-subtitle {
@@ -214,6 +214,11 @@ export default function Home() {
         .app-container.initial-view .hero-subtitle {
           font-size: 1.25rem;
           margin-bottom: calc(var(--spacing-xl) * 1.5);
+        }
+        
+        .app-container.has-content .hero-subtitle {
+          font-size: 0.9rem;
+          margin-bottom: var(--spacing-md);
         }
         
         .url-input-section {
