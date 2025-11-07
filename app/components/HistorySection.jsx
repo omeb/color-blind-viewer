@@ -2,6 +2,19 @@
 
 import React from 'react'
 
+// Example sites to always show (colorful sites for testing colorblind filters)
+const EXAMPLE_SITES = [
+  'https://www.wix.com',
+  'https://www.spotify.com',
+  'https://www.dribbble.com',
+  'https://www.behance.net',
+  'https://www.airbnb.com',
+  'https://www.stripe.com',
+  'https://www.notion.so',
+  'https://www.canva.com',
+  'https://www.unsplash.com'
+]
+
 /**
  * History Section Component
  * 
@@ -9,6 +22,7 @@ import React from 'react'
  * - Click to quickly load a site
  * - Remove sites from history
  * - Automatically moves most recent to top
+ * - Always shows example sites for easy access
  * 
  * @param {Object} props
  * @param {Array<string>} props.history - Array of URLs in history
@@ -16,17 +30,6 @@ import React from 'react'
  * @param {Function} props.onRemoveUrl - Callback to remove URL from history
  */
 export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl }) {
-  const exampleSites = [
-    'https://www.wix.com',
-    'https://www.spotify.com',
-    'https://www.dribbble.com',
-    'https://www.behance.net',
-    'https://www.airbnb.com',
-    'https://www.stripe.com',
-    'https://www.notion.so',
-    'https://www.canva.com',
-    'https://www.unsplash.com'
-  ]
   
   // Ensure history is an array
   // Handle cases where history might be null, undefined, or not an array
@@ -39,12 +42,11 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
   
   // Filter out example sites from history to avoid duplicates
   const filteredHistory = React.useMemo(() => {
-    return historyArray.filter(url => !exampleSites.includes(url))
-  }, [historyArray, exampleSites])
+    return historyArray.filter(url => !EXAMPLE_SITES.includes(url))
+  }, [historyArray])
   
   // Always show examples, and show recent sites if they exist
-  const sitesToShow = [...filteredHistory, ...exampleSites]
-  const isShowingExamples = true // Always show examples
+  const sitesToShow = [...filteredHistory, ...EXAMPLE_SITES]
   
   // Extract domain name from URL for display
   const getDisplayUrl = (url) => {
@@ -62,7 +64,7 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
   }
   
   // Check if a URL is an example site (not in recent history)
-  const isExampleSite = (url) => exampleSites.includes(url)
+  const isExampleSite = (url) => EXAMPLE_SITES.includes(url)
   
   return (
     <div className="history-section">
