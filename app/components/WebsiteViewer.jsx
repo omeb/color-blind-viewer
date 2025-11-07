@@ -20,6 +20,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
   const [isSplitView, setIsSplitView] = React.useState(false)
   const [splitPosition, setSplitPosition] = React.useState(50)
   const [isDragging, setIsDragging] = React.useState(false)
+  const [iframeLoading, setIframeLoading] = React.useState(false)
+  const [iframeLoaded, setIframeLoaded] = React.useState(false)
   const iframeRef = React.useRef(null)
   const containerRef = React.useRef(null)
   
@@ -30,8 +32,19 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
   React.useEffect(() => {
     if (url) {
       setIframeKey(prev => prev + 1)
+      setIframeLoading(true)
+      setIframeLoaded(false)
     }
   }, [url])
+  
+  // Handle iframe load event
+  const handleIframeLoad = () => {
+    // Small delay to ensure content is rendered
+    setTimeout(() => {
+      setIframeLoading(false)
+      setIframeLoaded(true)
+    }, 500)
+  }
   
   // Handle split view dragging
   const handleMouseDown = () => {
@@ -113,18 +126,18 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
       
       {loading && (
         <div className="loading-state">
-          <div className="loader-container">
-            <div className="loader-circles">
-              <div className="circle circle-1"></div>
-              <div className="circle circle-2"></div>
-              <div className="circle circle-3"></div>
-            </div>
-            <div className="loader-bar">
-              <div className="loader-bar-fill"></div>
-            </div>
+          <div className="loading-content">
+            <div className="minimal-spinner"></div>
           </div>
-          <p className="loading-text">Loading website...</p>
-          <p className="loading-hint">Preparing accessibility view</p>
+        </div>
+      )}
+      
+      {!loading && iframeLoading && (
+        <div className="loading-state iframe-loading">
+          <div className="loading-content">
+            <div className="minimal-spinner"></div>
+            <p className="loading-text">Loading...</p>
+          </div>
         </div>
       )}
       
@@ -151,6 +164,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
                   className="website-iframe"
                   sandbox="allow-scripts allow-same-origin allow-forms"
                   loading="lazy"
+                  onLoad={handleIframeLoad}
                 />
               </div>
               
@@ -175,6 +189,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
                     className="website-iframe"
                     sandbox="allow-scripts allow-same-origin allow-forms"
                     loading="lazy"
+                    onLoad={handleIframeLoad}
                   />
                 </div>
               </div>
@@ -192,6 +207,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
                 className="website-iframe"
                 sandbox="allow-scripts allow-same-origin allow-forms"
                 loading="lazy"
+                onLoad={handleIframeLoad}
               />
             </div>
           )}
@@ -307,127 +323,69 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         }
         
         .loading-state {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
           display: flex;
-          flex-direction: column;
           align-items: center;
           justify-content: center;
-          height: 100%;
-          gap: var(--spacing-lg);
-          background: linear-gradient(135deg, rgba(110, 198, 255, 0.1) 0%, rgba(147, 112, 219, 0.1) 100%);
+          background: rgba(255, 255, 255, 0.98);
+          z-index: 5;
+          animation: fadeIn 0.2s ease;
         }
         
-        .loader-container {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: var(--spacing-lg);
+        .loading-state.iframe-loading {
+          animation: fadeOut 0.3s ease forwards;
         }
         
-        .loader-circles {
-          display: flex;
-          gap: var(--spacing-sm);
-        }
-        
-        .circle {
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #6EC6FF 0%, #9370DB 100%);
-          animation: bounce 1.4s ease-in-out infinite;
-          box-shadow: 0 0 20px rgba(110, 198, 255, 0.5);
-        }
-        
-        .circle-1 {
-          animation-delay: 0s;
-        }
-        
-        .circle-2 {
-          animation-delay: 0.2s;
-        }
-        
-        .circle-3 {
-          animation-delay: 0.4s;
-        }
-        
-        @keyframes bounce {
-          0%, 80%, 100% {
-            transform: scale(0.8) translateY(0);
-            opacity: 0.5;
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
           }
-          40% {
-            transform: scale(1.2) translateY(-20px);
+          to {
             opacity: 1;
           }
         }
         
-        .loader-bar {
-          width: 200px;
-          height: 4px;
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 10px;
-          overflow: hidden;
-          position: relative;
+        @keyframes fadeOut {
+          from {
+            opacity: 1;
+          }
+          to {
+            opacity: 0;
+          }
         }
         
-        .loader-bar-fill {
-          height: 100%;
-          background: linear-gradient(90deg, #6EC6FF 0%, #9370DB 50%, #6EC6FF 100%);
-          background-size: 200% 100%;
-          border-radius: 10px;
-          animation: shimmer 1.5s ease-in-out infinite;
-          box-shadow: 0 0 10px rgba(110, 198, 255, 0.5);
+        .loading-content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: var(--spacing-md);
         }
         
-        @keyframes shimmer {
-          0% {
-            background-position: -200% 0;
-            width: 0%;
-          }
-          50% {
-            width: 100%;
-          }
-          100% {
-            background-position: 200% 0;
-            width: 100%;
+        .minimal-spinner {
+          width: 48px;
+          height: 48px;
+          border: 3px solid rgba(0, 0, 0, 0.08);
+          border-top-color: rgba(0, 0, 0, 0.6);
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
           }
         }
         
         .loading-text {
           margin: 0;
-          color: rgba(255, 255, 255, 0.95);
-          font-size: 1.1rem;
-          font-weight: 600;
-          animation: pulse 2s ease-in-out infinite;
-        }
-        
-        .loading-hint {
-          margin: 0;
-          color: rgba(255, 255, 255, 0.7);
-          font-size: 0.9rem;
-          animation: fadeInOut 2s ease-in-out infinite;
-        }
-        
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.7;
-          }
-        }
-        
-        @keyframes fadeInOut {
-          0%, 100% {
-            opacity: 0.5;
-          }
-          50% {
-            opacity: 1;
-          }
-        }
-        
-        .loading-state p {
-          margin: 0;
-          color: rgba(255, 255, 255, 0.9);
+          color: rgba(0, 0, 0, 0.7);
+          font-size: 0.95rem;
+          font-weight: 400;
+          letter-spacing: -0.2px;
         }
         
         .error-state {
