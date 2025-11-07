@@ -272,14 +272,14 @@ export default function Home() {
           <div className="glass-card footer-content">
             <div className="footer-main">
               <h3 className="footer-title">Making the web accessible for everyone</h3>
+              <p className="footer-note">
+                Some sites may restrict embedding for security. Try different URLs if needed.
+              </p>
             </div>
             
             <div className="footer-divider"></div>
             
             <div className="footer-secondary">
-              <p className="footer-note">
-                Some sites may restrict embedding for security. Try different URLs if needed.
-              </p>
               <p className="footer-love">
                 Made with <span className="heart">❤️</span> by the Wix Accessibility team
                 {' · '}
