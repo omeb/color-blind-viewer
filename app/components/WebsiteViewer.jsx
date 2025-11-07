@@ -16,9 +16,9 @@ import { getCategorizedFilters } from '../lib/filters'
  * @param {boolean} props.loading - Whether the website is loading
  * @param {string} props.error - Error message if loading failed
  */
-export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemove, onFilterChange, onFilterInfo, onChangeUrl, loading = false, error = null, onUrlChange, history = [], onSelectUrl, onRemoveUrl }) {
+export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView: isSplitViewProp, onSplitViewChange, onFilterRemove, onFilterChange, onFilterInfo, onChangeUrl, loading = false, error = null, onUrlChange, history = [], onSelectUrl, onRemoveUrl }) {
   const [iframeKey, setIframeKey] = React.useState(0)
-  const [isSplitView, setIsSplitView] = React.useState(false)
+  const [isSplitView, setIsSplitView] = React.useState(isSplitViewProp || false)
   const [iframeLoading, setIframeLoading] = React.useState(false)
   const [iframeLoaded, setIframeLoaded] = React.useState(false)
   const [isEditingUrl, setIsEditingUrl] = React.useState(false)
@@ -26,8 +26,27 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
   const [showHistoryDropdown, setShowHistoryDropdown] = React.useState(false)
   const historyDropdownRef = React.useRef(null)
   const iframeRef = React.useRef(null)
+  const originalIframeRef = React.useRef(null)
+  const filteredIframeRef = React.useRef(null)
   const containerRef = React.useRef(null)
   const urlInputRef = React.useRef(null)
+  const isScrollingRef = React.useRef(false)
+  
+  // Sync split view with prop
+  React.useEffect(() => {
+    if (isSplitViewProp !== undefined) {
+      setIsSplitView(isSplitViewProp)
+    }
+  }, [isSplitViewProp])
+  
+  // Handle split view toggle
+  const handleSplitViewToggle = () => {
+    const newValue = !isSplitView
+    setIsSplitView(newValue)
+    if (onSplitViewChange) {
+      onSplitViewChange(newValue)
+    }
+  }
   
   // Build proxy URL
   const proxyUrl = url ? `/api/proxy?url=${encodeURIComponent(url)}` : null
@@ -74,6 +93,10 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
       setIframeKey(prev => prev + 1)
       setIframeLoading(true)
       setIframeLoaded(false)
+    } else {
+      // Reset loading states when URL is cleared
+      setIframeLoading(false)
+      setIframeLoaded(false)
     }
   }, [url])
   
@@ -108,6 +131,68 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
     }
   }
   
+  // Format URL (same logic as UrlInput component)
+  const formatUrl = (inputUrl) => {
+    let formatted = inputUrl.trim()
+    
+    // Remove spaces
+    formatted = formatted.replace(/\s+/g, '')
+    
+    // Fix common typos: replace -com, -org, -net with .com, .org, .net
+    formatted = formatted.replace(/-(com|org|net|io|co|edu|gov)$/i, '.$1')
+    
+    // Extract protocol if present
+    let protocol = ''
+    let rest = formatted
+    
+    if (formatted.startsWith('http://')) {
+      protocol = 'http://'
+      rest = formatted.slice(7)
+    } else if (formatted.startsWith('https://')) {
+      protocol = 'https://'
+      rest = formatted.slice(8)
+    }
+    
+    // Extract domain and path/query
+    const pathMatch = rest.match(/^([^/?#]+)(.*)$/)
+    const domain = pathMatch ? pathMatch[1] : rest
+    const path = pathMatch ? pathMatch[2] : ''
+    
+    // Check if domain has a subdomain
+    const domainParts = domain.split('.')
+    
+    // Common two-part TLDs (country code + top-level domain)
+    const twoPartTlds = ['co.il', 'co.uk', 'com.au', 'com.br', 'com.mx', 'com.ar', 'co.za', 'co.nz', 'co.jp', 'com.sg', 'com.hk', 'com.tw', 'com.tr', 'com.pl', 'com.ro', 'com.gr', 'com.es', 'com.it', 'com.fr', 'com.de', 'com.nl', 'com.be', 'com.se', 'com.no', 'com.dk', 'com.fi', 'com.pt', 'com.cz', 'com.hu', 'com.ua', 'com.ru', 'com.cn', 'com.in', 'com.my', 'com.ph', 'com.vn', 'com.th', 'com.id', 'com.kr', 'com.jp', 'net.au', 'org.uk', 'gov.uk', 'ac.uk', 'edu.au', 'gov.au', 'net.au', 'org.au']
+    
+    // Check if the last 2 parts form a two-part TLD
+    const lastTwoParts = domainParts.length >= 2 
+      ? domainParts.slice(-2).join('.') 
+      : ''
+    const isTwoPartTld = twoPartTlds.includes(lastTwoParts.toLowerCase())
+    
+    // Determine if we need to add www.
+    // If domain has only 2 parts (domain.tld) OR 
+    // if domain has 3 parts and last 2 form a two-part TLD (domain.co.il)
+    let finalDomain = domain
+    if (domainParts.length === 2) {
+      // Simple case: domain.tld -> www.domain.tld
+      finalDomain = 'www.' + domain
+    } else if (domainParts.length === 3 && isTwoPartTld) {
+      // Two-part TLD case: domain.co.il -> www.domain.co.il
+      finalDomain = 'www.' + domain
+    }
+    // If domainParts.length > 3 or already has subdomain, leave as is
+    
+    // Reconstruct URL with protocol
+    if (!protocol) {
+      protocol = 'https://'
+    }
+    
+    formatted = protocol + finalDomain + path
+    
+    return formatted
+  }
+  
   // Handle URL submit
   const handleUrlSubmit = (e) => {
     e.preventDefault()
@@ -117,18 +202,10 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
     setShowHistoryDropdown(false)
     
     if (editedUrl.trim() && onUrlChange) {
-      let formattedUrl = editedUrl.trim()
+      const formattedUrl = formatUrl(editedUrl)
       
-      // Remove spaces
-      formattedUrl = formattedUrl.replace(/\s+/g, '')
-      
-      // Fix common typos: replace -com, -org, -net with .com, .org, .net
-      formattedUrl = formattedUrl.replace(/-(com|org|net|io|co|edu|gov)$/i, '.$1')
-      
-      // Always add https:// if no protocol specified
-      if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
-        formattedUrl = 'https://' + formattedUrl
-      }
+      // Update the input field to show the formatted URL
+      setEditedUrl(formattedUrl)
       
       // Use the formatted URL from input, not from dropdown
       onUrlChange(formattedUrl)
@@ -189,23 +266,24 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
                     </div>
                     <div className="history-dropdown-list">
                       {history.slice(0, 5).map((historyUrl, index) => (
-                        <button
-                          key={`${historyUrl}-${index}`}
-                          onClick={() => {
-                            // Update input value immediately
-                            setEditedUrl(historyUrl)
-                            setShowHistoryDropdown(false)
-                            setIsEditingUrl(false)
-                            // Then trigger the callback
-                            if (onSelectUrl) {
-                              onSelectUrl(historyUrl)
-                            }
-                          }}
-                          className="history-dropdown-item"
-                          title={`Load ${historyUrl}`}
-                        >
-                          <span className="history-item-icon">🌐</span>
-                          <span className="history-item-url">{historyUrl}</span>
+                        <div key={`${historyUrl}-${index}`} className="history-dropdown-item-wrapper">
+                          <button
+                            onClick={() => {
+                              // Update input value immediately
+                              setEditedUrl(historyUrl)
+                              setShowHistoryDropdown(false)
+                              setIsEditingUrl(false)
+                              // Then trigger the callback
+                              if (onSelectUrl) {
+                                onSelectUrl(historyUrl)
+                              }
+                            }}
+                            className="history-dropdown-item"
+                            title={`Load ${historyUrl}`}
+                          >
+                            <span className="history-item-icon">🌐</span>
+                            <span className="history-item-url">{historyUrl}</span>
+                          </button>
                           {onRemoveUrl && (
                             <button
                               onClick={(e) => {
@@ -219,7 +297,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
                               ✕
                             </button>
                           )}
-                        </button>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -281,7 +359,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
             {activeFilter !== 'none' && (
               <>
                 <button
-                  onClick={() => setIsSplitView(!isSplitView)}
+                  onClick={handleSplitViewToggle}
                   className="control-btn"
                   aria-label={isSplitView ? 'Exit split view' : 'Compare side-by-side'}
                   title={isSplitView ? 'Exit Split View' : 'Compare Side-by-Side'}
@@ -317,63 +395,145 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         </div>
       )}
       
-      {loading && (
-        <div className="loading-state" role="status" aria-live="polite">
+      {/* Show loading state immediately when url exists OR loading is true */}
+      {(loading || iframeLoading || (url && !iframeLoaded)) && (
+        <div className={`loading-state ${iframeLoading ? 'iframe-loading' : 'initial-loading'}`} role="status" aria-live="polite">
           <div className="loading-content">
-            <div className="loading-orb">
-              <div className="orb-inner"></div>
-              <div className="orb-pulse"></div>
-              <div className="orb-glow"></div>
-            </div>
-            <div className="loading-text-wrapper">
-              <h3 className="loading-title">Preparing your view</h3>
-              <p className="loading-subtitle">Setting up the accessibility viewer</p>
-            </div>
-            <div className="loading-dots">
-              <span className="dot"></span>
-              <span className="dot"></span>
-              <span className="dot"></span>
-            </div>
+            {!iframeLoading ? (
+              <>
+                <div className="loading-orb">
+                  <div className="orb-inner"></div>
+                  <div className="orb-pulse"></div>
+                  <div className="orb-glow"></div>
+                </div>
+                <div className="loading-text-wrapper">
+                  <h3 className="loading-title">Preparing your view</h3>
+                  <p className="loading-subtitle">Setting up the accessibility viewer</p>
+                </div>
+                <div className="loading-dots">
+                  <span className="dot"></span>
+                  <span className="dot"></span>
+                  <span className="dot"></span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="loading-text-wrapper">
+                  <p className="loading-text">Loading website</p>
+                  <div className="loading-progress">
+                    <div className="progress-bar"></div>
+                  </div>
+                </div>
+                <div className="loading-skeleton">
+                  <div className="skeleton-header">
+                    <div className="skeleton-line skeleton-line-short"></div>
+                    <div className="skeleton-circle"></div>
+                  </div>
+                  <div className="skeleton-body">
+                    <div className="skeleton-line"></div>
+                    <div className="skeleton-line"></div>
+                    <div className="skeleton-line skeleton-line-medium"></div>
+                    <div className="skeleton-box"></div>
+                    <div className="skeleton-line"></div>
+                    <div className="skeleton-line skeleton-line-short"></div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
       
-      {!loading && iframeLoading && (
-        <div className="loading-state iframe-loading" role="status" aria-live="polite">
-          <div className="loading-content">
-            <div className="loading-text-wrapper">
-              <p className="loading-text">Loading website</p>
-              <div className="loading-progress">
-                <div className="progress-bar"></div>
-              </div>
+      {error && (() => {
+        // Parse error message to determine error type
+        const errorLower = error.toLowerCase()
+        let errorType = 'generic'
+        let userFriendlyTitle = 'Unable to Load Website'
+        let userFriendlyMessage = 'We couldn\'t load this website. This might be due to security restrictions or network issues.'
+        let suggestions = [
+          'Try a different website URL',
+          'Check if the website is accessible in your browser',
+          'Some sites block embedding for security reasons'
+        ]
+        
+        if (errorLower.includes('403') || errorLower.includes('forbidden')) {
+          errorType = 'forbidden'
+          userFriendlyTitle = 'Access Restricted'
+          userFriendlyMessage = 'This website has blocked embedding for security reasons. Many sites restrict iframe embedding to protect their content.'
+          suggestions = [
+            'Try opening the site directly in your browser',
+            'Try a different website that allows embedding',
+            'Some sites like social media platforms restrict embedding'
+          ]
+        } else if (errorLower.includes('404') || errorLower.includes('not found')) {
+          errorType = 'notfound'
+          userFriendlyTitle = 'Website Not Found'
+          userFriendlyMessage = 'The website you\'re looking for couldn\'t be found. It may have been moved or doesn\'t exist.'
+          suggestions = [
+            'Double-check the URL for typos',
+            'Try removing www. or adding it',
+            'Verify the website is still active'
+          ]
+        } else if (errorLower.includes('timeout') || errorLower.includes('too long')) {
+          errorType = 'timeout'
+          userFriendlyTitle = 'Request Timed Out'
+          userFriendlyMessage = 'The website took too long to respond. This could be due to slow loading or server issues.'
+          suggestions = [
+            'Try again in a few moments',
+            'Check your internet connection',
+            'The site might be experiencing high traffic'
+          ]
+        } else if (errorLower.includes('network') || errorLower.includes('connection')) {
+          errorType = 'network'
+          userFriendlyTitle = 'Connection Error'
+          userFriendlyMessage = 'We couldn\'t connect to the website. Please check your internet connection.'
+          suggestions = [
+            'Check your internet connection',
+            'Try refreshing the page',
+            'Verify the website URL is correct'
+          ]
+        } else if (errorLower.includes('html page') || errorLower.includes('not html')) {
+          errorType = 'nothtml'
+          userFriendlyTitle = 'Not a Web Page'
+          userFriendlyMessage = 'This URL doesn\'t point to a web page. It might be a file download or API endpoint.'
+          suggestions = [
+            'Make sure you\'re using a website URL, not a file link',
+            'Try the main page of the website',
+            'Some URLs point to downloads or APIs, not web pages'
+          ]
+        }
+        
+        return (
+          <div className="error-state" role="alert">
+            <div className="error-icon">
+              {errorType === 'forbidden' && '🚫'}
+              {errorType === 'notfound' && '🔍'}
+              {errorType === 'timeout' && '⏱️'}
+              {errorType === 'network' && '📡'}
+              {errorType === 'nothtml' && '📄'}
+              {errorType === 'generic' && '⚠️'}
             </div>
-            <div className="loading-skeleton">
-              <div className="skeleton-header">
-                <div className="skeleton-line skeleton-line-short"></div>
-                <div className="skeleton-circle"></div>
-              </div>
-              <div className="skeleton-body">
-                <div className="skeleton-line"></div>
-                <div className="skeleton-line"></div>
-                <div className="skeleton-line skeleton-line-medium"></div>
-                <div className="skeleton-box"></div>
-                <div className="skeleton-line"></div>
-                <div className="skeleton-line skeleton-line-short"></div>
-              </div>
+            <h3 className="error-title">{userFriendlyTitle}</h3>
+            <p className="error-message">{userFriendlyMessage}</p>
+            <div className="error-suggestions">
+              <p className="error-suggestions-title">What you can try:</p>
+              <ul className="error-suggestions-list">
+                {suggestions.map((suggestion, index) => (
+                  <li key={index}>{suggestion}</li>
+                ))}
+              </ul>
             </div>
+            {onChangeUrl && (
+              <button
+                onClick={() => onChangeUrl()}
+                className="error-action-button"
+              >
+                Try a Different URL
+              </button>
+            )}
           </div>
-        </div>
-      )}
-      
-      {error && (
-        <div className="error-state" role="alert">
-          <p className="error-title">Failed to load website</p>
-          <p className="error-message">{error}</p>
-          <p className="error-hint">
-            Some websites block iframe embedding for security reasons. Try a different website.
-          </p>
-        </div>
-      )}
+        )
+      })()}
       
       {proxyUrl && !loading && !error && (
         <div className={`iframe-content ${iframeLoading ? 'loading' : ''}`}>
@@ -382,6 +542,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
               <div className="split-pane split-pane-left">
                 {!iframeLoading && <div className="split-label">Original</div>}
                 <iframe
+                  ref={originalIframeRef}
                   key={`${iframeKey}-original`}
                   src={proxyUrl}
                   title="Original website view"
@@ -401,6 +562,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
                   style={{ filter: getFilterStyle(activeFilter) }}
                 >
                   <iframe
+                    ref={filteredIframeRef}
                     key={`${iframeKey}-filtered`}
                     src={proxyUrl}
                     title="Filtered website view"
@@ -454,6 +616,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           transition: all var(--transition-normal);
           display: flex;
           flex-direction: column;
+          /* Prevent layout shifts */
+          contain: layout style;
         }
         
         .website-viewer-container.split-view {
@@ -569,12 +733,19 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           overflow-y: auto;
         }
         
+        .history-dropdown-item-wrapper {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+        
         .history-dropdown-item {
           display: flex;
           align-items: center;
           gap: var(--spacing-sm);
           width: 100%;
           padding: var(--spacing-sm) var(--spacing-md);
+          padding-right: 40px;
           background: transparent;
           border: none;
           color: rgba(255, 255, 255, 0.9);
@@ -584,7 +755,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           font-size: 0.9rem;
         }
         
-        .history-dropdown-item:hover {
+        .history-dropdown-item-wrapper:hover .history-dropdown-item {
           background: rgba(255, 255, 255, 0.1);
         }
         
@@ -601,19 +772,23 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         }
         
         .history-item-remove {
-          flex-shrink: 0;
+          position: absolute;
+          right: var(--spacing-xs);
+          top: 50%;
+          transform: translateY(-50%);
           background: transparent;
           border: none;
           color: rgba(255, 255, 255, 0.5);
           cursor: pointer;
-          padding: 4px;
+          padding: 4px 8px;
           border-radius: 4px;
           transition: all var(--transition-fast);
           font-size: 0.9rem;
           opacity: 0;
+          z-index: 10;
         }
         
-        .history-dropdown-item:hover .history-item-remove {
+        .history-dropdown-item-wrapper:hover .history-item-remove {
           opacity: 1;
         }
         
@@ -641,16 +816,20 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           flex: 1;
           border: none;
           background: transparent;
-          font-size: 0.9rem;
+          font-size: 0.95rem;
+          font-weight: 500;
           color: rgba(0, 0, 0, 0.9);
-          font-family: monospace;
-          letter-spacing: -0.3px;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+          letter-spacing: -0.01em;
+          line-height: 1.5;
           outline: none;
           padding: 0;
         }
         
         .url-edit-input::placeholder {
-          color: rgba(0, 0, 0, 0.4);
+          color: rgba(0, 0, 0, 0.5);
+          font-weight: 400;
+          letter-spacing: 0;
         }
         
         .url-edit-actions {
@@ -829,7 +1008,16 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           backdrop-filter: blur(40px);
           -webkit-backdrop-filter: blur(40px);
           z-index: 5;
-          animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                      background 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .loading-state.initial-loading {
+          background: linear-gradient(135deg, 
+            rgba(102, 126, 234, 0.95) 0%, 
+            rgba(118, 75, 162, 0.95) 100%
+          );
         }
         
         .loading-state.iframe-loading {
@@ -857,6 +1045,10 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           justify-content: flex-start;
           gap: var(--spacing-lg);
           padding: var(--spacing-xl);
+          width: 100%;
+          max-width: 600px;
+          transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .iframe-loading .loading-content {
@@ -866,6 +1058,26 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         .iframe-loading .loading-text-wrapper {
           order: -1;
           margin-bottom: var(--spacing-md);
+        }
+        
+        /* Smooth transition between loading states */
+        .loading-state.initial-loading .loading-content {
+          animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .loading-state.iframe-loading .loading-content {
+          animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
         
         /* Orb Loading Animation - Initial Load */
@@ -1182,35 +1394,132 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           height: 100%;
           padding: var(--spacing-xl);
           text-align: center;
-          background: rgba(255, 107, 107, 0.1);
+          background: rgba(255, 107, 107, 0.08);
+          border-radius: var(--radius-md);
+          border: 1px solid rgba(255, 107, 107, 0.2);
+        }
+        
+        .error-icon {
+          font-size: 4rem;
+          margin-bottom: var(--spacing-md);
+          line-height: 1;
         }
         
         .error-title {
-          font-size: 1.2rem;
-          font-weight: 600;
-          color: #ff6b6b;
-          margin-bottom: var(--spacing-sm);
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: rgba(255, 255, 255, 1);
+          margin: 0 0 var(--spacing-sm) 0;
         }
         
         .error-message {
+          font-size: 1rem;
           color: rgba(255, 255, 255, 0.9);
-          margin-bottom: var(--spacing-md);
+          margin: 0 0 var(--spacing-lg) 0;
+          max-width: 500px;
+          line-height: 1.6;
         }
         
-        .error-hint {
+        .error-suggestions {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: var(--radius-sm);
+          padding: var(--spacing-md);
+          margin-bottom: var(--spacing-lg);
+          max-width: 500px;
+          text-align: left;
+        }
+        
+        .error-suggestions-title {
           font-size: 0.9rem;
-          opacity: 0.7;
-          color: rgba(255, 255, 255, 0.8);
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.95);
+          margin: 0 0 var(--spacing-sm) 0;
+        }
+        
+        .error-suggestions-list {
+          margin: 0;
+          padding-left: var(--spacing-md);
+          list-style: none;
+        }
+        
+        .error-suggestions-list li {
+          font-size: 0.9rem;
+          color: rgba(255, 255, 255, 0.85);
+          margin-bottom: var(--spacing-xs);
+          line-height: 1.6;
+          position: relative;
+          padding-left: var(--spacing-md);
+        }
+        
+        .error-suggestions-list li::before {
+          content: '•';
+          position: absolute;
+          left: 0;
+          color: rgba(110, 198, 255, 0.8);
+          font-weight: 700;
+        }
+        
+        .error-suggestions-list li:last-child {
+          margin-bottom: 0;
+        }
+        
+        .error-action-button {
+          background: rgba(110, 198, 255, 0.2);
+          border: 1px solid rgba(110, 198, 255, 0.4);
+          border-radius: var(--radius-sm);
+          color: rgba(255, 255, 255, 1);
+          padding: var(--spacing-sm) var(--spacing-lg);
+          font-size: 0.95rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all var(--transition-fast);
+          font-family: inherit;
+        }
+        
+        .error-action-button:hover {
+          background: rgba(110, 198, 255, 0.3);
+          border-color: rgba(110, 198, 255, 0.6);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(110, 198, 255, 0.2);
+        }
+        
+        .error-action-button:active {
+          transform: translateY(0);
         }
         
         .iframe-content {
           flex: 1;
-          position: relative;
+          position: absolute;
+          top: 0;
+          left: 0;
           width: 100%;
+          height: 100%;
           min-height: 0;
           overflow: hidden;
           display: flex;
           flex-direction: column;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .iframe-content:not(.loading) {
+          opacity: 1;
+          pointer-events: auto;
+        }
+        
+        .iframe-content.loading {
+          opacity: 0;
+          pointer-events: none;
+        }
+        
+        @keyframes fadeInContent {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
         }
         
         .iframe-wrapper {
@@ -1287,6 +1596,26 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           .website-viewer-container {
             min-height: 500px;
           }
+          
+          .error-state {
+            padding: var(--spacing-lg);
+          }
+          
+          .error-icon {
+            font-size: 3rem;
+          }
+          
+          .error-title {
+            font-size: 1.25rem;
+          }
+          
+          .error-message {
+            font-size: 0.95rem;
+          }
+          
+          .error-suggestions {
+            padding: var(--spacing-sm);
+          }
         }
         
         @media (max-width: 480px) {
@@ -1294,8 +1623,32 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
             min-height: 400px;
           }
           
-          .empty-state,
           .error-state {
+            padding: var(--spacing-md);
+          }
+          
+          .error-icon {
+            font-size: 2.5rem;
+          }
+          
+          .error-title {
+            font-size: 1.1rem;
+          }
+          
+          .error-message {
+            font-size: 0.9rem;
+          }
+          
+          .error-suggestions-list li {
+            font-size: 0.85rem;
+          }
+          
+          .error-action-button {
+            width: 100%;
+            padding: var(--spacing-sm);
+          }
+          
+          .empty-state {
             padding: var(--spacing-md);
           }
         }
