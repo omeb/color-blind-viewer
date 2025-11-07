@@ -284,6 +284,9 @@ export default function Home() {
             <p className="footer-note">
               Some sites may restrict embedding for security. Try different URLs if needed.
             </p>
+            <p className="footer-love">
+              Made with ❤️ by the Wix Accessibility team
+            </p>
           </div>
         </footer>
         
@@ -539,6 +542,13 @@ export default function Home() {
         .footer-note {
           font-size: 0.85rem;
           opacity: 0.8;
+        }
+        
+        .footer-love {
+          font-size: 0.9rem;
+          opacity: 0.85;
+          margin-top: var(--spacing-sm);
+          color: rgba(255, 255, 255, 0.9);
         }
         
         @media (max-width: 1200px) {
