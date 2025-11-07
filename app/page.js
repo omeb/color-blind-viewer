@@ -1424,6 +1424,16 @@ export default function Home() {
           }
         }
         
+        @media (min-width: 1920px) {
+          .sidebar {
+            display: none;
+          }
+          
+          .content-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+        
         @media (max-width: 1200px) {
           .content-grid {
             grid-template-columns: 380px minmax(0, 1fr);
