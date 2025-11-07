@@ -44,7 +44,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
     setTimeout(() => {
       setIframeLoading(false)
       setIframeLoaded(true)
-    }, 500)
+    }, 300)
   }
   
   // Handle split view dragging
@@ -443,13 +443,15 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(255, 255, 255, 0.98);
+          background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
           z-index: 5;
           animation: fadeIn 0.2s ease;
         }
         
         .loading-state.iframe-loading {
-          animation: fadeOut 0.3s ease forwards;
+          animation: none;
         }
         
         @keyframes fadeIn {
@@ -458,15 +460,6 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           }
           to {
             opacity: 1;
-          }
-        }
-        
-        @keyframes fadeOut {
-          from {
-            opacity: 1;
-          }
-          to {
-            opacity: 0;
           }
         }
         
@@ -480,8 +473,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         .minimal-spinner {
           width: 48px;
           height: 48px;
-          border: 3px solid rgba(0, 0, 0, 0.08);
-          border-top-color: rgba(0, 0, 0, 0.6);
+          border: 3px solid rgba(110, 198, 255, 0.2);
+          border-top-color: rgba(110, 198, 255, 0.9);
           border-radius: 50%;
           animation: spin 0.8s linear infinite;
         }
@@ -494,9 +487,9 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         
         .loading-text {
           margin: 0;
-          color: rgba(0, 0, 0, 0.7);
+          color: rgba(110, 198, 255, 0.9);
           font-size: 0.95rem;
-          font-weight: 400;
+          font-weight: 500;
           letter-spacing: -0.2px;
         }
         
