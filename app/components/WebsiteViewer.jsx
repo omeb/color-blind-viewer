@@ -16,9 +16,16 @@ import { getCategorizedFilters } from '../lib/filters'
  * @param {boolean} props.loading - Whether the website is loading
  * @param {string} props.error - Error message if loading failed
  */
-export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemove, onFilterChange, onFilterInfo, onChangeUrl, loading = false, error = null, onUrlChange }) {
+export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemove, onFilterChange, onFilterInfo, onChangeUrl, loading = false, error = null, onUrlChange, onSplitViewChange }) {
   const [iframeKey, setIframeKey] = React.useState(0)
   const [isSplitView, setIsSplitView] = React.useState(false)
+  
+  // Notify parent when split view changes
+  React.useEffect(() => {
+    if (onSplitViewChange) {
+      onSplitViewChange(isSplitView)
+    }
+  }, [isSplitView, onSplitViewChange])
   const [iframeLoading, setIframeLoading] = React.useState(false)
   const [iframeLoaded, setIframeLoaded] = React.useState(false)
   const [isEditingUrl, setIsEditingUrl] = React.useState(false)
@@ -359,13 +366,19 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         }
         
         .website-viewer-container.split-view {
-          height: 80vh;
-          min-height: 800px;
-          max-height: 90vh;
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: 1000;
+          height: 100vh;
+          width: 100vw;
           border-radius: 0;
-          background: transparent;
+          background: rgba(0, 0, 0, 0.95);
           margin: 0;
-          width: 100%;
+          padding: var(--spacing-md);
+          box-sizing: border-box;
         }
         
         

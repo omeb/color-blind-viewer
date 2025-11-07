@@ -36,6 +36,7 @@ export default function Home() {
   const [hasLoadedSite, setHasLoadedSite] = React.useState(false)
   const [history, setHistory] = React.useState([])
   const [selectedFilterInfo, setSelectedFilterInfo] = React.useState(null)
+  const [isSplitViewActive, setIsSplitViewActive] = React.useState(false)
   
   // Load history from localStorage on mount
   React.useEffect(() => {
@@ -170,7 +171,7 @@ export default function Home() {
         {/* Main Content - Only shown after first site load */}
         {hasLoadedSite && (
           <div className="main-content">
-            <div className="content-grid">
+            <div className={`content-grid ${isSplitViewActive ? 'split-view-active' : ''}`}>
               {/* Left Column - Controls and Info */}
               <aside className="sidebar glass-card">
                 <ImpairmentControls
@@ -218,6 +219,7 @@ export default function Home() {
                     onFilterInfo={setSelectedFilterInfo}
                     onChangeUrl={() => setHasLoadedSite(false)}
                     onUrlChange={handleUrlSubmit}
+                    onSplitViewChange={setIsSplitViewActive}
                     loading={loading}
                     error={error}
                   />
@@ -335,6 +337,10 @@ export default function Home() {
           display: grid;
           grid-template-columns: 350px 1fr;
           gap: var(--spacing-lg);
+        }
+        
+        .content-grid.split-view-active .sidebar {
+          display: none;
         }
         
         
