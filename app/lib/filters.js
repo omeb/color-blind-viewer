@@ -105,7 +105,7 @@ export const VISION_FILTERS = {
     id: 'glaucoma',
     name: 'Glaucoma',
     description: 'Tunnel vision and reduced peripheral vision.',
-    filter: 'brightness(0.7) contrast(0.8)',
+    filter: 'brightness(0.6) contrast(0.7) blur(1px)',
     prevalence: '~3% over age 40',
     severity: 'Progressive',
   },

@@ -1320,6 +1320,11 @@ function getFilterStyle(filterId) {
     cataracts: 'blur(2px) contrast(0.7) brightness(0.8)',
     lowVision: 'blur(3px)',
     lowContrast: 'contrast(0.5) brightness(0.9)',
+    protanomaly: 'url(#protanomaly)',
+    deuteranomaly: 'url(#deuteranomaly)',
+    glaucoma: 'brightness(0.6) contrast(0.7) blur(1px)',
+    macularDegeneration: 'blur(4px) contrast(0.6) brightness(0.7)',
+    diabeticRetinopathy: 'blur(2px) contrast(0.7) brightness(0.85)',
   }
   
   return filters[filterId] || 'none'

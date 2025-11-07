@@ -61,9 +61,13 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
         left: `${x}px`,
         top: `${y}px`,
         transform: 'translateY(-50%)',
-        maxHeight: `${maxHeight}px`,
-        '--arrow-side': arrowSide
+        maxHeight: `${maxHeight}px`
       })
+      
+      // Store arrow side in a data attribute for CSS
+      if (popoverRef.current) {
+        popoverRef.current.setAttribute('data-arrow-side', arrowSide)
+      }
     } else {
       setPopoverStyle({
         left: '50%',
@@ -99,11 +103,12 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
         aria-labelledby="popover-title"
       >
         {/* Arrow pointing to the button */}
-        {position && typeof window !== 'undefined' && (
-          <div 
-            className={`popover-arrow popover-arrow-${position.x < window.innerWidth / 2 ? 'right' : 'left'}`}
-          />
-        )}
+        {position && typeof window !== 'undefined' && (() => {
+          const arrowSide = position.x + 250 > window.innerWidth - 20 ? 'right' : 'left'
+          return (
+            <div className={`popover-arrow popover-arrow-${arrowSide}`} />
+          )
+        })()}
         <div className="popover-header">
           <div className="popover-title-section">
             <h3 id="popover-title" className="popover-title">{filter.name}</h3>
