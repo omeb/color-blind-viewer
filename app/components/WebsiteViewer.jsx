@@ -1437,6 +1437,19 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           display: block;
         }
         
+        /* Hide skip links and accessibility elements that shouldn't be visible */
+        .iframe-wrapper::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 200px;
+          height: 50px;
+          background: white;
+          z-index: 1000;
+          pointer-events: none;
+        }
+        
         .split-container {
           width: 100%;
           height: 100%;
