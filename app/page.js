@@ -454,7 +454,6 @@ export default function Home() {
           border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: var(--radius-md);
           box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-          padding: var(--spacing-md);
           animation: popoverFadeIn 0.2s ease-out;
         }
         
