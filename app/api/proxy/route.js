@@ -69,30 +69,21 @@ function injectBaseTag(html, baseUrl) {
   cleanedHtml = cleanedHtml.replace(/<[^>]*class\s*=\s*["'][^"']*screen-reader[^"']*["'][^>]*>.*?<\/[^>]*>/gi, '')
   cleanedHtml = cleanedHtml.replace(/<[^>]*class\s*=\s*["'][^"']*visually-hidden[^"']*["'][^>]*>.*?<\/[^>]*>/gi, '')
   
-  // Aggressive CSS to hide any remaining skip elements
+  // Simple CSS to hide skip links
   const hideSkipLinksCSS = `
     <style>
-      /* Aggressively hide all skip navigation elements */
-      a[href="#main"], a[href="#content"], a[href="#main-content"], 
-      a[class*="skip"], a[aria-label*="skip"], a[title*="skip"],
-      .skip-link, .skip-nav, .skip-to-content, .sr-only, .screen-reader-text, 
-      .visually-hidden, .screenreader, [class*="skip"]:not(button):not(input) {
-        display: none !important;
+      /* Hide skip navigation links */
+      a {
         visibility: hidden !important;
-        position: absolute !important;
-        left: -10000px !important;
-        top: -10000px !important;
-        width: 0 !important;
-        height: 0 !important;
-        overflow: hidden !important;
-        opacity: 0 !important;
-        z-index: -9999 !important;
       }
-      
-      /* Hide elements that contain text about skipping */
-      *:contains("Skip to main"), *:contains("Skip to content"), 
-      *:contains("Skip navigation"), *:contains("Skip to") {
-        display: none !important;
+      a[class*="skip-link"] {
+        visibility: hidden !important;
+      }
+      a[href="#main-content"] {
+        visibility: hidden !important;
+      }
+      a:contains("Skip to main content") {
+        visibility: hidden !important;
       }
     </style>
   `
