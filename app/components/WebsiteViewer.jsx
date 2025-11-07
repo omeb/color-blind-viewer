@@ -483,7 +483,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
       )}
       
       {proxyUrl && !loading && !error && (
-        <>
+        <div className="iframe-content">
           {isSplitView && activeFilter !== 'none' ? (
             <div className="split-container">
               <div className="split-pane split-pane-left" style={{ width: `${splitPosition}%` }}>
@@ -542,7 +542,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
               />
             </div>
           )}
-        </>
+        </div>
       )}
       </div>
       
@@ -575,15 +575,17 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           overflow: hidden;
           position: relative;
           transition: all var(--transition-normal);
+          display: flex;
+          flex-direction: column;
         }
         
         .website-viewer-wrapper.expanded .website-viewer-container {
           width: 100%;
-          height: calc(100% - 80px);
-          min-height: calc(100% - 80px);
+          height: 100%;
+          min-height: 100%;
           border-radius: 0;
           padding: 0;
-          margin: 80px 0 0 0;
+          margin: 0;
         }
         
         .expanded-filters {
@@ -769,10 +771,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         }
         
         .website-viewer-wrapper.expanded .viewer-header {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
+          position: relative;
+          flex-shrink: 0;
           z-index: 1001;
           margin-bottom: 0;
           padding: var(--spacing-md);
@@ -780,7 +780,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           backdrop-filter: blur(10px);
           -webkit-backdrop-filter: blur(10px);
           border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-          height: 80px;
+          height: 60px;
+          min-height: 60px;
           box-sizing: border-box;
         }
         
@@ -1412,6 +1413,14 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           color: rgba(255, 255, 255, 0.8);
         }
         
+        .iframe-content {
+          flex: 1;
+          position: relative;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+        }
+        
         .iframe-wrapper {
           width: 100%;
           height: 100%;
@@ -1426,9 +1435,6 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           height: 100%;
           border: none;
           display: block;
-          position: absolute;
-          top: 0;
-          left: 0;
         }
         
         .split-container {
