@@ -29,8 +29,8 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
     if (onFilterInfo) {
       const rect = e.currentTarget.getBoundingClientRect()
       onFilterInfo(filterId, {
-        x: rect.left + rect.width / 2,
-        y: rect.bottom + 8
+        x: rect.right + 12, // Position to the right of the button
+        y: rect.top + rect.height / 2 // Center vertically with the button
       })
     }
   }

@@ -34,19 +34,42 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
     // Calculate position with viewport constraints
     if (position && typeof window !== 'undefined') {
       const maxWidth = window.innerWidth > 768 ? 500 : window.innerWidth - 20
-      const x = Math.min(Math.max(position.x, maxWidth / 2), window.innerWidth - maxWidth / 2)
-      const y = position.y
+      const popoverWidth = Math.min(maxWidth, window.innerWidth - 40)
+      
+      // Position to the right of the button, but ensure it fits on screen
+      let x = position.x
+      let y = position.y
+      let arrowSide = 'left' // Arrow on left side (popover on right)
+      
+      // If popover would overflow right edge, position to the left instead
+      if (x + popoverWidth / 2 > window.innerWidth - 20) {
+        x = position.x - popoverWidth - 24 // Position to the left with arrow space
+        arrowSide = 'right' // Arrow on right side (popover on left)
+      }
+      
+      // Ensure popover doesn't overflow top or bottom
+      const maxHeight = window.innerHeight - 40
+      const estimatedHeight = Math.min(600, maxHeight)
+      
+      if (y - estimatedHeight / 2 < 20) {
+        y = estimatedHeight / 2 + 20
+      } else if (y + estimatedHeight / 2 > window.innerHeight - 20) {
+        y = window.innerHeight - estimatedHeight / 2 - 20
+      }
       
       setPopoverStyle({
         left: `${x}px`,
         top: `${y}px`,
-        transform: 'translateX(-50%)'
+        transform: 'translateY(-50%)',
+        maxHeight: `${maxHeight}px`,
+        '--arrow-side': arrowSide
       })
     } else {
       setPopoverStyle({
         left: '50%',
         top: window.innerWidth > 768 ? '100px' : '80px',
-        transform: 'translateX(-50%)'
+        transform: 'translateX(-50%)',
+        maxHeight: 'calc(100vh - 120px)'
       })
     }
     
@@ -75,6 +98,12 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
         aria-modal="true"
         aria-labelledby="popover-title"
       >
+        {/* Arrow pointing to the button */}
+        {position && typeof window !== 'undefined' && (
+          <div 
+            className={`popover-arrow popover-arrow-${position.x < window.innerWidth / 2 ? 'right' : 'left'}`}
+          />
+        )}
         <div className="popover-header">
           <div className="popover-title-section">
             <h3 id="popover-title" className="popover-title">{filter.name}</h3>
