@@ -61,7 +61,7 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
   
   // Render a single site item
   const renderSiteItem = (url, index, isExample = false) => (
-    <div key={`${url}-${index}`} className="history-item">
+    <div key={`${url}-${index}`} className={`history-item ${!isExample ? 'history-item-removable' : ''}`}>
       <button
         onClick={() => onSelectUrl(url)}
         className="history-button"

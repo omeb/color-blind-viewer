@@ -507,7 +507,7 @@ p {
   text-align: left !important;
 }
 
-.history-item:hover .history-button {
+.history-item-removable:hover .history-button {
   padding-right: 40px !important;
 }
 
