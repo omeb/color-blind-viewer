@@ -36,8 +36,25 @@ export default function Home() {
   const [hasLoadedSite, setHasLoadedSite] = React.useState(false)
   const [history, setHistory] = React.useState([])
   const [selectedFilterInfo, setSelectedFilterInfo] = React.useState(null)
+  const [showFilterPopover, setShowFilterPopover] = React.useState(false)
+  const filterPopoverRef = React.useRef(null)
   
-  // Load history from localStorage on mount
+  // Close popover when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (filterPopoverRef.current && !filterPopoverRef.current.contains(event.target)) {
+        // Check if click is not on the filter badge
+        if (!event.target.closest('.filter-badge')) {
+          setShowFilterPopover(false)
+        }
+      }
+    }
+    
+    if (showFilterPopover) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showFilterPopover])
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -197,12 +214,30 @@ export default function Home() {
                     <h2>Preview</h2>
                     {activeFilter !== 'none' && (
                       <div className="active-filter-info">
-                        <span className="filter-badge">
-                          {getFilterName(activeFilter)}
-                        </span>
-                        <span className="filter-explanation">
-                          {getFilterExplanation(activeFilter)}
-                        </span>
+                        <div className="filter-badge-wrapper" ref={filterPopoverRef}>
+                          <span 
+                            className="filter-badge clickable"
+                            onClick={() => setShowFilterPopover(!showFilterPopover)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault()
+                                setShowFilterPopover(!showFilterPopover)
+                              }
+                            }}
+                          >
+                            {getFilterName(activeFilter)}
+                          </span>
+                          <span className="filter-explanation">
+                            {getFilterExplanation(activeFilter)}
+                          </span>
+                          {showFilterPopover && (
+                            <div className="filter-popover">
+                              <InfoPanel activeFilter={activeFilter} />
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -217,11 +252,6 @@ export default function Home() {
                     loading={loading}
                     error={error}
                   />
-                  {activeFilter !== 'none' && (
-                    <div className="viewer-info-section">
-                      <InfoPanel activeFilter={activeFilter} />
-                    </div>
-                  )}
                 </div>
               </section>
             </div>
@@ -388,19 +418,58 @@ export default function Home() {
           font-style: italic;
         }
         
-        .viewer-info-section {
-          margin-top: var(--spacing-md);
-          padding: var(--spacing-md);
-          background: rgba(255, 255, 255, 0.03);
-          border-radius: var(--radius-md);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+        .filter-badge-wrapper {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          gap: var(--spacing-xs);
+          align-items: flex-end;
         }
         
-        .viewer-info-section :global(.info-panel) {
+        .filter-badge.clickable {
+          cursor: pointer;
+          transition: all var(--transition-fast);
+        }
+        
+        .filter-badge.clickable:hover {
+          background: rgba(110, 198, 255, 0.35);
+          border-color: rgba(110, 198, 255, 0.7);
+          transform: translateY(-1px);
+        }
+        
+        .filter-popover {
+          position: absolute;
+          top: calc(100% + var(--spacing-sm));
+          right: 0;
+          width: 400px;
+          max-width: 90vw;
+          z-index: 1000;
+          background: rgba(0, 0, 0, 0.95);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: var(--radius-md);
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+          padding: var(--spacing-md);
+          animation: popoverFadeIn 0.2s ease-out;
+        }
+        
+        @keyframes popoverFadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .filter-popover :global(.info-panel) {
           margin: 0;
         }
         
-        .viewer-info-section :global(.glass-card) {
+        .filter-popover :global(.glass-card) {
           background: transparent;
           box-shadow: none;
           padding: 0;
