@@ -579,11 +579,11 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         
         .website-viewer-wrapper.expanded .website-viewer-container {
           width: 100%;
-          height: calc(100% - 60px);
-          min-height: calc(100% - 60px);
+          height: calc(100% - 80px);
+          min-height: calc(100% - 80px);
           border-radius: 0;
           padding: 0;
-          margin: 60px 0 0 0;
+          margin: 80px 0 0 0;
         }
         
         .expanded-filters {
@@ -780,6 +780,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           backdrop-filter: blur(10px);
           -webkit-backdrop-filter: blur(10px);
           border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+          height: 80px;
+          box-sizing: border-box;
         }
         
         .url-display {
