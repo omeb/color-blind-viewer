@@ -1252,6 +1252,28 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           max-width: 100%;
         }
         
+        @media (max-width: 768px) {
+          .viewer-header {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          
+          .url-display,
+          .url-edit-form {
+            width: 100%;
+            flex: none;
+            min-width: 0;
+          }
+          
+          .viewer-controls {
+            width: 100%;
+            display: flex;
+            justify-content: flex-start;
+            gap: var(--spacing-xs);
+            margin-top: var(--spacing-xs);
+          }
+        }
+        
         
         .url-display {
           flex: 1;
