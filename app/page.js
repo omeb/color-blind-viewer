@@ -401,17 +401,23 @@ export default function Home() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation()
-                                  e.preventDefault()
                                   const badgeWrapper = e.currentTarget.closest('.filter-badge-wrapper')
                                   const badge = badgeWrapper?.querySelector('.filter-badge')
                                   if (badge) {
                                     const badgeRect = badge.getBoundingClientRect()
-                                    setFilterPopoverInfo({ filterId: activeFilter, position: { x: badgeRect.left + badgeRect.width / 2, y: badgeRect.bottom + 8 } })
+                                    setFilterPopoverInfo({ 
+                                      filterId: activeFilter, 
+                                      position: { 
+                                        x: badgeRect.left + badgeRect.width / 2, 
+                                        y: badgeRect.bottom + 8 
+                                      } 
+                                    })
                                   }
                                 }}
                                 className="filter-info-icon-btn"
                                 title="Show information about current filter"
                                 aria-label="Show filter information"
+                                type="button"
                               >
                                 ℹ
                               </button>
