@@ -402,6 +402,8 @@ export default function Home() {
                                   <span className="filter-picker-name">Original Site</span>
                                   <span className="filter-picker-desc">No filter applied</span>
                                 </button>
+                                
+                                <div className="filter-picker-section-header">Color Deficiency</div>
                                 {getCategorizedFilters().colorblind.map((filter) => (
                                   <button
                                     key={filter.id}
@@ -415,6 +417,8 @@ export default function Home() {
                                     <span className="filter-picker-desc">{filter.prevalence}</span>
                                   </button>
                                 ))}
+                                
+                                <div className="filter-picker-section-header">Other</div>
                                 {getCategorizedFilters().other.map((filter) => (
                                   <button
                                     key={filter.id}
