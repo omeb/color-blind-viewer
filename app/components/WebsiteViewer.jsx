@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import { getCategorizedFilters } from '../lib/filters'
+import html2canvas from 'html2canvas'
+import { getCategorizedFilters, getFilter } from '../lib/filters'
 
 /**
  * Website Viewer Component
@@ -28,6 +29,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
   const iframeRef = React.useRef(null)
   const originalIframeRef = React.useRef(null)
   const filteredIframeRef = React.useRef(null)
+  const splitContainerRef = React.useRef(null)
   const containerRef = React.useRef(null)
   const urlInputRef = React.useRef(null)
   const isScrollingRef = React.useRef(false)
@@ -204,6 +206,65 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
     setIframeKey(prev => prev + 1)
     setIframeLoading(true)
     setIframeLoaded(false)
+  }
+  
+  // Handle download snapshot
+  const handleDownloadSnapshot = async () => {
+    if (!splitContainerRef.current || !isSplitView || activeFilter === 'none') return
+    
+    try {
+      const filter = getFilter(activeFilter)
+      const filterName = filter ? filter.name : activeFilter
+      
+      // Capture the split container
+      const canvas = await html2canvas(splitContainerRef.current, {
+        backgroundColor: null,
+        useCORS: true,
+        allowTaint: true,
+        scale: 2, // Higher quality
+        logging: false,
+        width: splitContainerRef.current.offsetWidth,
+        height: splitContainerRef.current.offsetHeight,
+      })
+      
+      // Create a new canvas with extra space for the filter name
+      const padding = 60
+      const finalCanvas = document.createElement('canvas')
+      finalCanvas.width = canvas.width
+      finalCanvas.height = canvas.height + padding
+      const ctx = finalCanvas.getContext('2d')
+      
+      // Fill background
+      ctx.fillStyle = '#1a1a2e'
+      ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height)
+      
+      // Draw the captured canvas
+      ctx.drawImage(canvas, 0, padding)
+      
+      // Add filter name text at the top
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 24px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(`${filterName} Comparison`, finalCanvas.width / 2, padding / 2)
+      
+      // Convert to blob and download
+      finalCanvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = `colorblind-viewer-${filterName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.png`
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          URL.revokeObjectURL(url)
+        }
+      }, 'image/png')
+    } catch (error) {
+      console.error('Failed to capture snapshot:', error)
+      alert('Failed to capture snapshot. Please try again.')
+    }
   }
   
   // Handle URL edit activation
