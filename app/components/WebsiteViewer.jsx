@@ -473,6 +473,46 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         </div>
       )}
       
+      {/* Quick Filter Buttons - Above the viewer */}
+      {url && (
+        <div className="quick-filters">
+          <div className="quick-filters-scroll">
+            <button
+              onClick={() => {
+                onFilterChange && onFilterChange('none')
+              }}
+              className={`quick-filter-btn ${activeFilter === 'none' ? 'active' : ''}`}
+              title="Click to apply filter"
+            >
+              None
+            </button>
+            {getCategorizedFilters().colorblind.map((filter) => (
+              <button
+                key={filter.id}
+                onClick={() => {
+                  onFilterChange && onFilterChange(filter.id)
+                }}
+                className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
+                title="Click to apply filter"
+              >
+                {filter.name}
+              </button>
+            ))}
+            {getCategorizedFilters().other.map((filter) => (
+              <button
+                key={filter.id}
+                onClick={() => {
+                  onFilterChange && onFilterChange(filter.id)
+                }}
+                className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
+                title="Click to apply filter"
+              >
+                {filter.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       
       <div 
         ref={containerRef}
