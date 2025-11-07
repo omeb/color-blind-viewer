@@ -388,7 +388,23 @@ export default function Home() {
           font-style: italic;
         }
         
-        .footer {
+        .viewer-info-section {
+          margin-bottom: var(--spacing-md);
+          padding: var(--spacing-md);
+          background: rgba(255, 255, 255, 0.03);
+          border-radius: var(--radius-md);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .viewer-info-section :global(.info-panel) {
+          margin: 0;
+        }
+        
+        .viewer-info-section :global(.glass-card) {
+          background: transparent;
+          box-shadow: none;
+          padding: 0;
+        }
           margin-top: auto;
           padding-top: var(--spacing-xl);
           max-width: 1400px;
