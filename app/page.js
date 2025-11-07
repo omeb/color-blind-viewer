@@ -136,7 +136,7 @@ export default function Home() {
   
   return (
     <>
-      <a href="#main-content" className="skip-link">
+      <a href="#main-content" className="skip-link" style={{display: 'none'}}>
         Skip to main content
       </a>
       
