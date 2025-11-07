@@ -146,19 +146,19 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
         .history-item {
           position: relative;
           display: inline-flex;
-          align-items: stretch;
-          background: rgba(168, 153, 212, 0.4);
+          align-items: center;
+          background: rgba(168, 153, 212, 0.4) !important;
           backdrop-filter: blur(10px);
           -webkit-backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 999px;
-          overflow: hidden;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          border-radius: 999px !important;
           transition: all 0.2s ease;
+          overflow: visible;
         }
         
         .history-item:hover {
-          background: rgba(168, 153, 212, 0.5);
-          border-color: rgba(255, 255, 255, 0.3);
+          background: rgba(168, 153, 212, 0.5) !important;
+          border-color: rgba(255, 255, 255, 0.3) !important;
           transform: translateY(-1px);
         }
 
@@ -167,9 +167,9 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
           align-items: center;
           justify-content: flex-start;
           gap: 8px;
-          background: none;
-          border: none;
-          color: rgba(255, 255, 255, 1);
+          background: transparent !important;
+          border: none !important;
+          color: rgba(255, 255, 255, 1) !important;
           padding: 8px 16px;
           font-size: 0.9rem;
           font-weight: 400;
@@ -181,7 +181,7 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
         }
         
         .history-button:hover {
-          color: rgba(255, 255, 255, 1);
+          color: rgba(255, 255, 255, 1) !important;
         }
         
         .history-button:hover .history-url {
@@ -202,7 +202,7 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
           flex-shrink: 0;
           display: inline-flex;
           align-items: center;
-          color: #66B2FF;
+          color: #66B2FF !important;
         }
 
         .history-url {
@@ -212,34 +212,34 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
           white-space: nowrap;
           flex-shrink: 1;
           min-width: 0;
+          color: rgba(255, 255, 255, 1) !important;
         }
 
         .history-remove {
           position: absolute;
-          right: 0;
-          top: 0;
-          bottom: 0;
+          right: 4px;
+          top: 50%;
+          transform: translateY(-50%);
           background: rgba(239, 68, 68, 0.9);
           border: none;
           color: white;
-          padding: 0 12px;
-          font-size: 0.9rem;
+          padding: 4px 10px;
+          font-size: 0.85rem;
           font-weight: 600;
           cursor: pointer;
           opacity: 0;
-          transform: translateX(100%);
           transition: all 0.2s ease;
-          border-radius: 0 20px 20px 0;
+          border-radius: 999px;
           display: flex;
           align-items: center;
           justify-content: center;
-          min-width: 36px;
+          min-width: 28px;
+          height: 28px;
           z-index: 10;
         }
 
         .history-item:hover .history-remove {
           opacity: 1;
-          transform: translateX(0);
         }
 
         .history-remove:hover {
@@ -247,7 +247,7 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
         }
 
         .history-remove:active {
-          transform: translateX(0) scale(0.95);
+          transform: translateY(-50%) scale(0.95);
         }
         
         @media (max-width: 768px) {
