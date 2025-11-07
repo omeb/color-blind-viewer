@@ -4,9 +4,8 @@ import React from 'react'
 
 // Example sites to always show (colorful sites for testing colorblind filters)
 const EXAMPLE_SITES = [
-  'https://activetheory.net',
-  'https://dogstudio.co',
   'https://bruno-simon.com',
+  'https://dogstudio.co',
   'https://press.stripe.com',
   'https://rive.app',
   'https://pitch.com',
