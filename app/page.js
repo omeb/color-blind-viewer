@@ -592,6 +592,41 @@ export default function Home() {
               </div>
             </div>
             
+            {/* Quick Filter Buttons */}
+            {hasLoadedSite && (
+              <div className="footer-filters">
+                <div className="footer-filters-scroll">
+                  <button
+                    onClick={() => handleFilterChange('none')}
+                    className={`footer-filter-btn ${activeFilter === 'none' ? 'active' : ''}`}
+                    title="Click to apply filter"
+                  >
+                    None
+                  </button>
+                  {getCategorizedFilters().colorblind.map((filter) => (
+                    <button
+                      key={filter.id}
+                      onClick={() => handleFilterChange(filter.id)}
+                      className={`footer-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
+                      title="Click to apply filter"
+                    >
+                      {filter.name}
+                    </button>
+                  ))}
+                  {getCategorizedFilters().other.map((filter) => (
+                    <button
+                      key={filter.id}
+                      onClick={() => handleFilterChange(filter.id)}
+                      className={`footer-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
+                      title="Click to apply filter"
+                    >
+                      {filter.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             <div className="footer-bottom">
               <p className="footer-note">
                 🌐 Some sites may restrict embedding for security. Try different URLs if needed.
@@ -1169,7 +1204,7 @@ export default function Home() {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          padding: var(--spacing-sm) var(--spacing-md);
+          padding: var(--spacing-xs) var(--spacing-sm);
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
           flex-shrink: 0;
         }
@@ -1177,27 +1212,27 @@ export default function Home() {
         .filter-popover-title-row {
           display: flex;
           align-items: center;
-          gap: var(--spacing-sm);
+          gap: var(--spacing-xs);
           flex-wrap: wrap;
         }
         
         .filter-popover-title {
           margin: 0;
-          font-size: 0.9rem;
+          font-size: 0.85rem;
           font-weight: 600;
           color: rgba(255, 255, 255, 0.9);
         }
         
         .filter-popover-severity {
-          padding: 2px 8px;
+          padding: 2px 6px;
           background: rgba(110, 198, 255, 0.15);
           border: 1px solid rgba(110, 198, 255, 0.3);
-          border-radius: 8px;
-          font-size: 0.7rem;
+          border-radius: 6px;
+          font-size: 0.65rem;
           font-weight: 600;
           color: rgba(110, 198, 255, 1);
           text-transform: uppercase;
-          letter-spacing: 0.5px;
+          letter-spacing: 0.3px;
         }
         
         .filter-popover-close {
@@ -1205,13 +1240,13 @@ export default function Home() {
           border: none;
           color: rgba(255, 255, 255, 0.7);
           cursor: pointer;
-          padding: 4px;
+          padding: 2px;
           border-radius: 4px;
           transition: all var(--transition-fast);
-          font-size: 1rem;
+          font-size: 0.9rem;
           line-height: 1;
-          width: 24px;
-          height: 24px;
+          width: 20px;
+          height: 20px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1250,18 +1285,18 @@ export default function Home() {
         }
         
         .filter-popover-description {
-          margin: 0 0 var(--spacing-sm) 0;
-          padding: 0 var(--spacing-sm);
-          font-size: 0.75rem;
+          margin: 0 0 var(--spacing-xs) 0;
+          padding: 0 var(--spacing-xs);
+          font-size: 0.7rem;
           color: rgba(255, 255, 255, 0.7);
-          line-height: 1.5;
+          line-height: 1.4;
         }
         
         .filter-popover-stats {
           display: flex;
-          gap: var(--spacing-md);
-          margin-bottom: var(--spacing-sm);
-          padding: 0 var(--spacing-sm);
+          gap: var(--spacing-sm);
+          margin-bottom: var(--spacing-xs);
+          padding: 0 var(--spacing-xs);
           flex-wrap: wrap;
         }
         
@@ -1272,22 +1307,22 @@ export default function Home() {
         }
         
         .filter-popover-stat .stat-label {
-          font-size: 0.65rem;
+          font-size: 0.6rem;
           color: rgba(255, 255, 255, 0.5);
           text-transform: uppercase;
-          letter-spacing: 0.5px;
+          letter-spacing: 0.4px;
           font-weight: 500;
         }
         
         .filter-popover-stat .stat-value {
-          font-size: 0.75rem;
+          font-size: 0.7rem;
           font-weight: 600;
           color: rgba(255, 255, 255, 0.9);
         }
         
         .filter-popover-section {
-          margin-bottom: var(--spacing-md);
-          padding: 0 var(--spacing-sm);
+          margin-bottom: var(--spacing-sm);
+          padding: 0 var(--spacing-xs);
         }
         
         .filter-popover-section:last-child {
@@ -1296,18 +1331,18 @@ export default function Home() {
         
         .filter-popover-section h4 {
           margin: 0 0 var(--spacing-xs) 0;
-          font-size: 0.7rem;
+          font-size: 0.65rem;
           font-weight: 700;
           color: rgba(255, 255, 255, 0.9);
           text-transform: uppercase;
-          letter-spacing: 0.8px;
+          letter-spacing: 0.6px;
         }
         
         .filter-popover-section p {
           margin: 0;
-          font-size: 0.75rem;
+          font-size: 0.7rem;
           color: rgba(255, 255, 255, 0.8);
-          line-height: 1.5;
+          line-height: 1.4;
         }
         
         .filter-popover-section ul {
@@ -1318,11 +1353,11 @@ export default function Home() {
         
         .filter-popover-section ul li {
           position: relative;
-          padding-left: 18px;
+          padding-left: 16px;
           margin-bottom: var(--spacing-xs);
-          font-size: 0.75rem;
+          font-size: 0.7rem;
           color: rgba(255, 255, 255, 0.8);
-          line-height: 1.5;
+          line-height: 1.4;
         }
         
         .filter-popover-section ul li:before {
@@ -1332,7 +1367,7 @@ export default function Home() {
           top: 0;
           color: rgba(110, 198, 255, 1);
           font-weight: 600;
-          font-size: 0.75rem;
+          font-size: 0.7rem;
         }
         
         .filter-popover-section ul li:last-child {
