@@ -2,7 +2,7 @@
 
 import React from 'react'
 import html2canvas from 'html2canvas'
-import { getCategorizedFilters, getFilter } from '../lib/filters'
+import { getCategorizedFilters, getFilter, getAllFilterIds } from '../lib/filters'
 
 /**
  * Website Viewer Component
@@ -718,6 +718,41 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
                 </button>
               </>
             )}
+          </div>
+        </div>
+      )}
+      
+      {/* Quick Filter Buttons - Mobile Friendly */}
+      {url && (
+        <div className="quick-filters">
+          <div className="quick-filters-scroll">
+            <button
+              onClick={() => onFilterChange && onFilterChange('none')}
+              className={`quick-filter-btn ${activeFilter === 'none' ? 'active' : ''}`}
+              title="No filter"
+            >
+              None
+            </button>
+            {getCategorizedFilters().colorblind.map((filter) => (
+              <button
+                key={filter.id}
+                onClick={() => onFilterChange && onFilterChange(filter.id)}
+                className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
+                title={filter.description}
+              >
+                {filter.name}
+              </button>
+            ))}
+            {getCategorizedFilters().other.map((filter) => (
+              <button
+                key={filter.id}
+                onClick={() => onFilterChange && onFilterChange(filter.id)}
+                className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
+                title={filter.description}
+              >
+                {filter.name}
+              </button>
+            ))}
           </div>
         </div>
       )}
