@@ -1441,43 +1441,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           display: block;
         }
         
-        /* Completely hide skip links with multiple overlay techniques */
-        .iframe-wrapper::after {
-          content: '';
-          position: absolute;
-          top: -20px;
-          left: -20px;
-          width: 400px;
-          height: 120px;
-          background: white;
-          z-index: 10000;
-          pointer-events: none;
-          border-radius: 0;
-        }
-        
-        .iframe-wrapper::before {
-          content: '';
-          position: absolute;
-          top: -30px;
-          left: -30px;
-          width: 450px;
-          height: 150px;
-          background: #ffffff;
-          z-index: 9999;
-          pointer-events: none;
-        }
-        
-        /* Additional overlay for stubborn skip links */
-        .iframe-wrapper {
-          overflow: hidden;
-        }
-        
-        .iframe-wrapper .website-iframe {
-          margin-top: -50px;
-          padding-top: 50px;
-          margin-left: -50px;
-          padding-left: 50px;
-        }
+        /* Remove white overlays that were interfering with loading */
         
         .split-container {
           width: 100%;
