@@ -146,7 +146,7 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
         
         .filter-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          grid-template-columns: repeat(2, 1fr);
           gap: var(--spacing-sm);
         }
         
@@ -162,7 +162,7 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
           display: flex;
           flex-direction: column;
           align-items: flex-start;
-          padding: var(--spacing-md);
+          padding: var(--spacing-sm);
           background: var(--glass-bg);
           backdrop-filter: blur(10px);
           -webkit-backdrop-filter: blur(10px);
@@ -194,12 +194,12 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
         
         .filter-name {
           font-weight: 600;
-          font-size: 1rem;
-          margin-bottom: var(--spacing-xs);
+          font-size: 0.9rem;
+          margin-bottom: 2px;
         }
         
         .filter-prevalence {
-          font-size: 0.85rem;
+          font-size: 0.75rem;
           opacity: 0.8;
         }
         
@@ -264,7 +264,15 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
         
         @media (max-width: 480px) {
           .filter-btn {
-            padding: var(--spacing-sm);
+            padding: var(--spacing-xs);
+          }
+          
+          .filter-name {
+            font-size: 0.85rem;
+          }
+          
+          .filter-prevalence {
+            font-size: 0.7rem;
           }
         }
       `}</style>
