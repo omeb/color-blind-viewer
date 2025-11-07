@@ -55,20 +55,26 @@ function validateUrl(urlString) {
 function injectBaseTag(html, baseUrl) {
   const baseTag = `<base href="${baseUrl}" target="_parent">`
   
-  // Remove skip navigation links entirely from HTML
+  // Add style="display: none" to skip links
   let cleanedHtml = html
   
-  // Remove the exact skip link pattern we see in DevTools
-  cleanedHtml = cleanedHtml.replace(/<a\s+href="#main-content"\s+class="[^"]*skip-link[^"]*"[^>]*>.*?<\/a>/gi, '')
+  // Add style attribute to skip link - simple string replacement
+  cleanedHtml = cleanedHtml.replace(
+    /<a([^>]*href="#main-content"[^>]*class="[^"]*skip-link[^"]*"[^>]*)>/gi,
+    '<a$1 style="display: none">'
+  )
   
-  // Remove any anchor tag that contains "Skip to main content"
-  cleanedHtml = cleanedHtml.replace(/<a[^>]*>[^<]*Skip to main content[^<]*<\/a>/gi, '')
+  // Also try the reverse order (class first, then href)
+  cleanedHtml = cleanedHtml.replace(
+    /<a([^>]*class="[^"]*skip-link[^"]*"[^>]*href="#main-content"[^>]*)>/gi,
+    '<a$1 style="display: none">'
+  )
   
-  // Remove any element with skip-link class
-  cleanedHtml = cleanedHtml.replace(/<a[^>]*class="[^"]*skip-link[^"]*"[^>]*>.*?<\/a>/gi, '')
-  
-  // Remove href="#main-content" links
-  cleanedHtml = cleanedHtml.replace(/<a[^>]*href="#main-content"[^>]*>.*?<\/a>/gi, '')
+  // Catch any skip-link class
+  cleanedHtml = cleanedHtml.replace(
+    /<a([^>]*class="[^"]*skip-link[^"]*"[^>]*)>/gi,
+    '<a$1 style="display: none">'
+  )
   
   // Empty - we're removing elements from HTML instead
   const hideSkipLinksScript = ``
