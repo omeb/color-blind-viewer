@@ -25,8 +25,9 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
   const [isEditingUrl, setIsEditingUrl] = React.useState(false)
   const [editedUrl, setEditedUrl] = React.useState(url)
   const [showHistoryDropdown, setShowHistoryDropdown] = React.useState(false)
-  const [isInfoExpanded, setIsInfoExpanded] = React.useState(false)
+  const [filterPopoverInfo, setFilterPopoverInfo] = React.useState(null)
   const historyDropdownRef = React.useRef(null)
+  const filterPopoverRef = React.useRef(null)
   const iframeRef = React.useRef(null)
   const originalIframeRef = React.useRef(null)
   const filteredIframeRef = React.useRef(null)
@@ -46,6 +47,35 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
   React.useEffect(() => {
     setIsInfoExpanded(false)
   }, [activeFilter])
+  
+  // Close filter popover when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (filterPopoverRef.current && !filterPopoverRef.current.contains(event.target)) {
+        // Check if click is not on a quick filter button
+        if (!event.target.closest('.quick-filter-btn')) {
+          setFilterPopoverInfo(null)
+        }
+      }
+    }
+    
+    if (filterPopoverInfo) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [filterPopoverInfo])
+  
+  // Close popover on escape key
+  React.useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && filterPopoverInfo) {
+        setFilterPopoverInfo(null)
+      }
+    }
+    
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [filterPopoverInfo])
   
   // Synchronize scrolling between split view iframes
   React.useEffect(() => {
@@ -804,18 +834,36 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         <div className="quick-filters">
           <div className="quick-filters-scroll">
             <button
-              onClick={() => onFilterChange && onFilterChange('none')}
+              onClick={(e) => {
+                if (e.detail === 2) {
+                  // Double-click shows info
+                  const rect = e.currentTarget.getBoundingClientRect()
+                  setFilterPopoverInfo({ filterId: 'none', position: { x: rect.left + rect.width / 2, y: rect.bottom + 8 } })
+                } else {
+                  onFilterChange && onFilterChange('none')
+                  setFilterPopoverInfo(null)
+                }
+              }}
               className={`quick-filter-btn ${activeFilter === 'none' ? 'active' : ''}`}
-              title="No filter"
+              title="Double-click for info"
             >
               None
             </button>
             {getCategorizedFilters().colorblind.map((filter) => (
               <button
                 key={filter.id}
-                onClick={() => onFilterChange && onFilterChange(filter.id)}
+                onClick={(e) => {
+                  if (e.detail === 2) {
+                    // Double-click shows info
+                    const rect = e.currentTarget.getBoundingClientRect()
+                    setFilterPopoverInfo({ filterId: filter.id, position: { x: rect.left + rect.width / 2, y: rect.bottom + 8 } })
+                  } else {
+                    onFilterChange && onFilterChange(filter.id)
+                    setFilterPopoverInfo(null)
+                  }
+                }}
                 className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
-                title={filter.description}
+                title={`Double-click for info`}
               >
                 {filter.name}
               </button>
@@ -823,9 +871,18 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
             {getCategorizedFilters().other.map((filter) => (
               <button
                 key={filter.id}
-                onClick={() => onFilterChange && onFilterChange(filter.id)}
+                onClick={(e) => {
+                  if (e.detail === 2) {
+                    // Double-click shows info
+                    const rect = e.currentTarget.getBoundingClientRect()
+                    setFilterPopoverInfo({ filterId: filter.id, position: { x: rect.left + rect.width / 2, y: rect.bottom + 8 } })
+                  } else {
+                    onFilterChange && onFilterChange(filter.id)
+                    setFilterPopoverInfo(null)
+                  }
+                }}
                 className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
-                title={filter.description}
+                title={`Double-click for info`}
               >
                 {filter.name}
               </button>
@@ -834,9 +891,9 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         </div>
       )}
       
-      {/* Expandable Filter Info Card */}
-      {url && activeFilter !== 'none' && (() => {
-        const filter = getFilter(activeFilter)
+      {/* Filter Info Popover */}
+      {filterPopoverInfo && (() => {
+        const filter = getFilter(filterPopoverInfo.filterId)
         if (!filter) return null
         
         // Helper function to get "What this means" content
@@ -881,56 +938,60 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         }
         
         return (
-          <div className={`filter-info-card ${isInfoExpanded ? 'expanded' : ''}`}>
-            <button
-              className="filter-info-card-header"
-              onClick={() => setIsInfoExpanded(!isInfoExpanded)}
-              aria-expanded={isInfoExpanded}
-              aria-label={isInfoExpanded ? 'Collapse filter information' : 'Expand filter information'}
-            >
-              <div className="filter-info-card-summary">
-                <div className="filter-info-card-title-row">
-                  <h3 className="filter-info-card-title">{filter.name}</h3>
-                  {filter.severity && (
-                    <span className="filter-info-card-severity">{filter.severity}</span>
-                  )}
-                </div>
-                <p className="filter-info-card-description">{filter.description}</p>
-                <div className="filter-info-card-stats">
-                  <div className="filter-info-card-stat">
-                    <span className="stat-label">Prevalence</span>
-                    <span className="stat-value">{filter.prevalence}</span>
-                  </div>
-                  {filter.severity && (
-                    <div className="filter-info-card-stat">
-                      <span className="stat-label">Severity</span>
-                      <span className="stat-value">{filter.severity}</span>
-                    </div>
-                  )}
-                </div>
+          <div 
+            ref={filterPopoverRef}
+            className="filter-info-popover"
+            style={{
+              left: `${filterPopoverInfo.position.x}px`,
+              top: `${filterPopoverInfo.position.y}px`,
+            }}
+          >
+            <div className="filter-popover-header">
+              <div className="filter-popover-title-row">
+                <h3 className="filter-popover-title">{filter.name}</h3>
+                {filter.severity && (
+                  <span className="filter-popover-severity">{filter.severity}</span>
+                )}
               </div>
-              <div className="filter-info-card-toggle">
-                <span className={`toggle-icon ${isInfoExpanded ? 'expanded' : ''}`}>▼</span>
-              </div>
-            </button>
+              <button
+                onClick={() => setFilterPopoverInfo(null)}
+                className="filter-popover-close"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
             
-            {isInfoExpanded && (
-              <div className="filter-info-card-content">
-                <div className="filter-info-card-section">
-                  <h4>What this means</h4>
-                  <p>{getWhatThisMeans(filter.id)}</p>
+            <div className="filter-popover-body">
+              <p className="filter-popover-description">{filter.description}</p>
+              
+              <div className="filter-popover-stats">
+                <div className="filter-popover-stat">
+                  <span className="stat-label">Prevalence</span>
+                  <span className="stat-value">{filter.prevalence}</span>
                 </div>
-                
-                <div className="filter-info-card-section">
-                  <h4>Design Tips</h4>
-                  <ul>
-                    {getDesignTips(filter.id).map((tip, index) => (
-                      <li key={index}>{tip}</li>
-                    ))}
-                  </ul>
-                </div>
+                {filter.severity && (
+                  <div className="filter-popover-stat">
+                    <span className="stat-label">Severity</span>
+                    <span className="stat-value">{filter.severity}</span>
+                  </div>
+                )}
               </div>
-            )}
+              
+              <div className="filter-popover-section">
+                <h4>What this means</h4>
+                <p>{getWhatThisMeans(filter.id)}</p>
+              </div>
+              
+              <div className="filter-popover-section">
+                <h4>Design Tips</h4>
+                <ul>
+                  {getDesignTips(filter.id).map((tip, index) => (
+                    <li key={index}>{tip}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </div>
         )
       })()}
@@ -1553,20 +1614,35 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           }
         }
         
-        .filter-info-card {
-          margin-top: var(--spacing-sm);
-          margin-bottom: var(--spacing-sm);
-          background: rgba(0, 0, 0, 0.5);
+        .filter-info-popover {
+          position: fixed;
+          z-index: 2000;
+          background: rgba(0, 0, 0, 0.95);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.12);
+          border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: 12px;
-          overflow: hidden;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+          max-width: 400px;
+          width: calc(100vw - 40px);
+          max-height: calc(100vh - 100px);
+          overflow-y: auto;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+          transform: translateX(-50%);
+          animation: popoverFadeIn 0.2s ease-out;
         }
         
-        .filter-info-card-header {
+        @keyframes popoverFadeIn {
+          from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+          }
+        }
+        
+        .filter-popover-header {
           width: 100%;
           display: flex;
           align-items: flex-start;
@@ -1580,11 +1656,11 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           transition: background-color 0.2s ease;
         }
         
-        .filter-info-card-header:hover {
+        .filter-popover-header:hover {
           background: rgba(255, 255, 255, 0.03);
         }
         
-        .filter-info-card-header:active {
+        .filter-popover-header:active {
           background: rgba(255, 255, 255, 0.05);
         }
         
@@ -1593,7 +1669,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           min-width: 0;
         }
         
-        .filter-info-card-title-row {
+        .filter-popover-title-row {
           display: flex;
           align-items: center;
           gap: var(--spacing-sm);
@@ -1601,7 +1677,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           flex-wrap: wrap;
         }
         
-        .filter-info-card-title {
+        .filter-popover-title {
           margin: 0;
           font-size: 1rem;
           font-weight: 700;
@@ -1609,7 +1685,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           letter-spacing: -0.3px;
         }
         
-        .filter-info-card-severity {
+        .filter-popover-severity {
           padding: 3px 10px;
           background: rgba(110, 198, 255, 0.15);
           border: 1px solid rgba(110, 198, 255, 0.3);
@@ -1622,26 +1698,26 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           line-height: 1.2;
         }
         
-        .filter-info-card-description {
+        .filter-popover-description {
           margin: 0 0 var(--spacing-md) 0;
           font-size: 0.875rem;
           color: rgba(255, 255, 255, 0.75);
           line-height: 1.5;
         }
         
-        .filter-info-card-stats {
+        .filter-popover-stats {
           display: flex;
           gap: var(--spacing-lg);
           flex-wrap: wrap;
         }
         
-        .filter-info-card-stat {
+        .filter-popover-stat {
           display: flex;
           flex-direction: column;
           gap: 4px;
         }
         
-        .filter-info-card-stat .stat-label {
+        .filter-popover-stat .stat-label {
           font-size: 0.7rem;
           color: rgba(255, 255, 255, 0.5);
           text-transform: uppercase;
@@ -1649,7 +1725,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           font-weight: 500;
         }
         
-        .filter-info-card-stat .stat-value {
+        .filter-popover-stat .stat-value {
           font-size: 0.875rem;
           font-weight: 600;
           color: rgba(255, 255, 255, 0.95);
@@ -1667,7 +1743,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           transition: all 0.2s ease;
         }
         
-        .filter-info-card-header:hover .filter-info-card-toggle {
+        .filter-popover-header:hover .filter-info-card-toggle {
           background: rgba(255, 255, 255, 0.12);
         }
         
@@ -1682,7 +1758,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           transform: rotate(180deg);
         }
         
-        .filter-info-card-content {
+        .filter-popover-body {
           padding: var(--spacing-md);
           border-top: 1px solid rgba(255, 255, 255, 0.08);
           background: rgba(0, 0, 0, 0.2);
@@ -1704,15 +1780,15 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           }
         }
         
-        .filter-info-card-section {
+        .filter-popover-section {
           margin-bottom: var(--spacing-lg);
         }
         
-        .filter-info-card-section:last-child {
+        .filter-popover-section:last-child {
           margin-bottom: 0;
         }
         
-        .filter-info-card-section h4 {
+        .filter-popover-section h4 {
           margin: 0 0 var(--spacing-sm) 0;
           font-size: 0.8rem;
           font-weight: 700;
@@ -1721,20 +1797,20 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           letter-spacing: 1px;
         }
         
-        .filter-info-card-section p {
+        .filter-popover-section p {
           margin: 0;
           font-size: 0.875rem;
           color: rgba(255, 255, 255, 0.8);
           line-height: 1.6;
         }
         
-        .filter-info-card-section ul {
+        .filter-popover-section ul {
           margin: 0;
           padding: 0;
           list-style: none;
         }
         
-        .filter-info-card-section ul li {
+        .filter-popover-section ul li {
           position: relative;
           padding-left: 24px;
           margin-bottom: var(--spacing-sm);
@@ -1743,7 +1819,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           line-height: 1.6;
         }
         
-        .filter-info-card-section ul li:before {
+        .filter-popover-section ul li:before {
           content: '✓';
           position: absolute;
           left: 0;
@@ -1753,7 +1829,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           font-size: 0.875rem;
         }
         
-        .filter-info-card-section ul li:last-child {
+        .filter-popover-section ul li:last-child {
           margin-bottom: 0;
         }
         
@@ -1764,51 +1840,51 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
             border-radius: 10px;
           }
           
-          .filter-info-card-header {
+          .filter-popover-header {
             padding: var(--spacing-sm);
             gap: var(--spacing-sm);
           }
           
-          .filter-info-card-title {
+          .filter-popover-title {
             font-size: 0.95rem;
           }
           
-          .filter-info-card-description {
+          .filter-popover-description {
             font-size: 0.8rem;
             margin-bottom: var(--spacing-sm);
           }
           
-          .filter-info-card-stats {
+          .filter-popover-stats {
             gap: var(--spacing-md);
           }
           
-          .filter-info-card-stat .stat-label {
+          .filter-popover-stat .stat-label {
             font-size: 0.65rem;
           }
           
-          .filter-info-card-stat .stat-value {
+          .filter-popover-stat .stat-value {
             font-size: 0.8rem;
           }
           
-          .filter-info-card-content {
+          .filter-popover-body {
             padding: var(--spacing-sm);
           }
           
-          .filter-info-card-section {
+          .filter-popover-section {
             margin-bottom: var(--spacing-md);
           }
           
-          .filter-info-card-section h4 {
+          .filter-popover-section h4 {
             font-size: 0.75rem;
             margin-bottom: var(--spacing-xs);
           }
           
-          .filter-info-card-section p,
-          .filter-info-card-section ul li {
+          .filter-popover-section p,
+          .filter-popover-section ul li {
             font-size: 0.8rem;
           }
           
-          .filter-info-card-section ul li {
+          .filter-popover-section ul li {
             padding-left: 20px;
             margin-bottom: var(--spacing-xs);
           }
