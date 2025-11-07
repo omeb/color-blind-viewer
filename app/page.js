@@ -609,11 +609,37 @@ export default function Home() {
             <div 
               ref={filterInfoPopoverRef}
               className="filter-info-popover"
-              style={{
-                left: `${filterPopoverInfo.position.x}px`,
-                top: `${filterPopoverInfo.position.y}px`,
-                transform: 'translateX(-50%)',
-              }}
+              style={(() => {
+                const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1200
+                const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 800
+                const popoverWidth = 400
+                const minMargin = 20
+                
+                let x = filterPopoverInfo.position.x
+                let y = filterPopoverInfo.position.y
+                
+                // Ensure popover doesn't overflow right edge
+                if (x + popoverWidth / 2 > viewportWidth - minMargin) {
+                  x = viewportWidth - popoverWidth / 2 - minMargin
+                }
+                
+                // Ensure popover doesn't overflow left edge
+                if (x - popoverWidth / 2 < minMargin) {
+                  x = popoverWidth / 2 + minMargin
+                }
+                
+                // Ensure popover doesn't overflow bottom edge
+                const estimatedHeight = 500
+                if (y + estimatedHeight > viewportHeight - minMargin) {
+                  y = viewportHeight - estimatedHeight - minMargin
+                }
+                
+                return {
+                  left: `${x}px`,
+                  top: `${y}px`,
+                  transform: 'translateX(-50%)',
+                }
+              })()}
             >
               <div className="filter-popover-header">
                 <div className="filter-popover-title-row">
