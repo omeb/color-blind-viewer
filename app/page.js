@@ -53,11 +53,52 @@ export default function Home() {
   const [filterPopoverPosition, setFilterPopoverPosition] = React.useState(null)
   const [showFilterPopover, setShowFilterPopover] = React.useState(false)
   const [filterPopoverInfo, setFilterPopoverInfo] = React.useState(null)
+  const [popoverPosition, setPopoverPosition] = React.useState(null)
   const filterPopoverRef = React.useRef(null)
   const filterInfoPopoverRef = React.useRef(null)
   const infoIconRef = React.useRef(null)
   const isInitialMount = React.useRef(true)
   const [isInitialDelayComplete, setIsInitialDelayComplete] = React.useState(false)
+  
+  // Recalculate popover position after it's rendered
+  React.useEffect(() => {
+    if (filterPopoverInfo && filterInfoPopoverRef.current) {
+      const viewportWidth = window.innerWidth
+      const viewportHeight = window.innerHeight
+      const popoverWidth = 400
+      const minMargin = 20
+      
+      let x = filterPopoverInfo.position.x
+      let y = filterPopoverInfo.position.y
+      
+      // Get actual popover height
+      const actualHeight = filterInfoPopoverRef.current.offsetHeight || 500
+      
+      // Ensure popover doesn't overflow right edge
+      if (x + popoverWidth / 2 > viewportWidth - minMargin) {
+        x = viewportWidth - popoverWidth / 2 - minMargin
+      }
+      
+      // Ensure popover doesn't overflow left edge
+      if (x - popoverWidth / 2 < minMargin) {
+        x = popoverWidth / 2 + minMargin
+      }
+      
+      // Ensure popover doesn't overflow bottom edge
+      if (y + actualHeight > viewportHeight - minMargin) {
+        y = viewportHeight - actualHeight - minMargin
+      }
+      
+      // Ensure popover doesn't go above viewport
+      if (y < minMargin) {
+        y = minMargin
+      }
+      
+      setPopoverPosition({ x, y })
+    } else {
+      setPopoverPosition(null)
+    }
+  }, [filterPopoverInfo])
   
   // Hide all content for 0.7 seconds on initial load
   React.useEffect(() => {
