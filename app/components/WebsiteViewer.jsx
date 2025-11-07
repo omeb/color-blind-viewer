@@ -39,7 +39,95 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
     }
   }, [isSplitViewProp])
   
-  // Handle split view toggle
+  // Synchronize scrolling between split view iframes
+  React.useEffect(() => {
+    if (!isSplitView || activeFilter === 'none') return
+    
+    const originalIframe = originalIframeRef.current
+    const filteredIframe = filteredIframeRef.current
+    
+    if (!originalIframe || !filteredIframe) return
+    
+    const handleOriginalScroll = () => {
+      if (isScrollingRef.current) return
+      isScrollingRef.current = true
+      
+      try {
+        const originalDoc = originalIframe.contentDocument || originalIframe.contentWindow.document
+        const filteredDoc = filteredIframe.contentDocument || filteredIframe.contentWindow.document
+        
+        if (originalDoc && filteredDoc) {
+          filteredDoc.documentElement.scrollTop = originalDoc.documentElement.scrollTop
+          filteredDoc.documentElement.scrollLeft = originalDoc.documentElement.scrollLeft
+        }
+      } catch (e) {
+        // Cross-origin restrictions may prevent access
+      }
+      
+      setTimeout(() => {
+        isScrollingRef.current = false
+      }, 10)
+    }
+    
+    const handleFilteredScroll = () => {
+      if (isScrollingRef.current) return
+      isScrollingRef.current = true
+      
+      try {
+        const originalDoc = originalIframe.contentDocument || originalIframe.contentWindow.document
+        const filteredDoc = filteredIframe.contentDocument || filteredIframe.contentWindow.document
+        
+        if (originalDoc && filteredDoc) {
+          originalDoc.documentElement.scrollTop = filteredDoc.documentElement.scrollTop
+          originalDoc.documentElement.scrollLeft = filteredDoc.documentElement.scrollLeft
+        }
+      } catch (e) {
+        // Cross-origin restrictions may prevent access
+      }
+      
+      setTimeout(() => {
+        isScrollingRef.current = false
+      }, 10)
+    }
+    
+    // Wait for iframes to load before attaching listeners
+    const attachListeners = () => {
+      try {
+        const originalWindow = originalIframe.contentWindow
+        const filteredWindow = filteredIframe.contentWindow
+        
+        if (originalWindow) {
+          originalWindow.addEventListener('scroll', handleOriginalScroll, { passive: true })
+        }
+        if (filteredWindow) {
+          filteredWindow.addEventListener('scroll', handleFilteredScroll, { passive: true })
+        }
+      } catch (e) {
+        // Cross-origin restrictions may prevent access
+      }
+    }
+    
+    // Try to attach listeners immediately and after a delay
+    attachListeners()
+    const timeout = setTimeout(attachListeners, 1000)
+    
+    return () => {
+      clearTimeout(timeout)
+      try {
+        const originalWindow = originalIframe.contentWindow
+        const filteredWindow = filteredIframe.contentWindow
+        
+        if (originalWindow) {
+          originalWindow.removeEventListener('scroll', handleOriginalScroll)
+        }
+        if (filteredWindow) {
+          filteredWindow.removeEventListener('scroll', handleFilteredScroll)
+        }
+      } catch (e) {
+        // Cross-origin restrictions may prevent access
+      }
+    }
+  }, [isSplitView, activeFilter, iframeLoaded])
   const handleSplitViewToggle = () => {
     const newValue = !isSplitView
     setIsSplitView(newValue)
