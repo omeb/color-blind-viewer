@@ -25,9 +25,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
   const [isEditingUrl, setIsEditingUrl] = React.useState(false)
   const [editedUrl, setEditedUrl] = React.useState(url)
   const [showHistoryDropdown, setShowHistoryDropdown] = React.useState(false)
-  const [filterPopoverInfo, setFilterPopoverInfo] = React.useState(null)
   const historyDropdownRef = React.useRef(null)
-  const filterPopoverRef = React.useRef(null)
   const iframeRef = React.useRef(null)
   const originalIframeRef = React.useRef(null)
   const filteredIframeRef = React.useRef(null)
@@ -802,7 +800,6 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
             <button
               onClick={() => {
                 onFilterChange && onFilterChange('none')
-                setFilterPopoverInfo(null)
               }}
               className={`quick-filter-btn ${activeFilter === 'none' ? 'active' : ''}`}
               title="Click to apply filter"
@@ -814,7 +811,6 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
                 key={filter.id}
                 onClick={() => {
                   onFilterChange && onFilterChange(filter.id)
-                  setFilterPopoverInfo(null)
                 }}
                 className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
                 title="Click to apply filter"
@@ -827,7 +823,6 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
                 key={filter.id}
                 onClick={() => {
                   onFilterChange && onFilterChange(filter.id)
-                  setFilterPopoverInfo(null)
                 }}
                 className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
                 title="Click to apply filter"
