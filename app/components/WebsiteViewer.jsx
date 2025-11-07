@@ -100,12 +100,22 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
   
   // Handle URL change
   const handleUrlInputChange = (e) => {
-    setEditedUrl(e.target.value)
+    const newValue = e.target.value
+    setEditedUrl(newValue)
+    // Close dropdown when user starts typing manually
+    if (newValue.trim() && showHistoryDropdown) {
+      setShowHistoryDropdown(false)
+    }
   }
   
   // Handle URL submit
   const handleUrlSubmit = (e) => {
     e.preventDefault()
+    e.stopPropagation() // Prevent any event bubbling
+    
+    // Always close dropdown on submit
+    setShowHistoryDropdown(false)
+    
     if (editedUrl.trim() && onUrlChange) {
       let formattedUrl = editedUrl.trim()
       
@@ -120,6 +130,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         formattedUrl = 'https://' + formattedUrl
       }
       
+      // Use the formatted URL from input, not from dropdown
       onUrlChange(formattedUrl)
       setIsEditingUrl(false)
     }
@@ -131,10 +142,20 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
     setIsEditingUrl(false)
   }
   
-  // Handle keydown for escape key
+  // Handle keydown for escape key and enter
   const handleUrlKeyDown = (e) => {
     if (e.key === 'Escape') {
       handleUrlCancel()
+      setShowHistoryDropdown(false)
+    } else if (e.key === 'Enter') {
+      // Close dropdown when Enter is pressed
+      setShowHistoryDropdown(false)
+      // Form submission will handle the rest
+    } else if (e.key.length === 1) {
+      // User is typing - close dropdown
+      if (showHistoryDropdown) {
+        setShowHistoryDropdown(false)
+      }
     }
   }
   
