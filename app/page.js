@@ -243,7 +243,7 @@ export default function Home() {
     setLoadedUrl('')
     setHasLoadedSite(false)
     setActiveFilter('none')
-    setIsSplitView(false)
+    setIsSplitView(true)
     setTargetUrl('')
     setUrlInputValue('')
     setError(null)
