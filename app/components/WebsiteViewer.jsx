@@ -26,9 +26,23 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
   const [iframeLoaded, setIframeLoaded] = React.useState(false)
   const [isEditingUrl, setIsEditingUrl] = React.useState(false)
   const [editedUrl, setEditedUrl] = React.useState(url)
+  const [filtersVisible, setFiltersVisible] = React.useState(true)
+  const [filterPosition, setFilterPosition] = React.useState({ x: 0, y: 0 })
+  const [isDraggingFilters, setIsDraggingFilters] = React.useState(false)
+  const filtersRef = React.useRef(null)
   const iframeRef = React.useRef(null)
   const containerRef = React.useRef(null)
   const urlInputRef = React.useRef(null)
+  
+  // Initialize filter position to center-bottom when expanded
+  React.useEffect(() => {
+    if (typeof window !== 'undefined' && isExpanded && filterPosition.x === 0) {
+      setFilterPosition({
+        x: window.innerWidth / 2,
+        y: 24
+      })
+    }
+  }, [isExpanded])
   
   // Build proxy URL
   const proxyUrl = url ? `/api/proxy?url=${encodeURIComponent(url)}` : null
@@ -62,6 +76,13 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
       setIframeLoading(false)
       setIframeLoaded(true)
     }, 300)
+  }
+  
+  // Handle refresh
+  const handleRefresh = () => {
+    setIframeKey(prev => prev + 1)
+    setIframeLoading(true)
+    setIframeLoaded(false)
   }
   
   // Handle URL edit activation
@@ -138,19 +159,9 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
     }
   }, [isDragging])
   
-  // Prevent body scroll when expanded
-  React.useEffect(() => {
-    if (isExpanded) {
-      document.body.style.overflow = 'hidden'
-      return () => {
-        document.body.style.overflow = ''
-      }
-    }
-  }, [isExpanded])
-  
   return (
     <div className={`website-viewer-wrapper ${isExpanded ? 'expanded' : ''}`}>
-      {proxyUrl && !loading && !error && iframeLoaded && (
+      {url && (
         <div className="viewer-header">
           {isEditingUrl ? (
             <form onSubmit={handleUrlSubmit} className={`url-edit-form ${isEditingUrl ? 'editing' : ''}`}>
@@ -207,6 +218,16 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           
           <div className="viewer-controls">
             <button
+              onClick={handleRefresh}
+              className="control-btn"
+              aria-label="Refresh page"
+              title="Refresh"
+              disabled={loading || iframeLoading}
+            >
+              <span className="btn-icon">↻</span>
+            </button>
+            
+            <button
               onClick={() => {
                 const newExpanded = !isExpanded
                 setIsExpanded(newExpanded)
@@ -249,38 +270,145 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
       
       {/* Filter buttons shown when expanded */}
       {isExpanded && onFilterChange && (
-        <div className="expanded-filters">
-          <div className="expanded-filters-content">
-            {getCategorizedFilters().colorblind.map((filter) => (
-              <button
-                key={filter.id}
-                onClick={() => {
-                  if (onFilterInfo) {
-                    onFilterInfo(filter.id)
-                  }
-                }}
-                className={`expanded-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
-                title={`${filter.description} - Click for details`}
-              >
-                {filter.name}
-              </button>
-            ))}
-            {getCategorizedFilters().other.map((filter) => (
-              <button
-                key={filter.id}
-                onClick={() => {
-                  if (onFilterInfo) {
-                    onFilterInfo(filter.id)
-                  }
-                }}
-                className={`expanded-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
-                title={`${filter.description} - Click for details`}
-              >
-                {filter.name}
-              </button>
-            ))}
-          </div>
-        </div>
+        <>
+          {filtersVisible ? (
+            <div 
+              ref={filtersRef}
+              className="expanded-filters"
+              style={{
+                left: filterPosition.x === 0 ? '50%' : `${filterPosition.x}px`,
+                bottom: `${filterPosition.y}px`,
+                transform: filterPosition.x === 0 ? 'translateX(-50%)' : 'none'
+              }}
+            >
+              <div className="expanded-filters-header">
+                <button
+                  className="expanded-filters-hide-btn"
+                  onClick={() => setFiltersVisible(false)}
+                  aria-label="Hide filters"
+                  title="Hide filters"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+                <div 
+                  className="expanded-filters-drag-handle"
+                  onMouseDown={(e) => {
+                    e.preventDefault()
+                    setIsDraggingFilters(true)
+                    const startX = e.clientX
+                    const startY = e.clientY
+                    const startLeft = filterPosition.x
+                    const startBottom = filterPosition.y
+                    
+                    const handleMouseMove = (moveEvent) => {
+                      const deltaX = moveEvent.clientX - startX
+                      const deltaY = startY - moveEvent.clientY
+                      setFilterPosition({
+                        x: startLeft + deltaX,
+                        y: startBottom + deltaY
+                      })
+                    }
+                    
+                    const handleMouseUp = () => {
+                      setIsDraggingFilters(false)
+                      document.removeEventListener('mousemove', handleMouseMove)
+                      document.removeEventListener('mouseup', handleMouseUp)
+                    }
+                    
+                    document.addEventListener('mousemove', handleMouseMove)
+                    document.addEventListener('mouseup', handleMouseUp)
+                  }}
+                  title="Drag to move"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="4" cy="4" r="1.5" fill="currentColor"/>
+                    <circle cx="12" cy="4" r="1.5" fill="currentColor"/>
+                    <circle cx="4" cy="8" r="1.5" fill="currentColor"/>
+                    <circle cx="12" cy="8" r="1.5" fill="currentColor"/>
+                    <circle cx="4" cy="12" r="1.5" fill="currentColor"/>
+                    <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                  </svg>
+                </div>
+              </div>
+              <div className="expanded-filters-content">
+                {getCategorizedFilters().colorblind.map((filter) => (
+                  <div key={filter.id} className="expanded-filter-item">
+                    <button
+                      onClick={() => {
+                        const newFilter = activeFilter === filter.id ? 'none' : filter.id
+                        onFilterChange(newFilter)
+                      }}
+                      className={`expanded-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
+                      title={filter.description}
+                    >
+                      {filter.name}
+                    </button>
+                    {onFilterInfo && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onFilterInfo(filter.id)
+                        }}
+                        className="expanded-filter-info-btn"
+                        aria-label={`Learn more about ${filter.name}`}
+                        title="Learn more"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                          <path d="M8 6V8M8 10H8.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {getCategorizedFilters().other.map((filter) => (
+                  <div key={filter.id} className="expanded-filter-item">
+                    <button
+                      onClick={() => {
+                        const newFilter = activeFilter === filter.id ? 'none' : filter.id
+                        onFilterChange(newFilter)
+                      }}
+                      className={`expanded-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
+                      title={filter.description}
+                    >
+                      {filter.name}
+                    </button>
+                    {onFilterInfo && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onFilterInfo(filter.id)
+                        }}
+                        className="expanded-filter-info-btn"
+                        aria-label={`Learn more about ${filter.name}`}
+                        title="Learn more"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                          <path d="M8 6V8M8 10H8.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <button
+              className="expanded-filters-show-btn"
+              onClick={() => setFiltersVisible(true)}
+              aria-label="Show filters"
+              title="Show filters"
+            >
+              <svg width="20" height="20" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 10L8 6L12 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Filters
+            </button>
+          )}
+        </>
       )}
       
       <div 
@@ -320,6 +448,12 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
       {!loading && iframeLoading && (
         <div className="loading-state iframe-loading" role="status" aria-live="polite">
           <div className="loading-content">
+            <div className="loading-text-wrapper">
+              <p className="loading-text">Loading website</p>
+              <div className="loading-progress">
+                <div className="progress-bar"></div>
+              </div>
+            </div>
             <div className="loading-skeleton">
               <div className="skeleton-header">
                 <div className="skeleton-line skeleton-line-short"></div>
@@ -332,12 +466,6 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
                 <div className="skeleton-box"></div>
                 <div className="skeleton-line"></div>
                 <div className="skeleton-line skeleton-line-short"></div>
-              </div>
-            </div>
-            <div className="loading-text-wrapper">
-              <p className="loading-text">Loading website</p>
-              <div className="loading-progress">
-                <div className="progress-bar"></div>
               </div>
             </div>
           </div>
@@ -426,14 +554,16 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         
         .website-viewer-wrapper.expanded {
           position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 100vh;
+          top: var(--spacing-md);
+          left: var(--spacing-md);
+          right: var(--spacing-md);
+          bottom: var(--spacing-md);
           z-index: 1000;
           margin: 0;
           padding: 0;
           overflow: hidden;
+          border-radius: var(--radius-md);
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
         }
         
         .website-viewer-container {
@@ -449,9 +579,11 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         
         .website-viewer-wrapper.expanded .website-viewer-container {
           width: 100%;
-          height: 100%;
-          min-height: 100%;
+          height: calc(100% - 60px);
+          min-height: calc(100% - 60px);
           border-radius: 0;
+          padding: 0;
+          margin: 60px 0 0 0;
         }
         
         .expanded-filters {
@@ -461,6 +593,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           transform: translateX(-50%);
           z-index: 1002;
           animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          user-select: none;
         }
         
         @keyframes slideUp {
@@ -472,6 +605,39 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
             opacity: 1;
             transform: translateX(-50%) translateY(0);
           }
+        }
+        
+        .expanded-filters-header {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: var(--spacing-xs);
+          margin-bottom: var(--spacing-xs);
+        }
+        
+        .expanded-filters-hide-btn,
+        .expanded-filters-drag-handle {
+          background: rgba(0, 0, 0, 0.6);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          border-radius: 6px;
+          color: rgba(255, 255, 255, 0.8);
+          padding: 6px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .expanded-filters-drag-handle {
+          cursor: move;
+        }
+        
+        .expanded-filters-hide-btn:hover,
+        .expanded-filters-drag-handle:hover {
+          background: rgba(0, 0, 0, 0.8);
+          border-color: rgba(255, 255, 255, 0.3);
+          color: white;
         }
         
         .expanded-filters-content {
@@ -487,6 +653,13 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           padding: var(--spacing-sm);
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
           max-width: 90vw;
+        }
+        
+        .expanded-filter-item {
+          position: relative;
+          display: flex;
+          align-items: center;
+          gap: 4px;
         }
         
         .expanded-filter-btn {
@@ -519,6 +692,71 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           transform: translateY(0);
         }
         
+        .expanded-filter-info-btn {
+          position: absolute;
+          top: -4px;
+          right: -4px;
+          background: rgba(110, 198, 255, 0.2);
+          border: 1px solid rgba(110, 198, 255, 0.4);
+          border-radius: 50%;
+          width: 18px;
+          height: 18px;
+          color: rgba(110, 198, 255, 0.9);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0;
+          opacity: 0;
+          transition: all 0.2s ease;
+        }
+        
+        .expanded-filter-item:hover .expanded-filter-info-btn {
+          opacity: 1;
+        }
+        
+        .expanded-filter-info-btn:hover {
+          background: rgba(110, 198, 255, 0.4);
+          border-color: rgba(110, 198, 255, 0.6);
+          color: white;
+          transform: scale(1.1);
+        }
+        
+        .expanded-filter-info-btn svg {
+          width: 10px;
+          height: 10px;
+        }
+        
+        .expanded-filters-show-btn {
+          position: fixed;
+          bottom: var(--spacing-lg);
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 1002;
+          background: rgba(0, 0, 0, 0.85);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          border-radius: 12px;
+          color: rgba(255, 255, 255, 0.9);
+          padding: 10px 16px;
+          font-size: 0.9rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+        
+        .expanded-filters-show-btn:hover {
+          background: rgba(0, 0, 0, 0.95);
+          border-color: rgba(255, 255, 255, 0.3);
+          transform: translateX(-50%) translateY(-2px);
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+        }
+        
         .viewer-header {
           display: flex;
           align-items: center;
@@ -526,15 +764,22 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           gap: var(--spacing-sm);
           margin-bottom: var(--spacing-sm);
           flex-wrap: wrap;
+          position: relative;
+          z-index: 10;
         }
         
         .website-viewer-wrapper.expanded .viewer-header {
-          position: fixed;
-          top: var(--spacing-md);
-          left: var(--spacing-md);
-          right: var(--spacing-md);
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
           z-index: 1001;
           margin-bottom: 0;
+          padding: var(--spacing-md);
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border-bottom: 1px solid rgba(0, 0, 0, 0.1);
         }
         
         .url-display {
@@ -710,15 +955,24 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
         
-        .control-btn:hover {
+        .control-btn:hover:not(:disabled) {
           background: rgba(0, 0, 0, 0.95);
           border-color: rgba(255, 255, 255, 0.3);
           transform: translateY(-2px);
           box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
         }
         
-        .control-btn:active {
+        .control-btn:active:not(:disabled) {
           transform: translateY(0);
+        }
+        
+        .control-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        
+        .control-btn:disabled:hover {
+          transform: none;
         }
         
         .btn-icon {
@@ -807,8 +1061,18 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           display: flex;
           flex-direction: column;
           align-items: center;
+          justify-content: flex-start;
           gap: var(--spacing-lg);
           padding: var(--spacing-xl);
+        }
+        
+        .iframe-loading .loading-content {
+          flex-direction: column;
+        }
+        
+        .iframe-loading .loading-text-wrapper {
+          order: -1;
+          margin-bottom: var(--spacing-md);
         }
         
         /* Orb Loading Animation - Initial Load */
