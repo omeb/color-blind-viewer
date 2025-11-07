@@ -124,15 +124,17 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
         }
 
         .history-header {
-          margin-bottom: var(--spacing-sm);
+          margin-bottom: 12px;
         }
 
         .history-title {
-          font-size: 0.9rem;
-          font-weight: 600;
+          font-size: 0.95rem;
+          font-weight: 700;
           color: rgba(255, 255, 255, 1);
-          margin: 0;
+          margin: 0 0 12px 0;
           text-align: left;
+          letter-spacing: -0.02em;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         .history-list {
