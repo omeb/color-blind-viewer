@@ -236,6 +236,7 @@ export default function Home() {
           filterId={selectedFilterInfo}
           isOpen={selectedFilterInfo !== null}
           onClose={() => setSelectedFilterInfo(null)}
+          onApplyFilter={handleFilterChange}
         />
       </main>
       

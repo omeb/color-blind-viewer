@@ -12,8 +12,9 @@ import { getFilter } from '../lib/filters'
  * @param {string} props.filterId - ID of the filter to display
  * @param {boolean} props.isOpen - Whether the modal is open
  * @param {Function} props.onClose - Callback to close the modal
+ * @param {Function} props.onApplyFilter - Optional callback to apply the filter
  */
-export default function FilterInfoModal({ filterId, isOpen, onClose }) {
+export default function FilterInfoModal({ filterId, isOpen, onClose, onApplyFilter }) {
   const filter = getFilter(filterId)
   
   if (!isOpen || !filter) return null
@@ -116,6 +117,20 @@ export default function FilterInfoModal({ filterId, isOpen, onClose }) {
               )}
             </ul>
           </div>
+          
+          {onApplyFilter && (
+            <div className="modal-actions">
+              <button
+                onClick={() => {
+                  onApplyFilter(filter.id)
+                  onClose()
+                }}
+                className="modal-apply-btn"
+              >
+                Apply This Filter
+              </button>
+            </div>
+          )}
         </div>
       </div>
       
@@ -298,6 +313,36 @@ export default function FilterInfoModal({ filterId, isOpen, onClose }) {
           left: 0;
           color: rgba(110, 198, 255, 1);
           font-weight: 700;
+        }
+        
+        .modal-actions {
+          padding: var(--spacing-lg) var(--spacing-xl);
+          border-top: 1px solid rgba(255, 255, 255, 0.2);
+          display: flex;
+          justify-content: center;
+        }
+        
+        .modal-apply-btn {
+          background: linear-gradient(135deg, rgba(110, 198, 255, 0.9) 0%, rgba(147, 112, 219, 0.9) 100%);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 12px;
+          color: white;
+          padding: 12px 32px;
+          font-size: 1rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-apply-btn:hover {
+          background: linear-gradient(135deg, rgba(110, 198, 255, 1) 0%, rgba(147, 112, 219, 1) 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(110, 198, 255, 0.4);
+        }
+        
+        .modal-apply-btn:active {
+          transform: translateY(0);
         }
         
         @media (max-width: 768px) {
