@@ -1005,7 +1005,11 @@ export default function Home() {
         
         @media (max-width: 1200px) {
           .content-grid {
-            grid-template-columns: 380px 1fr;
+            grid-template-columns: 380px minmax(0, 1fr);
+          }
+          
+          .viewer-section {
+            max-width: 100%;
           }
         }
         
