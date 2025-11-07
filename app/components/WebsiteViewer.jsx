@@ -1571,8 +1571,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           display: flex;
           align-items: flex-start;
           justify-content: space-between;
-          gap: var(--spacing-md);
-          padding: var(--spacing-md);
+          gap: var(--spacing-sm);
+          padding: var(--spacing-sm) var(--spacing-md);
           background: transparent;
           border: none;
           cursor: pointer;
@@ -1596,59 +1596,60 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         .filter-info-card-title-row {
           display: flex;
           align-items: center;
-          gap: var(--spacing-sm);
-          margin-bottom: var(--spacing-xs);
+          gap: var(--spacing-xs);
+          margin-bottom: 4px;
           flex-wrap: wrap;
         }
         
         .filter-info-card-title {
           margin: 0;
-          font-size: 1.1rem;
+          font-size: 0.95rem;
           font-weight: 700;
           color: rgba(255, 255, 255, 1);
         }
         
         .filter-info-card-severity {
-          padding: 2px 8px;
+          padding: 1px 6px;
           background: rgba(110, 198, 255, 0.2);
           border: 1px solid rgba(110, 198, 255, 0.4);
-          border-radius: 12px;
-          font-size: 0.7rem;
+          border-radius: 10px;
+          font-size: 0.65rem;
           font-weight: 600;
           color: rgba(110, 198, 255, 1);
           text-transform: uppercase;
           letter-spacing: 0.5px;
+          line-height: 1.4;
         }
         
         .filter-info-card-description {
-          margin: var(--spacing-xs) 0;
-          font-size: 0.9rem;
+          margin: 4px 0;
+          font-size: 0.8rem;
           color: rgba(255, 255, 255, 0.85);
-          line-height: 1.5;
+          line-height: 1.4;
         }
         
         .filter-info-card-stats {
           display: flex;
           gap: var(--spacing-md);
-          margin-top: var(--spacing-xs);
+          margin-top: 6px;
           flex-wrap: wrap;
         }
         
         .filter-info-card-stat {
           display: flex;
           flex-direction: column;
-          gap: 2px;
+          gap: 1px;
         }
         
         .filter-info-card-stat .stat-label {
-          font-size: 0.75rem;
+          font-size: 0.7rem;
           color: rgba(255, 255, 255, 0.6);
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
         
         .filter-info-card-stat .stat-value {
-          font-size: 0.85rem;
+          font-size: 0.8rem;
           font-weight: 600;
           color: rgba(255, 255, 255, 0.9);
         }
@@ -1658,8 +1659,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 32px;
-          height: 32px;
+          width: 28px;
+          height: 28px;
           border-radius: 50%;
           background: rgba(255, 255, 255, 0.1);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1670,7 +1671,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         }
         
         .toggle-icon {
-          font-size: 0.7rem;
+          font-size: 0.65rem;
           color: rgba(255, 255, 255, 0.8);
           transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           display: inline-block;
@@ -1681,7 +1682,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         }
         
         .filter-info-card-content {
-          padding: 0 var(--spacing-md) var(--spacing-md);
+          padding: 0 var(--spacing-md) var(--spacing-sm);
           border-top: 1px solid rgba(255, 255, 255, 0.1);
           animation: expandContent 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -1696,13 +1697,13 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           to {
             opacity: 1;
             max-height: 2000px;
-            padding-top: var(--spacing-md);
-            padding-bottom: var(--spacing-md);
+            padding-top: var(--spacing-sm);
+            padding-bottom: var(--spacing-sm);
           }
         }
         
         .filter-info-card-section {
-          margin-bottom: var(--spacing-md);
+          margin-bottom: var(--spacing-sm);
         }
         
         .filter-info-card-section:last-child {
@@ -1710,8 +1711,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         }
         
         .filter-info-card-section h4 {
-          margin: 0 0 var(--spacing-sm) 0;
-          font-size: 0.95rem;
+          margin: 0 0 6px 0;
+          font-size: 0.85rem;
           font-weight: 700;
           color: rgba(255, 255, 255, 1);
           text-transform: uppercase;
@@ -1720,9 +1721,9 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         
         .filter-info-card-section p {
           margin: 0;
-          font-size: 0.9rem;
+          font-size: 0.8rem;
           color: rgba(255, 255, 255, 0.85);
-          line-height: 1.6;
+          line-height: 1.5;
         }
         
         .filter-info-card-section ul {
@@ -1733,11 +1734,11 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         
         .filter-info-card-section ul li {
           position: relative;
-          padding-left: var(--spacing-md);
-          margin-bottom: var(--spacing-xs);
-          font-size: 0.9rem;
+          padding-left: var(--spacing-sm);
+          margin-bottom: 4px;
+          font-size: 0.8rem;
           color: rgba(255, 255, 255, 0.85);
-          line-height: 1.6;
+          line-height: 1.5;
         }
         
         .filter-info-card-section ul li:before {
@@ -1746,6 +1747,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           left: 0;
           color: rgba(110, 198, 255, 1);
           font-weight: bold;
+          font-size: 0.75rem;
         }
         
         .filter-info-card-section ul li:last-child {
@@ -1759,36 +1761,51 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           }
           
           .filter-info-card-header {
-            padding: var(--spacing-sm);
+            padding: var(--spacing-xs) var(--spacing-sm);
           }
           
           .filter-info-card-title {
-            font-size: 1rem;
+            font-size: 0.9rem;
           }
           
           .filter-info-card-description {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
           }
           
           .filter-info-card-stats {
             gap: var(--spacing-sm);
+            margin-top: 4px;
+          }
+          
+          .filter-info-card-stat .stat-label {
+            font-size: 0.65rem;
+          }
+          
+          .filter-info-card-stat .stat-value {
+            font-size: 0.75rem;
           }
           
           .filter-info-card-content {
-            padding: 0 var(--spacing-sm) var(--spacing-sm);
+            padding: 0 var(--spacing-sm) var(--spacing-xs);
           }
           
           .filter-info-card-section {
-            margin-bottom: var(--spacing-sm);
+            margin-bottom: var(--spacing-xs);
           }
           
           .filter-info-card-section h4 {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
+            margin-bottom: 4px;
           }
           
           .filter-info-card-section p,
           .filter-info-card-section ul li {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
+          }
+          
+          .filter-info-card-section ul li {
+            margin-bottom: 3px;
+            padding-left: var(--spacing-xs);
           }
         }
         
