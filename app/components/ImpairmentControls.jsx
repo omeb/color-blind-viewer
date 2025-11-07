@@ -130,19 +130,21 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
         }
         
         .filter-btn:hover {
-          background: rgba(255, 255, 255, 0.2);
-          border-color: rgba(255, 255, 255, 0.4);
-          transform: translateY(-2px);
+          background: rgba(255, 255, 255, 0.25);
+          border-color: rgba(255, 255, 255, 0.5);
+          transform: translateY(-3px);
+          box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2);
         }
         
         .filter-btn:active {
-          transform: translateY(0);
+          transform: translateY(-1px);
         }
         
         .filter-btn.active {
-          background: rgba(255, 255, 255, 0.3);
-          border-color: rgba(255, 255, 255, 0.6);
-          box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+          background: linear-gradient(135deg, rgba(110, 198, 255, 0.3) 0%, rgba(147, 112, 219, 0.3) 100%);
+          border-color: rgba(110, 198, 255, 0.7);
+          box-shadow: 0 0 30px rgba(110, 198, 255, 0.5), inset 0 0 20px rgba(110, 198, 255, 0.2);
+          transform: scale(1.02);
         }
         
         .filter-name {

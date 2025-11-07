@@ -22,11 +22,11 @@ export default function UrlInput({ onSubmit, loading = false }) {
     
     // Validate URL
     if (!url.trim()) {
-      setError('Please enter a website URL')
+      setError('Please enter a website URL (e.g., wix.com, github.com)')
       return
     }
     
-    // Check if URL starts with http:// or https://
+    // Auto-add https:// if no protocol specified
     let formattedUrl = url.trim()
     if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
       formattedUrl = 'https://' + formattedUrl
@@ -37,7 +37,7 @@ export default function UrlInput({ onSubmit, loading = false }) {
       new URL(formattedUrl)
       onSubmit(formattedUrl)
     } catch (err) {
-      setError('Please enter a valid website URL')
+      setError('Invalid website address. Try: example.com or www.example.com')
     }
   }
   
@@ -67,7 +67,7 @@ export default function UrlInput({ onSubmit, loading = false }) {
           type="submit"
           disabled={loading || !url.trim()}
           className="btn btn-primary submit-button"
-          aria-label={loading ? 'Loading website' : 'Load website'}
+          aria-label={loading ? 'Loading website' : 'View website with filters'}
         >
           {loading ? (
             <>
@@ -75,7 +75,7 @@ export default function UrlInput({ onSubmit, loading = false }) {
               Loading...
             </>
           ) : (
-            'Load Website'
+            'View Website'
           )}
         </button>
       </div>

@@ -5,7 +5,25 @@ import UrlInput from './components/UrlInput'
 import WebsiteViewer from './components/WebsiteViewer'
 import ImpairmentControls from './components/ImpairmentControls'
 import InfoPanel from './components/InfoPanel'
-import { generateSVGFilters } from './lib/filters'
+import { generateSVGFilters, getFilter } from './lib/filters'
+
+function getFilterName(filterId) {
+  const filter = getFilter(filterId)
+  return filter ? filter.name : filterId
+}
+
+function getFilterExplanation(filterId) {
+  const explanations = {
+    protanopia: 'Cannot distinguish red from green',
+    deuteranopia: 'Most common - green color blindness',
+    tritanopia: 'Blue-yellow color blindness',
+    achromatopsia: 'Sees only in grayscale',
+    cataracts: 'Cloudy, blurred vision',
+    lowVision: 'Significantly reduced clarity',
+    lowContrast: 'Difficulty seeing similar shades',
+  }
+  return explanations[filterId] || ''
+}
 
 export default function Home() {
   const [targetUrl, setTargetUrl] = React.useState('')
@@ -76,14 +94,20 @@ export default function Home() {
                 <div className="viewer-header">
                   <h2>Preview</h2>
                   {activeFilter !== 'none' && (
-                    <span className="active-filter-badge">
-                      Filter: {activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1)}
-                    </span>
+                    <div className="active-filter-info">
+                      <span className="filter-badge">
+                        {getFilterName(activeFilter)}
+                      </span>
+                      <span className="filter-explanation">
+                        {getFilterExplanation(activeFilter)}
+                      </span>
+                    </div>
                   )}
                 </div>
                 <WebsiteViewer
                   url={loadedUrl}
                   activeFilter={activeFilter}
+                  onFilterRemove={() => setActiveFilter('none')}
                   loading={loading}
                   error={error}
                 />
@@ -176,14 +200,28 @@ export default function Home() {
           margin: 0;
         }
         
-        .active-filter-badge {
+        .active-filter-info {
+          display: flex;
+          flex-direction: column;
+          gap: var(--spacing-xs);
+          align-items: flex-end;
+        }
+        
+        .filter-badge {
           padding: var(--spacing-xs) var(--spacing-md);
-          background: rgba(110, 198, 255, 0.2);
-          border: 1px solid rgba(110, 198, 255, 0.4);
+          background: rgba(110, 198, 255, 0.25);
+          border: 1px solid rgba(110, 198, 255, 0.5);
           border-radius: 20px;
           font-size: 0.9rem;
-          font-weight: 600;
+          font-weight: 700;
           color: var(--text-light);
+          text-transform: capitalize;
+        }
+        
+        .filter-explanation {
+          font-size: 0.85rem;
+          color: rgba(255, 255, 255, 0.85);
+          font-style: italic;
         }
         
         .footer {
