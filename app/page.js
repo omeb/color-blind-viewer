@@ -330,13 +330,6 @@ export default function Home() {
           gap: var(--spacing-lg);
         }
         
-        .content-grid.hide-sidebar {
-          grid-template-columns: 1fr;
-        }
-        
-        .content-grid.hide-sidebar .sidebar {
-          display: none;
-        }
         
         .sidebar {
           position: sticky;
