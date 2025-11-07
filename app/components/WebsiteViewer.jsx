@@ -257,12 +257,10 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
                 onClick={() => {
                   if (onFilterInfo) {
                     onFilterInfo(filter.id)
-                  } else {
-                    onFilterChange(filter.id === activeFilter ? 'none' : filter.id)
                   }
                 }}
                 className={`expanded-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
-                title={filter.description}
+                title={`${filter.description} - Click for details`}
               >
                 {filter.name}
               </button>
@@ -273,12 +271,10 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
                 onClick={() => {
                   if (onFilterInfo) {
                     onFilterInfo(filter.id)
-                  } else {
-                    onFilterChange(filter.id === activeFilter ? 'none' : filter.id)
                   }
                 }}
                 className={`expanded-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
-                title={filter.description}
+                title={`${filter.description} - Click for details`}
               >
                 {filter.name}
               </button>
