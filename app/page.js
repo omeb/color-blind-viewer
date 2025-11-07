@@ -1500,6 +1500,74 @@ export default function Home() {
           opacity: 0.8;
         }
         
+        .footer-filters {
+          width: 100%;
+          max-width: 100%;
+          overflow-x: auto;
+          overflow-y: hidden;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+          margin-top: var(--spacing-sm);
+          padding-top: var(--spacing-sm);
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer-filters::-webkit-scrollbar {
+          height: 4px;
+        }
+        
+        .footer-filters::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        
+        .footer-filters::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 2px;
+        }
+        
+        .footer-filters-scroll {
+          display: flex;
+          gap: 8px;
+          padding-bottom: 4px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+        
+        .footer-filter-btn {
+          flex-shrink: 0;
+          padding: 4px 10px;
+          font-size: 0.7rem;
+          font-weight: 500;
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 12px;
+          color: rgba(255, 255, 255, 0.9);
+          cursor: pointer;
+          transition: all 0.2s ease;
+          white-space: nowrap;
+          outline-offset: 2px;
+        }
+        
+        .footer-filter-btn:hover {
+          background: rgba(255, 255, 255, 0.15);
+          border-color: rgba(255, 255, 255, 0.3);
+          transform: translateY(-1px);
+        }
+        
+        .footer-filter-btn.active {
+          background: rgba(110, 198, 255, 0.3);
+          border-color: rgba(110, 198, 255, 0.6);
+          color: rgba(255, 255, 255, 1);
+          box-shadow: 0 2px 8px rgba(110, 198, 255, 0.3);
+        }
+        
+        .footer-filter-btn:active {
+          transform: translateY(0);
+        }
+        
         .footer-bottom {
           display: flex;
           flex-direction: column;
