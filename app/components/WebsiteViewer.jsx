@@ -213,7 +213,6 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
       <div 
         ref={containerRef}
         className={`website-viewer-container ${isSplitView ? 'split-view' : ''}`}
-        style={{}}
       >
       
       {!url && !loading && !error && (
