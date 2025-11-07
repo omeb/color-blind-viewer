@@ -176,7 +176,10 @@ export default function Home() {
     
     if (splitParam === 'true' || splitParam === '1') {
       setIsSplitView(true)
+    } else if (splitParam === 'false' || splitParam === '0') {
+      setIsSplitView(false)
     }
+    // Default is already true from useState initialization
   }, []) // Run once on mount
   
   // Update URL query parameters when state changes
