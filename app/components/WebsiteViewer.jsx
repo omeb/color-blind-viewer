@@ -16,9 +16,8 @@ import { getCategorizedFilters } from '../lib/filters'
  * @param {boolean} props.loading - Whether the website is loading
  * @param {string} props.error - Error message if loading failed
  */
-export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemove, onFilterChange, onFilterInfo, onChangeUrl, loading = false, error = null, onUrlChange, onExpandedChange }) {
+export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemove, onFilterChange, onFilterInfo, onChangeUrl, loading = false, error = null, onUrlChange }) {
   const [iframeKey, setIframeKey] = React.useState(0)
-  const [isExpanded, setIsExpanded] = React.useState(false)
   const [isSplitView, setIsSplitView] = React.useState(false)
   const [splitPosition, setSplitPosition] = React.useState(50)
   const [isDragging, setIsDragging] = React.useState(false)
@@ -26,23 +25,9 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
   const [iframeLoaded, setIframeLoaded] = React.useState(false)
   const [isEditingUrl, setIsEditingUrl] = React.useState(false)
   const [editedUrl, setEditedUrl] = React.useState(url)
-  const [filtersVisible, setFiltersVisible] = React.useState(true)
-  const [filterPosition, setFilterPosition] = React.useState({ x: 0, y: 0 })
-  const [isDraggingFilters, setIsDraggingFilters] = React.useState(false)
-  const filtersRef = React.useRef(null)
   const iframeRef = React.useRef(null)
   const containerRef = React.useRef(null)
   const urlInputRef = React.useRef(null)
-  
-  // Initialize filter position to center-bottom when expanded
-  React.useEffect(() => {
-    if (typeof window !== 'undefined' && isExpanded && filterPosition.x === 0) {
-      setFilterPosition({
-        x: window.innerWidth / 2,
-        y: 24
-      })
-    }
-  }, [isExpanded])
   
   // Build proxy URL
   const proxyUrl = url ? `/api/proxy?url=${encodeURIComponent(url)}` : null
@@ -160,7 +145,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
   }, [isDragging])
   
   return (
-    <div className={`website-viewer-wrapper ${isExpanded ? 'expanded' : ''}`}>
+    <div className="website-viewer-wrapper">
       {url && (
         <div className="viewer-header">
           {isEditingUrl ? (
@@ -227,20 +212,6 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
               <span className="btn-icon">↻</span>
             </button>
             
-            <button
-              onClick={() => {
-                const newExpanded = !isExpanded
-                setIsExpanded(newExpanded)
-                if (onExpandedChange) {
-                  onExpandedChange(newExpanded)
-                }
-              }}
-              className="control-btn"
-              aria-label={isExpanded ? 'Exit fullscreen view' : 'View in fullscreen'}
-              title={isExpanded ? 'Exit Fullscreen' : 'Fullscreen'}
-            >
-              <span className="btn-icon">{isExpanded ? '✕' : '⤢'}</span>
-            </button>
             
             {activeFilter !== 'none' && (
               <>
@@ -413,7 +384,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
       
       <div 
         ref={containerRef}
-        className={`website-viewer-container ${isExpanded ? 'expanded' : ''} ${isSplitView ? 'split-view' : ''}`}
+        className={`website-viewer-container ${isSplitView ? 'split-view' : ''}`}
         style={{ cursor: isDragging ? 'ew-resize' : 'default' }}
       >
       
@@ -552,20 +523,6 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           width: 100%;
         }
         
-        .website-viewer-wrapper.expanded {
-          position: fixed;
-          top: 20px;
-          left: 20px;
-          right: 20px;
-          bottom: 20px;
-          z-index: 1000;
-          margin: 0;
-          padding: 0;
-          overflow: hidden;
-          border-radius: var(--radius-md);
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-          background: rgba(255, 255, 255, 0.05);
-        }
         
         .website-viewer-container {
           width: 100%;
@@ -580,185 +537,10 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           flex-direction: column;
         }
         
-        .website-viewer-wrapper.expanded .website-viewer-container {
-          width: 100%;
-          height: 100%;
-          min-height: 100%;
-          border-radius: 0;
-          padding: 0;
-          margin: 0;
-        }
         
-        .expanded-filters {
-          position: fixed;
-          bottom: var(--spacing-lg);
-          left: 50%;
-          transform: translateX(-50%);
-          z-index: 1002;
-          animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          user-select: none;
-        }
         
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateX(-50%) translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-          }
-        }
         
-        .expanded-filters-header {
-          display: flex;
-          align-items: center;
-          justify-content: flex-end;
-          gap: var(--spacing-xs);
-          margin-bottom: var(--spacing-xs);
-        }
         
-        .expanded-filters-hide-btn,
-        .expanded-filters-drag-handle {
-          background: rgba(0, 0, 0, 0.6);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          border-radius: 6px;
-          color: rgba(255, 255, 255, 0.8);
-          padding: 6px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        
-        .expanded-filters-drag-handle {
-          cursor: move;
-        }
-        
-        .expanded-filters-hide-btn:hover,
-        .expanded-filters-drag-handle:hover {
-          background: rgba(0, 0, 0, 0.8);
-          border-color: rgba(255, 255, 255, 0.3);
-          color: white;
-        }
-        
-        .expanded-filters-content {
-          display: flex;
-          gap: var(--spacing-xs);
-          flex-wrap: wrap;
-          justify-content: center;
-          background: rgba(0, 0, 0, 0.85);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          border-radius: 12px;
-          padding: var(--spacing-sm);
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-          max-width: 90vw;
-        }
-        
-        .expanded-filter-item {
-          position: relative;
-          display: flex;
-          align-items: center;
-          gap: 4px;
-        }
-        
-        .expanded-filter-btn {
-          background: rgba(255, 255, 255, 0.1);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 8px;
-          color: rgba(255, 255, 255, 0.9);
-          padding: 8px 16px;
-          font-size: 0.85rem;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-          white-space: nowrap;
-        }
-        
-        .expanded-filter-btn:hover {
-          background: rgba(255, 255, 255, 0.2);
-          border-color: rgba(255, 255, 255, 0.3);
-          transform: translateY(-2px);
-        }
-        
-        .expanded-filter-btn.active {
-          background: linear-gradient(135deg, rgba(110, 198, 255, 0.3) 0%, rgba(147, 112, 219, 0.3) 100%);
-          border-color: rgba(110, 198, 255, 0.6);
-          color: white;
-          box-shadow: 0 0 20px rgba(110, 198, 255, 0.4);
-        }
-        
-        .expanded-filter-btn:active {
-          transform: translateY(0);
-        }
-        
-        .expanded-filter-info-btn {
-          position: absolute;
-          top: -4px;
-          right: -4px;
-          background: rgba(110, 198, 255, 0.2);
-          border: 1px solid rgba(110, 198, 255, 0.4);
-          border-radius: 50%;
-          width: 18px;
-          height: 18px;
-          color: rgba(110, 198, 255, 0.9);
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0;
-          opacity: 0;
-          transition: all 0.2s ease;
-        }
-        
-        .expanded-filter-item:hover .expanded-filter-info-btn {
-          opacity: 1;
-        }
-        
-        .expanded-filter-info-btn:hover {
-          background: rgba(110, 198, 255, 0.4);
-          border-color: rgba(110, 198, 255, 0.6);
-          color: white;
-          transform: scale(1.1);
-        }
-        
-        .expanded-filter-info-btn svg {
-          width: 10px;
-          height: 10px;
-        }
-        
-        .expanded-filters-show-btn {
-          position: fixed;
-          bottom: var(--spacing-lg);
-          left: 50%;
-          transform: translateX(-50%);
-          z-index: 1002;
-          background: rgba(0, 0, 0, 0.85);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          border-radius: 12px;
-          color: rgba(255, 255, 255, 0.9);
-          padding: 10px 16px;
-          font-size: 0.9rem;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-        }
-        
-        .expanded-filters-show-btn:hover {
-          background: rgba(0, 0, 0, 0.95);
-          border-color: rgba(255, 255, 255, 0.3);
-          transform: translateX(-50%) translateY(-2px);
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-        }
         
         .viewer-header {
           display: flex;
@@ -771,20 +553,6 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           z-index: 10;
         }
         
-        .website-viewer-wrapper.expanded .viewer-header {
-          position: relative;
-          flex-shrink: 0;
-          z-index: 1001;
-          margin-bottom: 0;
-          padding: var(--spacing-md);
-          background: rgba(255, 255, 255, 0.95);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-          height: 60px;
-          min-height: 60px;
-          box-sizing: border-box;
-        }
         
         .url-display {
           flex: 1;

@@ -35,7 +35,6 @@ export default function Home() {
   const [error, setError] = React.useState(null)
   const [hasLoadedSite, setHasLoadedSite] = React.useState(false)
   const [history, setHistory] = React.useState([])
-  const [isViewerExpanded, setIsViewerExpanded] = React.useState(false)
   const [selectedFilterInfo, setSelectedFilterInfo] = React.useState(null)
   
   // Load history from localStorage on mount
@@ -170,7 +169,7 @@ export default function Home() {
         {/* Main Content - Only shown after first site load */}
         {hasLoadedSite && (
           <div className="main-content">
-            <div className={`content-grid ${isViewerExpanded ? 'hide-sidebar' : ''}`}>
+            <div className="content-grid">
               {/* Left Column - Controls and Info */}
               <aside className="sidebar glass-card">
                 <ImpairmentControls
@@ -216,7 +215,6 @@ export default function Home() {
                     onFilterRemove={() => setActiveFilter('none')}
                     onFilterChange={handleFilterChange}
                     onFilterInfo={setSelectedFilterInfo}
-                    onExpandedChange={setIsViewerExpanded}
                     onChangeUrl={() => setHasLoadedSite(false)}
                     onUrlChange={handleUrlSubmit}
                     loading={loading}
