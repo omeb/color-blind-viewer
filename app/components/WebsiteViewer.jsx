@@ -359,10 +359,13 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         }
         
         .website-viewer-container.split-view {
-          height: 700px;
-          min-height: 700px;
+          height: 80vh;
+          min-height: 800px;
+          max-height: 90vh;
           border-radius: 0;
           background: transparent;
+          margin: 0;
+          width: 100%;
         }
         
         
