@@ -130,7 +130,7 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
         .history-title {
           font-size: 0.95rem;
           font-weight: 700;
-          color: rgba(255, 255, 255, 1);
+          color: rgba(255, 255, 255, 1) !important;
           margin: 0 0 12px 0;
           text-align: left;
           letter-spacing: -0.02em;
@@ -147,41 +147,46 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
           position: relative;
           display: inline-flex;
           align-items: center;
-          background: rgba(168, 153, 212, 0.4);
+          background: rgba(168, 153, 212, 0.4) !important;
           backdrop-filter: blur(10px);
           -webkit-backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 999px;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          border-radius: 999px !important;
           transition: all 0.2s ease;
+          overflow: visible;
         }
         
         .history-item:hover {
-          background: rgba(168, 153, 212, 0.5);
-          border-color: rgba(255, 255, 255, 0.3);
+          background: rgba(168, 153, 212, 0.5) !important;
+          border-color: rgba(255, 255, 255, 0.3) !important;
           transform: translateY(-1px);
         }
 
         .history-button {
           all: unset;
-          display: flex;
+          display: flex !important;
           align-items: center;
           justify-content: flex-start;
           gap: 8px;
-          color: rgba(255, 255, 255, 1);
-          padding: 8px 16px;
-          padding-right: 12px;
-          font-size: 0.9rem;
-          font-weight: 400;
+          color: rgba(255, 255, 255, 1) !important;
+          padding: 8px 16px !important;
+          padding-right: 12px !important;
+          font-size: 0.9rem !important;
+          font-weight: 400 !important;
           cursor: pointer;
           font-family: inherit;
           transition: all 0.2s ease;
           flex: 1;
           min-width: 0;
           box-sizing: border-box;
+          background: transparent !important;
+          border: none !important;
+          margin: 0 !important;
+          text-align: left !important;
         }
         
         .history-button:hover {
-          color: rgba(255, 255, 255, 1);
+          color: rgba(255, 255, 255, 1) !important;
         }
         
         .history-button:hover .history-url {
@@ -203,6 +208,7 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
           display: inline-flex;
           align-items: center;
           filter: none;
+          color: #66B2FF !important;
         }
 
         .history-url {
@@ -212,7 +218,7 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
           white-space: nowrap;
           flex-shrink: 1;
           min-width: 0;
-          color: rgba(255, 255, 255, 1);
+          color: rgba(255, 255, 255, 1) !important;
         }
 
         .history-remove {
@@ -221,8 +227,8 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
           right: 4px;
           top: 50%;
           transform: translateY(-50%);
-          background: rgba(239, 68, 68, 0.9);
-          color: white;
+          background: rgba(239, 68, 68, 0.9) !important;
+          color: white !important;
           padding: 0;
           font-size: 0.85rem;
           font-weight: 600;
@@ -237,6 +243,8 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
           height: 24px;
           z-index: 10;
           box-sizing: border-box;
+          border: none !important;
+          margin: 0 !important;
         }
 
         .history-item:hover .history-remove {
@@ -244,7 +252,7 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
         }
 
         .history-remove:hover {
-          background: rgba(220, 38, 38, 1);
+          background: rgba(220, 38, 38, 1) !important;
         }
 
         .history-remove:active {
