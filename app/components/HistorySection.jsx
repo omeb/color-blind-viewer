@@ -11,7 +11,6 @@ const EXAMPLE_SITES = [
   'https://www.airbnb.com',
   'https://www.stripe.com',
   'https://www.notion.so',
-  'https://www.canva.com',
   'https://www.unsplash.com'
 ]
 
@@ -45,9 +44,6 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
     return historyArray.filter(url => !EXAMPLE_SITES.includes(url))
   }, [historyArray])
   
-  // Always show examples, and show recent sites if they exist
-  const sitesToShow = [...filteredHistory, ...EXAMPLE_SITES]
-  
   // Extract domain name from URL for display
   const getDisplayUrl = (url) => {
     try {
@@ -63,50 +59,68 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
     }
   }
   
-  // Check if a URL is an example site (not in recent history)
-  const isExampleSite = (url) => EXAMPLE_SITES.includes(url)
+  // Render a single site item
+  const renderSiteItem = (url, index, isExample = false) => (
+    <div key={`${url}-${index}`} className="history-item">
+      <button
+        onClick={() => onSelectUrl(url)}
+        className="history-button"
+        title={`Load ${url}`}
+      >
+        <span className="history-icon">🌐</span>
+        <span className="history-url">{getDisplayUrl(url)}</span>
+      </button>
+      {!isExample && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onRemoveUrl(url)
+          }}
+          className="history-remove"
+          aria-label={`Remove ${url} from history`}
+          title="Remove from history"
+        >
+          ✕
+        </button>
+      )}
+    </div>
+  )
   
   return (
     <div className="history-section">
-      <div className="history-header">
-        <h3 className="history-title">
-          {filteredHistory.length > 0 ? 'Recent & Example Sites' : 'Example Sites'}
-        </h3>
-      </div>
-      <div className="history-list">
-        {sitesToShow.map((url, index) => {
-          const isExample = isExampleSite(url)
-          return (
-            <div key={`${url}-${index}`} className="history-item">
-              <button
-                onClick={() => onSelectUrl(url)}
-                className="history-button"
-                title={`Load ${url}`}
-              >
-                <span className="history-icon">🌐</span>
-                <span className="history-url">{getDisplayUrl(url)}</span>
-              </button>
-              {!isExample && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onRemoveUrl(url)
-                  }}
-                  className="history-remove"
-                  aria-label={`Remove ${url} from history`}
-                  title="Remove from history"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          )
-        })}
+      {/* Recent Sites Section */}
+      {filteredHistory.length > 0 && (
+        <div className="history-group">
+          <div className="history-header">
+            <h3 className="history-title">Recent Sites</h3>
+          </div>
+          <div className="history-list">
+            {filteredHistory.map((url, index) => renderSiteItem(url, index, false))}
+          </div>
+        </div>
+      )}
+      
+      {/* Example Sites Section */}
+      <div className="history-group">
+        <div className="history-header">
+          <h3 className="history-title">Example Sites</h3>
+        </div>
+        <div className="history-list">
+          {EXAMPLE_SITES.map((url, index) => renderSiteItem(url, index, true))}
+        </div>
       </div>
 
       <style jsx>{`
         .history-section {
           margin-top: var(--spacing-lg);
+        }
+
+        .history-group {
+          margin-bottom: var(--spacing-lg);
+        }
+
+        .history-group:last-child {
+          margin-bottom: 0;
         }
 
         .history-header {
