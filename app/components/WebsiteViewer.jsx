@@ -358,6 +358,13 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           flex-direction: column;
         }
         
+        .website-viewer-container.split-view {
+          height: 700px;
+          min-height: 700px;
+          border-radius: 0;
+          background: transparent;
+        }
+        
         
         
         
@@ -1038,6 +1045,9 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           flex: 1;
           position: relative;
           display: flex;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: var(--radius-md);
+          overflow: hidden;
         }
         
         .split-pane {
