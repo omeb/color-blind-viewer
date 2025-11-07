@@ -982,6 +982,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         
         .website-viewer-container {
           width: 100%;
+          max-width: 100%;
           flex: 1;
           min-height: 600px;
           background: rgba(255, 255, 255, 0.05);
@@ -993,6 +994,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           flex-direction: column;
           /* Prevent layout shifts */
           contain: layout style;
+          min-width: 0;
         }
         
         .website-viewer-container.split-view {
@@ -1012,12 +1014,15 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           flex-wrap: wrap;
           position: relative;
           z-index: 10;
+          min-width: 0;
+          max-width: 100%;
         }
         
         
         .url-display {
           flex: 1;
           min-width: 200px;
+          max-width: 100%;
           display: flex;
           align-items: center;
           gap: 8px;
@@ -1029,6 +1034,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           padding: 8px 12px;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          min-width: 0;
+          overflow: hidden;
         }
         
         .url-display.clickable {
@@ -1049,9 +1056,12 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         .url-edit-form {
           flex: 1;
           min-width: 200px;
+          max-width: 100%;
           display: flex;
           align-items: center;
           gap: 8px;
+          min-width: 0;
+        }
           background: rgba(255, 255, 255, 0.95);
           backdrop-filter: blur(10px);
           -webkit-backdrop-filter: blur(10px);
@@ -1286,11 +1296,13 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         .quick-filters {
           margin-bottom: var(--spacing-sm);
           width: 100%;
+          max-width: 100%;
           overflow-x: auto;
           overflow-y: hidden;
           -webkit-overflow-scrolling: touch;
           scrollbar-width: thin;
           scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+          min-width: 0;
         }
         
         .quick-filters::-webkit-scrollbar {
@@ -1310,7 +1322,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           display: flex;
           gap: 8px;
           padding-bottom: 4px;
-          min-width: fit-content;
+          min-width: 0;
         }
         
         .quick-filter-btn {
