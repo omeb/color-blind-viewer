@@ -62,23 +62,6 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
     }
   }, [isDragging])
   
-  // Screenshot function
-  const handleScreenshot = async () => {
-    if (!iframeRef.current) return
-    
-    try {
-      // Since we can't directly capture iframe content due to CORS,
-      // we'll capture the container with the filter applied
-      const container = containerRef.current
-      if (!container) return
-      
-      // Use html2canvas if available, or fall back to a simple approach
-      alert('Screenshot feature coming soon! For now, use your browser\'s screenshot tool (Cmd/Ctrl + Shift + S)')
-    } catch (err) {
-      console.error('Screenshot failed:', err)
-    }
-  }
-  
   return (
     <div 
       ref={containerRef}
@@ -93,7 +76,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
             aria-label={isExpanded ? 'Exit fullscreen view' : 'View in fullscreen'}
             title={isExpanded ? 'Exit Fullscreen' : 'Fullscreen'}
           >
-            {isExpanded ? '✕' : '⤢'}
+            <span className="btn-icon">{isExpanded ? '✕' : '⤢'}</span>
           </button>
           
           {activeFilter !== 'none' && (
@@ -104,7 +87,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
                 aria-label={isSplitView ? 'Exit split view' : 'Compare side-by-side'}
                 title={isSplitView ? 'Exit Split View' : 'Compare Side-by-Side'}
               >
-                {isSplitView ? '◫' : '◧'}
+                <span className="btn-icon">{isSplitView ? '◫' : '◧'}</span>
               </button>
               
               <button
@@ -113,19 +96,11 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
                 aria-label="Remove filter"
                 title="Remove Filter"
               >
-                ✕ Filter
+                <span className="btn-icon">✕</span>
+                <span className="btn-text">Filter</span>
               </button>
             </>
           )}
-          
-          <button
-            onClick={handleScreenshot}
-            className="control-btn"
-            aria-label="Take screenshot"
-            title="Screenshot"
-          >
-            📷
-          </button>
         </div>
       )}
       
@@ -248,39 +223,66 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         
         .viewer-controls {
           position: absolute;
-          top: var(--spacing-sm);
-          right: var(--spacing-sm);
+          top: var(--spacing-md);
+          right: var(--spacing-md);
           z-index: 10;
           display: flex;
           gap: var(--spacing-xs);
+          flex-wrap: wrap;
         }
         
         .control-btn {
-          background: rgba(0, 0, 0, 0.7);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          border-radius: var(--radius-sm);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(0, 0, 0, 0.85);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          border-radius: 8px;
           color: white;
-          padding: var(--spacing-sm) var(--spacing-md);
-          font-size: 1rem;
+          padding: 10px 14px;
+          font-size: 0.9rem;
+          font-weight: 500;
           cursor: pointer;
-          transition: all var(--transition-fast);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           white-space: nowrap;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
         
         .control-btn:hover {
-          background: rgba(0, 0, 0, 0.9);
+          background: rgba(0, 0, 0, 0.95);
+          border-color: rgba(255, 255, 255, 0.3);
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+        }
+        
+        .control-btn:active {
+          transform: translateY(0);
+        }
+        
+        .btn-icon {
+          font-size: 1.1rem;
+          line-height: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .btn-text {
+          font-size: 0.85rem;
+          letter-spacing: 0.3px;
         }
         
         .remove-filter-btn {
-          background: rgba(255, 107, 107, 0.8);
-          border-color: rgba(255, 107, 107, 0.5);
+          background: linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(220, 38, 38, 0.9) 100%);
+          border-color: rgba(255, 255, 255, 0.2);
         }
         
         .remove-filter-btn:hover {
-          background: rgba(255, 107, 107, 1);
+          background: linear-gradient(135deg, rgba(239, 68, 68, 1) 0%, rgba(220, 38, 38, 1) 100%);
+          border-color: rgba(255, 255, 255, 0.4);
+          box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
         }
         
         .empty-state {
