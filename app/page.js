@@ -200,9 +200,6 @@ export default function Home() {
     
     if (activeFilter && activeFilter !== 'none') {
       newParams.set('filter', activeFilter)
-    } else if (activeFilter === 'tritanopia') {
-      // Set tritanopia as default in URL if no other filter is set
-      newParams.set('filter', 'tritanopia')
     }
     
     if (isSplitView) {
@@ -245,7 +242,7 @@ export default function Home() {
     // Clear all state
     setLoadedUrl('')
     setHasLoadedSite(false)
-    setActiveFilter('none')
+    setActiveFilter('tritanopia')
     setIsSplitView(true)
     setTargetUrl('')
     setUrlInputValue('')
