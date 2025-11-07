@@ -1079,10 +1079,11 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         .quick-filters {
           margin-top: var(--spacing-md);
           margin-bottom: var(--spacing-sm);
+          padding-top: 4px;
           width: 100%;
           max-width: 100%;
           overflow-x: auto;
-          overflow-y: hidden;
+          overflow-y: visible;
           -webkit-overflow-scrolling: touch;
           scrollbar-width: thin;
           scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
@@ -1109,6 +1110,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           display: flex;
           gap: 12px;
           padding-bottom: 4px;
+          padding-top: 4px;
           min-width: 0;
           flex: 1;
         }
@@ -1128,12 +1130,13 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           transition: all 0.2s ease;
           white-space: nowrap;
           outline-offset: 2px;
+          position: relative;
         }
         
         .quick-filter-btn:hover {
           background: rgba(255, 255, 255, 0.15);
           border-color: rgba(255, 255, 255, 0.3);
-          transform: translateY(-1px);
+          transform: translateY(-2px);
         }
         
         .quick-filter-btn.active {
