@@ -16,17 +16,29 @@ export default function DarkModeToggle() {
 
   // Initialize theme from localStorage or system preference
   React.useEffect(() => {
-    setMounted(true)
+    const root = document.documentElement
+    
+    // Apply theme immediately to prevent flash
     const savedTheme = localStorage.getItem('colorblind-viewer-theme')
+    let initialTheme = 'auto'
+    
     if (savedTheme && ['auto', 'light', 'dark'].includes(savedTheme)) {
-      setTheme(savedTheme)
-    } else {
-      // Default to auto if no preference saved
-      setTheme('auto')
+      initialTheme = savedTheme
     }
+    
+    // Apply theme immediately before React state updates
+    if (initialTheme === 'auto') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      root.setAttribute('data-theme', prefersDark ? 'dark' : 'light')
+    } else {
+      root.setAttribute('data-theme', initialTheme)
+    }
+    
+    setTheme(initialTheme)
+    setMounted(true)
   }, [])
 
-  // Apply theme to document
+  // Apply theme to document when theme changes
   React.useEffect(() => {
     if (!mounted) return
 

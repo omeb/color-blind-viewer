@@ -94,6 +94,29 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
+        {/* Apply theme immediately to prevent flash */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const savedTheme = localStorage.getItem('colorblind-viewer-theme');
+                  let theme = savedTheme || 'auto';
+                  
+                  if (theme === 'auto') {
+                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+                  } else {
+                    document.documentElement.setAttribute('data-theme', theme);
+                  }
+                } catch (e) {
+                  // Fallback to light if localStorage fails
+                  document.documentElement.setAttribute('data-theme', 'light');
+                }
+              })();
+            `,
+          }}
+        />
         {/* Structured Data for SEO */}
         <script
           type="application/ld+json"
