@@ -41,9 +41,10 @@ function getFilterExplanation(filterId) {
 
 export default function Home() {
   const [targetUrl, setTargetUrl] = React.useState('')
+  const [urlInputValue, setUrlInputValue] = React.useState('')
   const [loadedUrl, setLoadedUrl] = React.useState('')
   const [activeFilter, setActiveFilter] = React.useState('none')
-  const [isSplitView, setIsSplitView] = React.useState(false)
+  const [isSplitView, setIsSplitView] = React.useState(true)
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState(null)
   const [hasLoadedSite, setHasLoadedSite] = React.useState(false)
@@ -241,6 +242,7 @@ export default function Home() {
     setActiveFilter('none')
     setIsSplitView(false)
     setTargetUrl('')
+    setUrlInputValue('')
     setError(null)
     
     // Clear URL query params
@@ -312,10 +314,19 @@ export default function Home() {
               </p>
               
               <div className="url-input-section">
-                <UrlInput onSubmit={handleUrlSubmit} loading={loading} />
+                <UrlInput 
+                  onSubmit={handleUrlSubmit} 
+                  loading={loading}
+                  value={urlInputValue}
+                  onValueChange={setUrlInputValue}
+                />
                 <HistorySection
                   history={history}
-                  onSelectUrl={handleUrlSubmit}
+                  onSelectUrl={(url) => {
+                    // Populate the input field and submit
+                    setUrlInputValue(url)
+                    handleUrlSubmit(url)
+                  }}
                   onRemoveUrl={removeFromHistory}
                 />
               </div>
@@ -618,12 +629,12 @@ export default function Home() {
         .hero-subtitle {
           font-size: 1.25rem;
           margin-bottom: calc(var(--spacing-xl) * 1.5);
-          opacity: 0.95;
+          color: rgba(255, 255, 255, 1);
           line-height: 1.6;
         }
         
         .hero-subtitle .highlight {
-          color: #6EC6FF;
+          color: #B0E0E6;
           font-weight: 600;
         }
         
