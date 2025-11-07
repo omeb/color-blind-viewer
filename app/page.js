@@ -378,6 +378,41 @@ export default function Home() {
             <DarkModeToggle />
           </div>
           
+          {/* Quick Filter Buttons - Floating next to dark mode toggle */}
+          {hasLoadedSite && (
+            <div className="filter-buttons-wrapper">
+              <div className="filter-buttons-container">
+                <button
+                  onClick={() => handleFilterChange('none')}
+                  className={`filter-button ${activeFilter === 'none' ? 'active' : ''}`}
+                  title="No filter"
+                >
+                  None
+                </button>
+                {getCategorizedFilters().colorblind.map((filter) => (
+                  <button
+                    key={filter.id}
+                    onClick={() => handleFilterChange(filter.id)}
+                    className={`filter-button ${activeFilter === filter.id ? 'active' : ''}`}
+                    title={filter.name}
+                  >
+                    {filter.name}
+                  </button>
+                ))}
+                {getCategorizedFilters().other.map((filter) => (
+                  <button
+                    key={filter.id}
+                    onClick={() => handleFilterChange(filter.id)}
+                    className={`filter-button ${activeFilter === filter.id ? 'active' : ''}`}
+                    title={filter.name}
+                  >
+                    {filter.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          
           <main id="main-content" className={`app-container ${hasLoadedSite ? 'has-content' : 'initial-view'}`}>
         {/* Hero Section - Only shown initially */}
         {!hasLoadedSite && (
