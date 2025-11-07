@@ -536,47 +536,32 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: var(--spacing-sm);
+          gap: var(--spacing-xs);
         }
         
         .footer-title {
-          font-size: 1.2rem;
+          font-size: 1.1rem;
           font-weight: 600;
           margin: 0;
           color: rgba(255, 255, 255, 0.95);
           letter-spacing: -0.01em;
         }
         
-        .footer-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          color: #6EC6FF;
+        .footer-link-inline {
+          color: rgba(110, 198, 255, 0.9);
           text-decoration: none;
-          font-size: 0.9rem;
-          font-weight: 500;
-          padding: var(--spacing-xs) var(--spacing-sm);
-          border-radius: 6px;
-          background: rgba(110, 198, 255, 0.08);
-          border: 1px solid rgba(110, 198, 255, 0.15);
-          transition: all var(--transition-fast);
+          font-size: 0.85rem;
+          transition: opacity var(--transition-fast);
         }
         
-        .footer-link:hover {
-          background: rgba(110, 198, 255, 0.15);
-          border-color: rgba(110, 198, 255, 0.3);
-          transform: translateY(-1px);
-          box-shadow: 0 2px 8px rgba(110, 198, 255, 0.2);
-        }
-        
-        .footer-link-icon {
-          font-size: 0.7rem;
+        .footer-link-inline:hover {
+          opacity: 0.7;
         }
         
         .footer-divider {
-          width: 50px;
+          width: 40px;
           height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
           margin: var(--spacing-xs) auto;
         }
         
