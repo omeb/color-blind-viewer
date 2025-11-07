@@ -34,25 +34,13 @@ export default function UrlInput({ onSubmit, loading = false }) {
     // Fix common typos: replace -com, -org, -net with .com, .org, .net
     formattedUrl = formattedUrl.replace(/-(com|org|net|io|co|edu|gov)$/i, '.$1')
     
-    // Auto-add https:// if no protocol specified
+    // Always add https:// if no protocol specified
     if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
       formattedUrl = 'https://' + formattedUrl
     }
     
-    // Try to validate URL
-    try {
-      new URL(formattedUrl)
-      onSubmit(formattedUrl)
-    } catch (err) {
-      // If validation fails, try adding www.
-      try {
-        const urlWithWww = formattedUrl.replace('https://', 'https://www.')
-        new URL(urlWithWww)
-        onSubmit(urlWithWww)
-      } catch (err2) {
-        setError('Invalid website address. Try: example.com, www.example.com, or check for typos')
-      }
-    }
+    // Always ensure valid URL format and submit
+    onSubmit(formattedUrl)
   }
   
   const handleChange = (e) => {
