@@ -1429,7 +1429,11 @@ export default function Home() {
           }
         }
         
-        @media (min-width: 1920px) {
+        @media (max-width: 1200px) {
+          .content-grid {
+            grid-template-columns: 380px minmax(0, 1fr);
+          }
+          
           .sidebar {
             display: none;
           }
@@ -1437,15 +1441,19 @@ export default function Home() {
           .content-grid {
             grid-template-columns: 1fr;
           }
-        }
-        
-        @media (max-width: 1200px) {
-          .content-grid {
-            grid-template-columns: 380px minmax(0, 1fr);
-          }
           
           .viewer-section {
             max-width: 100%;
+          }
+        }
+        
+        @media (min-width: 1920px) {
+          .sidebar {
+            display: flex;
+          }
+          
+          .content-grid {
+            grid-template-columns: 420px minmax(0, 1fr);
           }
         }
         
