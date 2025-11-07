@@ -69,20 +69,11 @@ function injectBaseTag(html, baseUrl) {
   cleanedHtml = cleanedHtml.replace(/<[^>]*class\s*=\s*["'][^"']*screen-reader[^"']*["'][^>]*>.*?<\/[^>]*>/gi, '')
   cleanedHtml = cleanedHtml.replace(/<[^>]*class\s*=\s*["'][^"']*visually-hidden[^"']*["'][^>]*>.*?<\/[^>]*>/gi, '')
   
-  // CSS to hide only skip navigation links
+  // CSS to hide ONLY the specific skip link
   const hideSkipLinksCSS = `
     <style>
-      /* Hide only skip navigation links, not all links */
-      body a[href="#main-content"] {
-        visibility: hidden !important;
-      }
-      body a[class*="skip-link"] {
-        visibility: hidden !important;
-      }
-      body a[class*="skip"] {
-        visibility: hidden !important;
-      }
-      body .skip-link {
+      /* Hide only the specific skip to main content link */
+      a[href="#main-content"][class*="skip-link"] {
         visibility: hidden !important;
       }
     </style>
