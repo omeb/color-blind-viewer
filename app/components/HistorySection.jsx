@@ -24,12 +24,11 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
     'https://www.airbnb.com',
     'https://www.stripe.com',
     'https://www.notion.so',
-    'https://www.figma.com',
     'https://www.canva.com',
     'https://www.unsplash.com'
   ]
   
-  // Ensure history is an array and show examples if empty
+  // Ensure history is an array
   // Handle cases where history might be null, undefined, or not an array
   const historyArray = React.useMemo(() => {
     if (!history) return []
@@ -38,8 +37,14 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
     return history.filter(url => url && typeof url === 'string' && url.trim().length > 0)
   }, [history])
   
-  const sitesToShow = historyArray.length > 0 ? historyArray : exampleSites
-  const isShowingExamples = historyArray.length === 0
+  // Filter out example sites from history to avoid duplicates
+  const filteredHistory = React.useMemo(() => {
+    return historyArray.filter(url => !exampleSites.includes(url))
+  }, [historyArray, exampleSites])
+  
+  // Always show examples, and show recent sites if they exist
+  const sitesToShow = [...filteredHistory, ...exampleSites]
+  const isShowingExamples = true // Always show examples
   
   // Extract domain name from URL for display
   const getDisplayUrl = (url) => {
@@ -56,37 +61,45 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
     }
   }
   
+  // Check if a URL is an example site (not in recent history)
+  const isExampleSite = (url) => exampleSites.includes(url)
+  
   return (
     <div className="history-section">
       <div className="history-header">
-        <h3 className="history-title">{isShowingExamples ? 'Example Sites' : 'Recent Sites'}</h3>
+        <h3 className="history-title">
+          {filteredHistory.length > 0 ? 'Recent & Example Sites' : 'Example Sites'}
+        </h3>
       </div>
       <div className="history-list">
-        {sitesToShow.map((url, index) => (
-          <div key={`${url}-${index}`} className="history-item">
-            <button
-              onClick={() => onSelectUrl(url)}
-              className="history-button"
-              title={`Load ${url}`}
-            >
-              <span className="history-icon">🌐</span>
-              <span className="history-url">{getDisplayUrl(url)}</span>
-            </button>
-            {!isShowingExamples && (
+        {sitesToShow.map((url, index) => {
+          const isExample = isExampleSite(url)
+          return (
+            <div key={`${url}-${index}`} className="history-item">
               <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onRemoveUrl(url)
-                }}
-                className="history-remove"
-                aria-label={`Remove ${url} from history`}
-                title="Remove from history"
+                onClick={() => onSelectUrl(url)}
+                className="history-button"
+                title={`Load ${url}`}
               >
-                ✕
+                <span className="history-icon">🌐</span>
+                <span className="history-url">{getDisplayUrl(url)}</span>
               </button>
-            )}
-          </div>
-        ))}
+              {!isExample && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onRemoveUrl(url)
+                  }}
+                  className="history-remove"
+                  aria-label={`Remove ${url} from history`}
+                  title="Remove from history"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          )
+        })}
       </div>
 
       <style jsx>{`
