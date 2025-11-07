@@ -1283,6 +1283,80 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           flex-wrap: wrap;
         }
         
+        .quick-filters {
+          margin-bottom: var(--spacing-sm);
+          width: 100%;
+          overflow-x: auto;
+          overflow-y: hidden;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+        }
+        
+        .quick-filters::-webkit-scrollbar {
+          height: 4px;
+        }
+        
+        .quick-filters::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        
+        .quick-filters::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 2px;
+        }
+        
+        .quick-filters-scroll {
+          display: flex;
+          gap: 8px;
+          padding-bottom: 4px;
+          min-width: fit-content;
+        }
+        
+        .quick-filter-btn {
+          flex-shrink: 0;
+          padding: 6px 12px;
+          font-size: 0.75rem;
+          font-weight: 500;
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 16px;
+          color: rgba(255, 255, 255, 0.9);
+          cursor: pointer;
+          transition: all 0.2s ease;
+          white-space: nowrap;
+        }
+        
+        .quick-filter-btn:hover {
+          background: rgba(255, 255, 255, 0.15);
+          border-color: rgba(255, 255, 255, 0.3);
+          transform: translateY(-1px);
+        }
+        
+        .quick-filter-btn.active {
+          background: rgba(110, 198, 255, 0.3);
+          border-color: rgba(110, 198, 255, 0.6);
+          color: rgba(255, 255, 255, 1);
+          box-shadow: 0 2px 8px rgba(110, 198, 255, 0.3);
+        }
+        
+        .quick-filter-btn:active {
+          transform: translateY(0);
+        }
+        
+        @media (max-width: 768px) {
+          .quick-filters {
+            margin-bottom: var(--spacing-xs);
+          }
+          
+          .quick-filter-btn {
+            padding: 5px 10px;
+            font-size: 0.7rem;
+          }
+        }
+        
         .control-btn {
           display: flex;
           align-items: center;
