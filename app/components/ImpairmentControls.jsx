@@ -104,16 +104,6 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
         </div>
       </div>
       
-      {activeFilter !== 'none' && (
-        <button
-          onClick={() => onFilterChange('none')}
-          className="reset-btn"
-          aria-label="Clear active filter"
-        >
-          Clear Filter
-        </button>
-      )}
-      
       <style jsx>{`
         .impairment-controls {
           width: 100%;
@@ -237,23 +227,6 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
         .filter-info-btn-external svg {
           width: 12px;
           height: 12px;
-        }
-        
-        .reset-btn {
-          width: 100%;
-          padding: var(--spacing-md);
-          background: rgba(255, 107, 107, 0.2);
-          border: 2px solid rgba(255, 107, 107, 0.4);
-          border-radius: var(--radius-sm);
-          color: white;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all var(--transition-normal);
-        }
-        
-        .reset-btn:hover {
-          background: rgba(255, 107, 107, 0.3);
-          border-color: rgba(255, 107, 107, 0.6);
         }
         
         @media (max-width: 768px) {

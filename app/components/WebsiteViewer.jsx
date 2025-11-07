@@ -279,14 +279,26 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
             
             
             {activeFilter !== 'none' && (
-              <button
-                onClick={() => setIsSplitView(!isSplitView)}
-                className="control-btn"
-                aria-label={isSplitView ? 'Exit split view' : 'Compare side-by-side'}
-                title={isSplitView ? 'Exit Split View' : 'Compare Side-by-Side'}
-              >
-                <span className="btn-icon">{isSplitView ? '◫' : '◧'}</span>
-              </button>
+              <>
+                <button
+                  onClick={() => setIsSplitView(!isSplitView)}
+                  className="control-btn"
+                  aria-label={isSplitView ? 'Exit split view' : 'Compare side-by-side'}
+                  title={isSplitView ? 'Exit Split View' : 'Compare Side-by-Side'}
+                >
+                  <span className="btn-icon">{isSplitView ? '◫' : '◧'}</span>
+                </button>
+                
+                <button
+                  onClick={onFilterRemove}
+                  className="control-btn remove-filter-btn"
+                  aria-label="Remove filter"
+                  title="Remove Filter"
+                >
+                  <span className="btn-icon">✕</span>
+                  <span className="btn-text">Filter</span>
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -764,6 +776,17 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         .btn-text {
           font-size: 0.85rem;
           letter-spacing: 0.3px;
+        }
+        
+        .remove-filter-btn {
+          background: linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(220, 38, 38, 0.9) 100%);
+          border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .remove-filter-btn:hover {
+          background: linear-gradient(135deg, rgba(239, 68, 68, 1) 0%, rgba(220, 38, 38, 1) 100%);
+          border-color: rgba(255, 255, 255, 0.4);
+          box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
         }
         
         .empty-state {
