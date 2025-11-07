@@ -230,6 +230,13 @@ export default function Home() {
             </p>
           </div>
         </footer>
+        
+        {/* Filter Info Modal */}
+        <FilterInfoModal
+          filterId={selectedFilterInfo}
+          isOpen={selectedFilterInfo !== null}
+          onClose={() => setSelectedFilterInfo(null)}
+        />
       </main>
       
       <style jsx>{`
