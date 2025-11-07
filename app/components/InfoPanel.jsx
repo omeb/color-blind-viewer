@@ -192,7 +192,7 @@ export default function InfoPanel({ activeFilter = 'none', showHeader = true, on
         }
         
         .panel-content {
-          padding: 0 var(--spacing-md) var(--spacing-md);
+          padding: ${showHeader ? '0 var(--spacing-md) var(--spacing-md)' : 'var(--spacing-md)'};
           color: var(--text-light);
         }
         
