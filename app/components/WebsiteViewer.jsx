@@ -241,6 +241,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
             height: Math.max(originalDoc.body.scrollHeight, originalIframe.offsetHeight),
           })
           
+          // Capture filtered iframe content
           filteredCanvas = await html2canvas(filteredDoc.body, {
             backgroundColor: '#ffffff',
             useCORS: true,
@@ -250,6 +251,66 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
             width: filteredIframe.offsetWidth,
             height: Math.max(filteredDoc.body.scrollHeight, filteredIframe.offsetHeight),
           })
+          
+          // Apply the filter to the filtered canvas
+          const filterStyle = getFilterStyle(activeFilter)
+          if (filterStyle && filterStyle !== 'none') {
+            // Create a temporary canvas to apply the filter
+            const tempCanvas = document.createElement('canvas')
+            tempCanvas.width = filteredCanvas.width
+            tempCanvas.height = filteredCanvas.height
+            const tempCtx = tempCanvas.getContext('2d')
+            
+            // Apply CSS filter using canvas filter property (if supported) or manual processing
+            // For SVG filters, we need to use a different approach
+            if (filterStyle.startsWith('url(')) {
+              // SVG filter - create a wrapper and apply it
+              const wrapper = document.createElement('div')
+              wrapper.style.filter = filterStyle
+              wrapper.style.width = filteredCanvas.width + 'px'
+              wrapper.style.height = filteredCanvas.height + 'px'
+              wrapper.style.position = 'absolute'
+              wrapper.style.left = '-9999px'
+              document.body.appendChild(wrapper)
+              
+              const img = document.createElement('img')
+              img.src = filteredCanvas.toDataURL()
+              img.style.width = '100%'
+              img.style.height = '100%'
+              wrapper.appendChild(img)
+              
+              // Wait for image to load and capture the wrapper
+              await new Promise((resolve) => {
+                img.onload = () => {
+                  setTimeout(() => {
+                    html2canvas(wrapper, {
+                      backgroundColor: '#ffffff',
+                      useCORS: true,
+                      allowTaint: true,
+                      scale: 2,
+                      logging: false,
+                    }).then((canvas) => {
+                      filteredCanvas = canvas
+                      document.body.removeChild(wrapper)
+                      resolve()
+                    }).catch(() => {
+                      document.body.removeChild(wrapper)
+                      resolve()
+                    })
+                  }, 100)
+                }
+                img.onerror = () => {
+                  document.body.removeChild(wrapper)
+                  resolve()
+                }
+              })
+            } else {
+              // CSS filter - apply directly to canvas context
+              tempCtx.filter = filterStyle
+              tempCtx.drawImage(filteredCanvas, 0, 0)
+              filteredCanvas = tempCanvas
+            }
+          }
         }
       } catch (e) {
         console.warn('Could not access iframe content directly, trying alternative method:', e)
