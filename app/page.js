@@ -234,7 +234,11 @@ export default function Home() {
                           </span>
                           {showFilterPopover && (
                             <div className="filter-popover">
-                              <InfoPanel activeFilter={activeFilter} />
+                              <InfoPanel 
+                                activeFilter={activeFilter} 
+                                showHeader={false}
+                                onClose={() => setShowFilterPopover(false)}
+                              />
                             </div>
                           )}
                         </div>

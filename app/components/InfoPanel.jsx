@@ -11,8 +11,10 @@ import { getFilter } from '../lib/filters'
  * 
  * @param {Object} props
  * @param {string} props.activeFilter - Currently active filter ID
+ * @param {boolean} props.showHeader - Whether to show the collapsible header (default: true)
+ * @param {Function} props.onClose - Optional callback when close button is clicked
  */
-export default function InfoPanel({ activeFilter = 'none' }) {
+export default function InfoPanel({ activeFilter = 'none', showHeader = true, onClose }) {
   const [isExpanded, setIsExpanded] = React.useState(true)
   const filter = getFilter(activeFilter)
   
@@ -22,19 +24,35 @@ export default function InfoPanel({ activeFilter = 'none' }) {
   
   return (
     <div className="info-panel">
-      <button
-        onClick={toggleExpanded}
-        className="panel-toggle"
-        aria-expanded={isExpanded}
-        aria-controls="panel-content"
-      >
-        <h3>About Vision Impairments</h3>
-        <span className="toggle-icon" aria-hidden="true">
-          {isExpanded ? '−' : '+'}
-        </span>
-      </button>
+      {showHeader ? (
+        <button
+          onClick={toggleExpanded}
+          className="panel-toggle"
+          aria-expanded={isExpanded}
+          aria-controls="panel-content"
+        >
+          <h3>About Vision Impairments</h3>
+          <span className="toggle-icon" aria-hidden="true">
+            {isExpanded ? '−' : '+'}
+          </span>
+        </button>
+      ) : (
+        <div className="panel-header-popover">
+          <h3>About Vision Impairments</h3>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="panel-close-btn"
+              aria-label="Close"
+              title="Close"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      )}
       
-      {isExpanded && (
+      {(showHeader ? isExpanded : true) && (
         <div id="panel-content" className="panel-content">
           {activeFilter !== 'none' && filter ? (
             <div className="active-filter-info">
@@ -130,6 +148,41 @@ export default function InfoPanel({ activeFilter = 'none' }) {
         .panel-toggle h3 {
           margin: 0;
           font-size: 1.25rem;
+        }
+        
+        .panel-header-popover {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: var(--spacing-md);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          margin-bottom: var(--spacing-md);
+        }
+        
+        .panel-header-popover h3 {
+          margin: 0;
+          font-size: 1.25rem;
+          color: var(--text-light);
+        }
+        
+        .panel-close-btn {
+          background: transparent;
+          border: none;
+          color: rgba(255, 255, 255, 0.7);
+          cursor: pointer;
+          font-size: 1.5rem;
+          line-height: 1;
+          padding: 4px 8px;
+          border-radius: var(--radius-sm);
+          transition: all var(--transition-fast);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .panel-close-btn:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: white;
         }
         
         .toggle-icon {
