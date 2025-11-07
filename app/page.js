@@ -1092,9 +1092,7 @@ export default function Home() {
         }
         
         .filter-info-popover {
-          position: absolute;
-          top: calc(100% + var(--spacing-sm));
-          right: 0;
+          position: fixed;
           width: 400px;
           max-width: 90vw;
           max-height: calc(100vh - 200px);
