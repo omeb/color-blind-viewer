@@ -77,7 +77,7 @@ function injectBaseTag(html, baseUrl) {
 export async function GET(request) {
   try {
     // Get URL from query parameters
-    const searchParams = request.nextUrl.searchParams
+    const { searchParams } = new URL(request.url)
     const targetUrl = searchParams.get('url')
     
     // Validate URL
