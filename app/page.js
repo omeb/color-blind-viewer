@@ -272,15 +272,6 @@ export default function Home() {
           <div className="glass-card footer-content">
             <div className="footer-main">
               <h3 className="footer-title">Making the web accessible for everyone</h3>
-              <a 
-                href="https://github.com/omeb/color-blind-viewer" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="footer-link"
-              >
-                <span className="footer-link-icon">🔗</span>
-                Open Source on GitHub
-              </a>
             </div>
             
             <div className="footer-divider"></div>
@@ -291,6 +282,15 @@ export default function Home() {
               </p>
               <p className="footer-love">
                 Made with <span className="heart">❤️</span> by the Wix Accessibility team
+                {' · '}
+                <a 
+                  href="https://github.com/omeb/color-blind-viewer" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="footer-link-inline"
+                >
+                  Open Source
+                </a>
               </p>
             </div>
           </div>
