@@ -703,7 +703,7 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           min-width: 0;
-          max-width: 100%;
+          max-width: 900px;
         }
         
         .viewer-section .glass-card {
