@@ -147,23 +147,19 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
           position: relative;
           display: inline-flex;
           align-items: stretch;
-          background: rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          border-radius: 12px;
+          background: rgba(168, 153, 212, 0.4);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 999px;
           overflow: hidden;
-          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1),
-                      0 2px 4px rgba(0, 0, 0, 0.05);
+          transition: all 0.2s ease;
         }
         
         .history-item:hover {
-          background: rgba(255, 255, 255, 0.25);
-          border-color: rgba(255, 255, 255, 0.4);
-          transform: translateY(-2px);
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15),
-                      0 4px 8px rgba(0, 0, 0, 0.1);
+          background: rgba(168, 153, 212, 0.5);
+          border-color: rgba(255, 255, 255, 0.3);
+          transform: translateY(-1px);
         }
 
         .history-button {
@@ -173,10 +169,10 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
           gap: 8px;
           background: none;
           border: none;
-          color: rgba(255, 255, 255, 0.95);
-          padding: 10px 16px;
+          color: rgba(255, 255, 255, 1);
+          padding: 8px 16px;
           font-size: 0.9rem;
-          font-weight: 500;
+          font-weight: 400;
           cursor: pointer;
           font-family: inherit;
           transition: all 0.2s ease;
@@ -190,14 +186,14 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
         
         .history-button:hover .history-url {
           text-decoration: underline;
-          text-decoration-thickness: 2px;
-          text-underline-offset: 3px;
+          text-decoration-thickness: 1.5px;
+          text-underline-offset: 2px;
         }
         
         .history-button:focus-visible {
           outline: 2px solid rgba(255, 255, 255, 0.8);
           outline-offset: 2px;
-          border-radius: 4px;
+          border-radius: 999px;
         }
 
         .history-icon {
@@ -206,7 +202,7 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
           flex-shrink: 0;
           display: inline-flex;
           align-items: center;
-          filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+          color: #66B2FF;
         }
 
         .history-url {
@@ -216,7 +212,6 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
           white-space: nowrap;
           flex-shrink: 1;
           min-width: 0;
-          letter-spacing: -0.01em;
         }
 
         .history-remove {
