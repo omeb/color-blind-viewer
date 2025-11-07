@@ -53,7 +53,7 @@ export default function InfoPanel({ activeFilter = 'none', showHeader = true, on
       )}
       
       {(showHeader ? isExpanded : true) && (
-        <div id="panel-content" className="panel-content">
+        <div id="panel-content" className={`panel-content ${!showHeader ? 'popover-mode' : ''}`}>
           {activeFilter !== 'none' && filter ? (
             <div className="active-filter-info">
               <h4>{filter.name}</h4>
@@ -192,8 +192,12 @@ export default function InfoPanel({ activeFilter = 'none', showHeader = true, on
         }
         
         .panel-content {
-          padding: ${showHeader ? '0 var(--spacing-md) var(--spacing-md)' : 'var(--spacing-md)'};
+          padding: 0 var(--spacing-md) var(--spacing-md);
           color: var(--text-light);
+        }
+        
+        .panel-content.popover-mode {
+          padding: var(--spacing-md);
         }
         
         .active-filter-info {
