@@ -43,11 +43,6 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
     }
   }, [isSplitViewProp])
   
-  // Reset expanded state when filter changes
-  React.useEffect(() => {
-    setIsInfoExpanded(false)
-  }, [activeFilter])
-  
   // Close filter popover when clicking outside
   React.useEffect(() => {
     const handleClickOutside = (event) => {
