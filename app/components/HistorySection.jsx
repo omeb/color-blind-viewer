@@ -18,10 +18,15 @@ import React from 'react'
 export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl }) {
   const exampleSites = [
     'https://www.wix.com',
-    'https://www.github.com',
-    'https://www.wikipedia.org',
-    'https://www.reddit.com',
-    'https://www.stackoverflow.com'
+    'https://www.spotify.com',
+    'https://www.dribbble.com',
+    'https://www.behance.net',
+    'https://www.airbnb.com',
+    'https://www.stripe.com',
+    'https://www.notion.so',
+    'https://www.figma.com',
+    'https://www.canva.com',
+    'https://www.unsplash.com'
   ]
   
   // Ensure history is an array and show examples if empty
