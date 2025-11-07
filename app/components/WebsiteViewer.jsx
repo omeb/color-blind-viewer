@@ -828,74 +828,81 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
       {url && (
         <div className="quick-filters">
           <div className="quick-filters-scroll">
-            <button
-              onClick={(e) => {
-                if (e.detail === 2) {
-                  // Double-click shows info
-                  const rect = e.currentTarget.getBoundingClientRect()
-                  setFilterPopoverInfo({ filterId: 'none', position: { x: rect.left + rect.width / 2, y: rect.bottom + 8 } })
-                } else {
+            <div className="quick-filter-wrapper">
+              <button
+                onClick={() => {
                   onFilterChange && onFilterChange('none')
                   setFilterPopoverInfo(null)
-                }
-              }}
-              onContextMenu={(e) => {
-                e.preventDefault()
-                const rect = e.currentTarget.getBoundingClientRect()
-                setFilterPopoverInfo({ filterId: 'none', position: { x: rect.left + rect.width / 2, y: rect.bottom + 8 } })
-              }}
-              className={`quick-filter-btn ${activeFilter === 'none' ? 'active' : ''}`}
-              title="Click to apply • Double-click or right-click for info"
-            >
-              None
-            </button>
-            {getCategorizedFilters().colorblind.map((filter) => (
+                }}
+                className={`quick-filter-btn ${activeFilter === 'none' ? 'active' : ''}`}
+                title="Click to apply filter"
+              >
+                None
+              </button>
               <button
-                key={filter.id}
                 onClick={(e) => {
-                  if (e.detail === 2) {
-                    // Double-click shows info
-                    const rect = e.currentTarget.getBoundingClientRect()
-                    setFilterPopoverInfo({ filterId: filter.id, position: { x: rect.left + rect.width / 2, y: rect.bottom + 8 } })
-                  } else {
+                  e.stopPropagation()
+                  const rect = e.currentTarget.closest('.quick-filter-wrapper').querySelector('.quick-filter-btn').getBoundingClientRect()
+                  setFilterPopoverInfo({ filterId: 'none', position: { x: rect.left + rect.width / 2, y: rect.bottom + 8 } })
+                }}
+                className="quick-filter-info-btn"
+                title="Show filter information"
+                aria-label="Show filter information"
+              >
+                ℹ
+              </button>
+            </div>
+            {getCategorizedFilters().colorblind.map((filter) => (
+              <div key={filter.id} className="quick-filter-wrapper">
+                <button
+                  onClick={() => {
                     onFilterChange && onFilterChange(filter.id)
                     setFilterPopoverInfo(null)
-                  }
-                }}
-                onContextMenu={(e) => {
-                  e.preventDefault()
-                  const rect = e.currentTarget.getBoundingClientRect()
-                  setFilterPopoverInfo({ filterId: filter.id, position: { x: rect.left + rect.width / 2, y: rect.bottom + 8 } })
-                }}
-                className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
-                title={`Click to apply • Double-click or right-click for info`}
-              >
-                {filter.name}
-              </button>
+                  }}
+                  className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
+                  title="Click to apply filter"
+                >
+                  {filter.name}
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    const rect = e.currentTarget.closest('.quick-filter-wrapper').querySelector('.quick-filter-btn').getBoundingClientRect()
+                    setFilterPopoverInfo({ filterId: filter.id, position: { x: rect.left + rect.width / 2, y: rect.bottom + 8 } })
+                  }}
+                  className="quick-filter-info-btn"
+                  title="Show filter information"
+                  aria-label="Show filter information"
+                >
+                  ℹ
+                </button>
+              </div>
             ))}
             {getCategorizedFilters().other.map((filter) => (
-              <button
-                key={filter.id}
-                onClick={(e) => {
-                  if (e.detail === 2) {
-                    // Double-click shows info
-                    const rect = e.currentTarget.getBoundingClientRect()
-                    setFilterPopoverInfo({ filterId: filter.id, position: { x: rect.left + rect.width / 2, y: rect.bottom + 8 } })
-                  } else {
+              <div key={filter.id} className="quick-filter-wrapper">
+                <button
+                  onClick={() => {
                     onFilterChange && onFilterChange(filter.id)
                     setFilterPopoverInfo(null)
-                  }
-                }}
-                onContextMenu={(e) => {
-                  e.preventDefault()
-                  const rect = e.currentTarget.getBoundingClientRect()
-                  setFilterPopoverInfo({ filterId: filter.id, position: { x: rect.left + rect.width / 2, y: rect.bottom + 8 } })
-                }}
-                className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
-                title={`Click to apply • Double-click or right-click for info`}
-              >
-                {filter.name}
-              </button>
+                  }}
+                  className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
+                  title="Click to apply filter"
+                >
+                  {filter.name}
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    const rect = e.currentTarget.closest('.quick-filter-wrapper').querySelector('.quick-filter-btn').getBoundingClientRect()
+                    setFilterPopoverInfo({ filterId: filter.id, position: { x: rect.left + rect.width / 2, y: rect.bottom + 8 } })
+                  }}
+                  className="quick-filter-info-btn"
+                  title="Show filter information"
+                  aria-label="Show filter information"
+                >
+                  ℹ
+                </button>
+              </div>
             ))}
           </div>
         </div>
@@ -1601,6 +1608,13 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           min-width: 0;
         }
         
+        .quick-filter-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          position: relative;
+        }
+        
         .quick-filter-btn {
           flex-shrink: 0;
           padding: 6px 12px;
@@ -1616,6 +1630,38 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           transition: all 0.2s ease;
           white-space: nowrap;
           outline-offset: 2px;
+        }
+        
+        .quick-filter-info-btn {
+          flex-shrink: 0;
+          width: 20px;
+          height: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 50%;
+          color: rgba(255, 255, 255, 0.7);
+          cursor: pointer;
+          font-size: 0.7rem;
+          font-weight: 600;
+          transition: all 0.2s ease;
+          padding: 0;
+          outline-offset: 2px;
+        }
+        
+        .quick-filter-info-btn:hover {
+          background: rgba(110, 198, 255, 0.3);
+          border-color: rgba(110, 198, 255, 0.6);
+          color: rgba(255, 255, 255, 1);
+          transform: scale(1.1);
+        }
+        
+        .quick-filter-info-btn:active {
+          transform: scale(0.95);
         }
         
         .quick-filter-btn:hover {
@@ -1643,6 +1689,12 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           .quick-filter-btn {
             padding: 5px 10px;
             font-size: 0.7rem;
+          }
+          
+          .quick-filter-info-btn {
+            width: 18px;
+            height: 18px;
+            font-size: 0.65rem;
           }
         }
         
