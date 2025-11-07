@@ -11,10 +11,11 @@ import React from 'react'
  * @param {string} props.url - Original website URL to display
  * @param {string} props.activeFilter - Active filter ID (from filters.js)
  * @param {Function} props.onFilterRemove - Callback to remove active filter
+ * @param {Function} props.onChangeUrl - Callback to change URL
  * @param {boolean} props.loading - Whether the website is loading
  * @param {string} props.error - Error message if loading failed
  */
-export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemove, loading = false, error = null }) {
+export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemove, onChangeUrl, loading = false, error = null }) {
   const [iframeKey, setIframeKey] = React.useState(0)
   const [isExpanded, setIsExpanded] = React.useState(false)
   const [isSplitView, setIsSplitView] = React.useState(false)
@@ -75,47 +76,76 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
     }
   }, [isDragging])
   
+  // Prevent body scroll when expanded
+  React.useEffect(() => {
+    if (isExpanded) {
+      document.body.style.overflow = 'hidden'
+      return () => {
+        document.body.style.overflow = ''
+      }
+    }
+  }, [isExpanded])
+  
   return (
-    <div 
-      ref={containerRef}
-      className={`website-viewer-container ${isExpanded ? 'expanded' : ''} ${isSplitView ? 'split-view' : ''}`}
-      style={{ cursor: isDragging ? 'ew-resize' : 'default' }}
-    >
-      {proxyUrl && !loading && !error && (
-        <div className="viewer-controls">
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="control-btn"
-            aria-label={isExpanded ? 'Exit fullscreen view' : 'View in fullscreen'}
-            title={isExpanded ? 'Exit Fullscreen' : 'Fullscreen'}
-          >
-            <span className="btn-icon">{isExpanded ? '✕' : '⤢'}</span>
-          </button>
+    <div className={`website-viewer-wrapper ${isExpanded ? 'expanded' : ''}`}>
+      {proxyUrl && !loading && !error && iframeLoaded && (
+        <div className="viewer-header">
+          <div className="url-display">
+            <span className="url-icon">🌐</span>
+            <span className="url-text">{url}</span>
+            {onChangeUrl && (
+              <button
+                onClick={onChangeUrl}
+                className="url-change-btn"
+                aria-label="Change URL"
+                title="Change URL"
+              >
+                ✎
+              </button>
+            )}
+          </div>
           
-          {activeFilter !== 'none' && (
-            <>
-              <button
-                onClick={() => setIsSplitView(!isSplitView)}
-                className="control-btn"
-                aria-label={isSplitView ? 'Exit split view' : 'Compare side-by-side'}
-                title={isSplitView ? 'Exit Split View' : 'Compare Side-by-Side'}
-              >
-                <span className="btn-icon">{isSplitView ? '◫' : '◧'}</span>
-              </button>
-              
-              <button
-                onClick={onFilterRemove}
-                className="control-btn remove-filter-btn"
-                aria-label="Remove filter"
-                title="Remove Filter"
-              >
-                <span className="btn-icon">✕</span>
-                <span className="btn-text">Filter</span>
-              </button>
-            </>
-          )}
+          <div className="viewer-controls">
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="control-btn"
+              aria-label={isExpanded ? 'Exit fullscreen view' : 'View in fullscreen'}
+              title={isExpanded ? 'Exit Fullscreen' : 'Fullscreen'}
+            >
+              <span className="btn-icon">{isExpanded ? '✕' : '⤢'}</span>
+            </button>
+            
+            {activeFilter !== 'none' && (
+              <>
+                <button
+                  onClick={() => setIsSplitView(!isSplitView)}
+                  className="control-btn"
+                  aria-label={isSplitView ? 'Exit split view' : 'Compare side-by-side'}
+                  title={isSplitView ? 'Exit Split View' : 'Compare Side-by-Side'}
+                >
+                  <span className="btn-icon">{isSplitView ? '◫' : '◧'}</span>
+                </button>
+                
+                <button
+                  onClick={onFilterRemove}
+                  className="control-btn remove-filter-btn"
+                  aria-label="Remove filter"
+                  title="Remove Filter"
+                >
+                  <span className="btn-icon">✕</span>
+                  <span className="btn-text">Filter</span>
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
+      
+      <div 
+        ref={containerRef}
+        className={`website-viewer-container ${isExpanded ? 'expanded' : ''} ${isSplitView ? 'split-view' : ''}`}
+        style={{ cursor: isDragging ? 'ew-resize' : 'default' }}
+      >
       
       {!url && !loading && !error && (
         <div className="empty-state">
@@ -213,8 +243,26 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           )}
         </>
       )}
+      </div>
       
       <style jsx>{`
+        .website-viewer-wrapper {
+          position: relative;
+          width: 100%;
+        }
+        
+        .website-viewer-wrapper.expanded {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          z-index: 1000;
+          margin: 0;
+          padding: 0;
+          overflow: hidden;
+        }
+        
         .website-viewer-container {
           width: 100%;
           height: 600px;
@@ -226,22 +274,86 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           transition: all var(--transition-normal);
         }
         
-        .website-viewer-container.expanded {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 100vh;
-          min-height: 100vh;
-          z-index: 1000;
+        .website-viewer-wrapper.expanded .website-viewer-container {
+          width: 100%;
+          height: 100%;
+          min-height: 100%;
           border-radius: 0;
         }
         
-        .viewer-controls {
-          position: absolute;
+        .viewer-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: var(--spacing-sm);
+          margin-bottom: var(--spacing-sm);
+          flex-wrap: wrap;
+        }
+        
+        .website-viewer-wrapper.expanded .viewer-header {
+          position: fixed;
           top: var(--spacing-md);
+          left: var(--spacing-md);
           right: var(--spacing-md);
-          z-index: 10;
+          z-index: 1001;
+          margin-bottom: 0;
+        }
+        
+        .url-display {
+          flex: 1;
+          min-width: 200px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 1px solid rgba(0, 0, 0, 0.1);
+          border-radius: 6px;
+          padding: 8px 12px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .url-icon {
+          font-size: 1rem;
+          line-height: 1;
+          flex-shrink: 0;
+        }
+        
+        .url-text {
+          flex: 1;
+          font-size: 0.85rem;
+          color: rgba(0, 0, 0, 0.7);
+          font-family: monospace;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          letter-spacing: -0.3px;
+        }
+        
+        .url-change-btn {
+          flex-shrink: 0;
+          background: rgba(0, 0, 0, 0.1);
+          border: none;
+          border-radius: 4px;
+          padding: 4px 8px;
+          font-size: 1rem;
+          color: rgba(0, 0, 0, 0.6);
+          cursor: pointer;
+          transition: all 0.2s ease;
+          line-height: 1;
+        }
+        
+        .url-change-btn:hover {
+          background: rgba(0, 0, 0, 0.15);
+          color: rgba(0, 0, 0, 0.8);
+        }
+        
+        .url-change-btn:active {
+          transform: scale(0.95);
+        }
+        
+        .viewer-controls {
           display: flex;
           gap: var(--spacing-xs);
           flex-wrap: wrap;
