@@ -4,26 +4,21 @@ import React from 'react'
 import { getFilter } from '../lib/filters'
 
 /**
- * Filter Info Modal Component
+ * Filter Info Popover Component
  * 
- * Displays detailed information about a vision impairment filter in a modal overlay.
+ * Displays detailed information about a vision impairment filter in a popover.
  * 
  * @param {Object} props
  * @param {string} props.filterId - ID of the filter to display
- * @param {boolean} props.isOpen - Whether the modal is open
- * @param {Function} props.onClose - Callback to close the modal
+ * @param {boolean} props.isOpen - Whether the popover is open
+ * @param {Function} props.onClose - Callback to close the popover
  * @param {Function} props.onApplyFilter - Optional callback to apply the filter
  */
-export default function FilterInfoModal({ filterId, isOpen, onClose, onApplyFilter }) {
+export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFilter }) {
   const filter = getFilter(filterId)
+  const popoverRef = React.useRef(null)
   
   if (!isOpen || !filter) return null
-  
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose()
-    }
-  }
   
   const handleEscape = (e) => {
     if (e.key === 'Escape') {
@@ -34,71 +29,83 @@ export default function FilterInfoModal({ filterId, isOpen, onClose, onApplyFilt
   React.useEffect(() => {
     if (isOpen) {
       document.addEventListener('keydown', handleEscape)
-      document.body.style.overflow = 'hidden'
       return () => {
         document.removeEventListener('keydown', handleEscape)
-        document.body.style.overflow = ''
       }
     }
   }, [isOpen])
   
   return (
     <div 
-      className="modal-backdrop" 
-      onClick={handleBackdropClick}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title"
+      className="filter-info-popover-backdrop"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose()
+        }
+      }}
     >
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button
-          onClick={onClose}
-          className="modal-close"
-          aria-label="Close modal"
-        >
-          ✕
-        </button>
-        
-        <div className="modal-header">
-          <h2 id="modal-title" className="modal-title">{filter.name}</h2>
-          {filter.severity && (
-            <span className="modal-severity">{filter.severity}</span>
-          )}
+      <div 
+        ref={popoverRef}
+        className="filter-info-popover" 
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="popover-title"
+      >
+        <div className="popover-header">
+          <div className="popover-title-section">
+            <h3 id="popover-title" className="popover-title">{filter.name}</h3>
+            {filter.severity && (
+              <span className="popover-severity">{filter.severity}</span>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            className="popover-close"
+            aria-label="Close"
+          >
+            ✕
+          </button>
         </div>
         
-        <div className="modal-body">
-          <p className="modal-description">{filter.description}</p>
+        <div className="popover-body">
+          <p className="popover-description">{filter.description}</p>
           
-          <div className="modal-stats">
-            <div className="modal-stat">
+          <div className="popover-stats">
+            <div className="popover-stat">
               <span className="stat-label">Prevalence</span>
               <span className="stat-value">{filter.prevalence}</span>
             </div>
             {filter.severity && (
-              <div className="modal-stat">
+              <div className="popover-stat">
                 <span className="stat-label">Severity</span>
                 <span className="stat-value">{filter.severity}</span>
               </div>
             )}
           </div>
           
-          <div className="modal-info">
-            <h3>What this means</h3>
+          <div className="popover-info">
+            <h4>What this means</h4>
             <p>
               {filter.id === 'protanopia' && 'People with protanopia cannot distinguish between red and green colors. Red appears darker and may be confused with black or dark gray. This affects how they perceive traffic lights, color-coded information, and design elements that rely on red-green differentiation.'}
               {filter.id === 'deuteranopia' && 'Deuteranopia is the most common form of color blindness. People with this condition cannot distinguish between red and green colors, similar to protanopia but caused by different cone cells. Green appears more like beige or gray, making it difficult to see green elements against certain backgrounds.'}
+              {filter.id === 'protanomaly' && 'Protanomaly is a milder form of red colorblindness. People with this condition have reduced sensitivity to red light, making it harder to distinguish between red and green, though not as severely as protanopia.'}
+              {filter.id === 'deuteranomaly' && 'Deuteranomaly is the most common color vision deficiency. People with this condition have reduced sensitivity to green light, making it difficult to distinguish between red and green colors, though the effect is milder than deuteranopia.'}
               {filter.id === 'tritanopia' && 'Tritanopia is a rare form of color blindness affecting blue-yellow color vision. People with tritanopia have difficulty distinguishing between blue and green, and between yellow and violet. Blue appears greenish, and yellow may appear pink or light gray.'}
               {filter.id === 'achromatopsia' && 'Achromatopsia is complete color blindness, where people see only in shades of gray. This is a rare condition that significantly impacts daily life, as all color information is lost. Designers should ensure that color is never the only way to convey important information.'}
               {filter.id === 'cataracts' && 'Cataracts cause clouding of the eye\'s lens, resulting in blurred, dimmed vision. Colors appear less vibrant, and there\'s reduced contrast sensitivity. This condition is common in older adults and can make text harder to read, especially with low contrast.'}
               {filter.id === 'lowVision' && 'Low vision refers to significantly reduced visual clarity that cannot be fully corrected with glasses or contact lenses. This includes blurred vision, making it difficult to read small text, see details, or distinguish between similar elements.'}
               {filter.id === 'lowContrast' && 'Low contrast sensitivity makes it difficult to distinguish between similar shades and colors. Text and elements with low contrast ratios become hard to see, which is why WCAG guidelines recommend minimum contrast ratios of 4.5:1 for text.'}
+              {filter.id === 'glaucoma' && 'Glaucoma causes progressive vision loss, typically starting with peripheral vision. People with glaucoma experience tunnel vision, making it difficult to see content at the edges of the screen. Important information should be placed centrally.'}
+              {filter.id === 'macularDegeneration' && 'Macular degeneration affects central vision, causing blurred or dark spots in the center of the visual field. People with this condition may have difficulty reading text and seeing fine details, especially in the center of their vision.'}
+              {filter.id === 'diabeticRetinopathy' && 'Diabetic retinopathy can cause blurred vision, floaters, and reduced contrast sensitivity. Fluctuating vision and difficulty seeing in low light are common. High contrast and clear typography are essential.'}
             </p>
           </div>
           
-          <div className="modal-tips">
-            <h3>Design Tips</h3>
+          <div className="popover-tips">
+            <h4>Design Tips</h4>
             <ul>
-              {filter.id === 'protanopia' || filter.id === 'deuteranopia' || filter.id === 'tritanopia' || filter.id === 'achromatopsia' ? (
+              {filter.id === 'protanopia' || filter.id === 'deuteranopia' || filter.id === 'protanomaly' || filter.id === 'deuteranomaly' || filter.id === 'tritanopia' || filter.id === 'achromatopsia' ? (
                 <>
                   <li>Never rely on color alone to convey information</li>
                   <li>Use icons, patterns, or labels alongside colors</li>
@@ -119,13 +126,13 @@ export default function FilterInfoModal({ filterId, isOpen, onClose, onApplyFilt
           </div>
           
           {onApplyFilter && (
-            <div className="modal-actions">
+            <div className="popover-actions">
               <button
                 onClick={() => {
                   onApplyFilter(filter.id)
                   onClose()
                 }}
-                className="modal-apply-btn"
+                className="popover-apply-btn"
               >
                 Apply This Filter
               </button>
@@ -135,179 +142,176 @@ export default function FilterInfoModal({ filterId, isOpen, onClose, onApplyFilt
       </div>
       
       <style jsx>{`
-        .modal-backdrop {
+        .filter-info-popover-backdrop {
           position: fixed;
           top: 0;
           left: 0;
           width: 100vw;
           height: 100vh;
-          background: rgba(0, 0, 0, 0.7);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
           z-index: 2000;
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           justify-content: center;
-          padding: var(--spacing-lg);
-          animation: fadeIn 0.2s ease;
+          padding-top: 100px;
+          pointer-events: none;
         }
         
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        
-        .modal-content {
-          background: linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%);
+        .filter-info-popover {
+          pointer-events: auto;
+          background: rgba(0, 0, 0, 0.95);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
           border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 20px;
-          max-width: 600px;
-          width: 100%;
-          max-height: 90vh;
+          border-radius: var(--radius-md);
+          max-width: 500px;
+          width: 90vw;
+          max-height: calc(100vh - 120px);
           overflow-y: auto;
-          position: relative;
           box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-          animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          animation: popoverSlideIn 0.2s ease-out;
         }
         
-        @keyframes slideUp {
+        @keyframes popoverSlideIn {
           from {
             opacity: 0;
-            transform: translateY(40px) scale(0.95);
+            transform: translateY(-10px);
           }
           to {
             opacity: 1;
-            transform: translateY(0) scale(1);
+            transform: translateY(0);
           }
         }
         
-        .modal-close {
-          position: absolute;
-          top: var(--spacing-md);
-          right: var(--spacing-md);
-          background: rgba(255, 255, 255, 0.2);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          border-radius: 50%;
-          width: 36px;
-          height: 36px;
-          color: white;
-          font-size: 1.2rem;
-          cursor: pointer;
+        .popover-header {
           display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s ease;
-          z-index: 10;
-        }
-        
-        .modal-close:hover {
-          background: rgba(255, 255, 255, 0.3);
-          transform: rotate(90deg);
-        }
-        
-        .modal-header {
-          padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-md);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .modal-title {
-          font-size: 2rem;
-          font-weight: 700;
-          color: white;
-          margin: 0 0 var(--spacing-sm) 0;
-        }
-        
-        .modal-severity {
-          display: inline-block;
-          padding: 4px 12px;
-          background: rgba(255, 255, 255, 0.2);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          border-radius: 12px;
-          font-size: 0.85rem;
-          font-weight: 600;
-          color: white;
-        }
-        
-        .modal-body {
-          padding: var(--spacing-xl);
-        }
-        
-        .modal-description {
-          font-size: 1.1rem;
-          line-height: 1.6;
-          color: rgba(255, 255, 255, 0.95);
-          margin-bottom: var(--spacing-lg);
-        }
-        
-        .modal-stats {
-          display: flex;
-          gap: var(--spacing-lg);
-          margin-bottom: var(--spacing-xl);
+          justify-content: space-between;
+          align-items: flex-start;
           padding: var(--spacing-md);
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 12px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .modal-stat {
+        .popover-title-section {
           display: flex;
           flex-direction: column;
           gap: var(--spacing-xs);
         }
         
+        .popover-title {
+          font-size: 1.3rem;
+          font-weight: 700;
+          color: white;
+          margin: 0;
+        }
+        
+        .popover-severity {
+          display: inline-block;
+          padding: 2px 8px;
+          background: rgba(255, 255, 255, 0.15);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 8px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.9);
+          width: fit-content;
+        }
+        
+        .popover-close {
+          background: transparent;
+          border: none;
+          color: rgba(255, 255, 255, 0.7);
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 4px;
+          transition: all var(--transition-fast);
+          font-size: 1rem;
+          line-height: 1;
+          width: 24px;
+          height: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        
+        .popover-close:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .popover-body {
+          padding: var(--spacing-md);
+        }
+        
+        .popover-description {
+          font-size: 0.95rem;
+          line-height: 1.6;
+          color: rgba(255, 255, 255, 0.9);
+          margin-bottom: var(--spacing-md);
+        }
+        
+        .popover-stats {
+          display: flex;
+          gap: var(--spacing-md);
+          margin-bottom: var(--spacing-md);
+          padding: var(--spacing-sm);
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 8px;
+        }
+        
+        .popover-stat {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        
         .stat-label {
-          font-size: 0.85rem;
-          color: rgba(255, 255, 255, 0.8);
+          font-size: 0.75rem;
+          color: rgba(255, 255, 255, 0.7);
           font-weight: 500;
         }
         
         .stat-value {
-          font-size: 1.1rem;
+          font-size: 0.9rem;
           color: white;
           font-weight: 600;
         }
         
-        .modal-info,
-        .modal-tips {
-          margin-bottom: var(--spacing-lg);
+        .popover-info,
+        .popover-tips {
+          margin-bottom: var(--spacing-md);
         }
         
-        .modal-info h3,
-        .modal-tips h3 {
-          font-size: 1.2rem;
+        .popover-info h4,
+        .popover-tips h4 {
+          font-size: 1rem;
           font-weight: 600;
           color: white;
-          margin: 0 0 var(--spacing-md) 0;
+          margin: 0 0 var(--spacing-sm) 0;
         }
         
-        .modal-info p {
-          font-size: 0.95rem;
-          line-height: 1.7;
-          color: rgba(255, 255, 255, 0.9);
+        .popover-info p {
+          font-size: 0.85rem;
+          line-height: 1.6;
+          color: rgba(255, 255, 255, 0.85);
           margin: 0;
         }
         
-        .modal-tips ul {
+        .popover-tips ul {
           margin: 0;
-          padding-left: var(--spacing-lg);
+          padding-left: var(--spacing-md);
           list-style: none;
         }
         
-        .modal-tips li {
-          font-size: 0.95rem;
-          line-height: 1.7;
-          color: rgba(255, 255, 255, 0.9);
-          margin-bottom: var(--spacing-sm);
+        .popover-tips li {
+          font-size: 0.85rem;
+          line-height: 1.6;
+          color: rgba(255, 255, 255, 0.85);
+          margin-bottom: var(--spacing-xs);
           position: relative;
           padding-left: var(--spacing-md);
         }
         
-        .modal-tips li::before {
+        .popover-tips li::before {
           content: '✓';
           position: absolute;
           left: 0;
@@ -315,53 +319,43 @@ export default function FilterInfoModal({ filterId, isOpen, onClose, onApplyFilt
           font-weight: 700;
         }
         
-        .modal-actions {
-          padding: var(--spacing-lg) var(--spacing-xl);
-          border-top: 1px solid rgba(255, 255, 255, 0.2);
+        .popover-actions {
+          padding-top: var(--spacing-md);
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
           display: flex;
           justify-content: center;
         }
         
-        .modal-apply-btn {
-          background: linear-gradient(135deg, rgba(110, 198, 255, 0.9) 0%, rgba(147, 112, 219, 0.9) 100%);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          border-radius: 12px;
+        .popover-apply-btn {
+          background: rgba(110, 198, 255, 0.2);
+          border: 1px solid rgba(110, 198, 255, 0.4);
+          border-radius: 8px;
           color: white;
-          padding: 12px 32px;
-          font-size: 1rem;
+          padding: var(--spacing-sm) var(--spacing-md);
+          font-size: 0.9rem;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s ease;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+          transition: all var(--transition-fast);
         }
         
-        .modal-apply-btn:hover {
-          background: linear-gradient(135deg, rgba(110, 198, 255, 1) 0%, rgba(147, 112, 219, 1) 100%);
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(110, 198, 255, 0.4);
-        }
-        
-        .modal-apply-btn:active {
-          transform: translateY(0);
+        .popover-apply-btn:hover {
+          background: rgba(110, 198, 255, 0.3);
+          border-color: rgba(110, 198, 255, 0.6);
         }
         
         @media (max-width: 768px) {
-          .modal-content {
+          .filter-info-popover {
             max-width: 95vw;
-            border-radius: 16px;
+            max-height: calc(100vh - 80px);
           }
           
-          .modal-title {
-            font-size: 1.5rem;
+          .popover-title {
+            font-size: 1.1rem;
           }
           
-          .modal-body {
-            padding: var(--spacing-lg);
-          }
-          
-          .modal-stats {
+          .popover-stats {
             flex-direction: column;
-            gap: var(--spacing-md);
+            gap: var(--spacing-sm);
           }
         }
       `}</style>

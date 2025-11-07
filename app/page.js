@@ -6,7 +6,7 @@ import WebsiteViewer from './components/WebsiteViewer'
 import ImpairmentControls from './components/ImpairmentControls'
 import InfoPanel from './components/InfoPanel'
 import HistorySection from './components/HistorySection'
-import FilterInfoModal from './components/FilterInfoModal'
+import FilterInfoPopover from './components/FilterInfoModal'
 import { generateSVGFilters, getFilter, getCategorizedFilters } from './lib/filters'
 
 function getFilterName(filterId) {
@@ -342,8 +342,8 @@ export default function Home() {
           </div>
         </footer>
         
-        {/* Filter Info Modal */}
-        <FilterInfoModal
+        {/* Filter Info Popover */}
+        <FilterInfoPopover
           filterId={selectedFilterInfo}
           isOpen={selectedFilterInfo !== null}
           onClose={() => setSelectedFilterInfo(null)}
