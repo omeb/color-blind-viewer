@@ -384,9 +384,27 @@ export default function Home() {
           height: fit-content;
           max-height: calc(100vh - 2 * var(--spacing-lg));
           overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+        }
+        
+        .sidebar .glass-card {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          min-height: 600px;
         }
         
         .viewer-section {
+          min-height: 600px;
+          display: flex;
+          flex-direction: column;
+        }
+        
+        .viewer-section .glass-card {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
           min-height: 600px;
         }
         

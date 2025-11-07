@@ -107,6 +107,9 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
       <style jsx>{`
         .impairment-controls {
           width: 100%;
+          display: flex;
+          flex-direction: column;
+          flex: 1;
         }
         
         .controls-header {

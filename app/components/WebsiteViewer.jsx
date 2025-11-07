@@ -437,6 +437,9 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         .website-viewer-wrapper {
           position: relative;
           width: 100%;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
         }
         
         
