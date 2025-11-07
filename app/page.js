@@ -31,6 +31,7 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = React.useState('none')
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState(null)
+  const [hasLoadedSite, setHasLoadedSite] = React.useState(false)
   
   const handleUrlSubmit = async (url) => {
     setLoading(true)
@@ -41,6 +42,7 @@ export default function Home() {
     setTimeout(() => {
       setLoadedUrl(url)
       setLoading(false)
+      setHasLoadedSite(true)
     }, 500)
   }
   
@@ -57,9 +59,9 @@ export default function Home() {
       {/* SVG filters for colorblindness simulation */}
       <div dangerouslySetInnerHTML={{ __html: generateSVGFilters() }} />
       
-      <main id="main-content" className="app-container">
+      <main id="main-content" className={`app-container ${hasLoadedSite ? 'has-content' : 'initial-view'}`}>
         {/* Hero Section */}
-        <section className="hero-section">
+        <section className={`hero-section ${hasLoadedSite ? 'compact' : ''}`}>
           <div className="glass-card-lg hero-content">
             <h1>Colorblind Viewer</h1>
             <p className="hero-subtitle">
@@ -73,48 +75,50 @@ export default function Home() {
           </div>
         </section>
         
-        {/* Main Content */}
-        <div className="main-content">
-          <div className="content-grid">
-            {/* Left Column - Controls and Info */}
-            <aside className="sidebar glass-card">
-              <ImpairmentControls
-                activeFilter={activeFilter}
-                onFilterChange={handleFilterChange}
-              />
-              
-              <div className="mt-lg">
-                <InfoPanel activeFilter={activeFilter} />
-              </div>
-            </aside>
-            
-            {/* Right Column - Website Viewer */}
-            <section className="viewer-section">
-              <div className="glass-card">
-                <div className="viewer-header">
-                  <h2>Preview</h2>
-                  {activeFilter !== 'none' && (
-                    <div className="active-filter-info">
-                      <span className="filter-badge">
-                        {getFilterName(activeFilter)}
-                      </span>
-                      <span className="filter-explanation">
-                        {getFilterExplanation(activeFilter)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <WebsiteViewer
-                  url={loadedUrl}
+        {/* Main Content - Only shown after first site load */}
+        {hasLoadedSite && (
+          <div className="main-content">
+            <div className="content-grid">
+              {/* Left Column - Controls and Info */}
+              <aside className="sidebar glass-card">
+                <ImpairmentControls
                   activeFilter={activeFilter}
-                  onFilterRemove={() => setActiveFilter('none')}
-                  loading={loading}
-                  error={error}
+                  onFilterChange={handleFilterChange}
                 />
-              </div>
-            </section>
+                
+                <div className="mt-lg">
+                  <InfoPanel activeFilter={activeFilter} />
+                </div>
+              </aside>
+              
+              {/* Right Column - Website Viewer */}
+              <section className="viewer-section">
+                <div className="glass-card">
+                  <div className="viewer-header">
+                    <h2>Preview</h2>
+                    {activeFilter !== 'none' && (
+                      <div className="active-filter-info">
+                        <span className="filter-badge">
+                          {getFilterName(activeFilter)}
+                        </span>
+                        <span className="filter-explanation">
+                          {getFilterExplanation(activeFilter)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <WebsiteViewer
+                    url={loadedUrl}
+                    activeFilter={activeFilter}
+                    onFilterRemove={() => setActiveFilter('none')}
+                    loading={loading}
+                    error={error}
+                  />
+                </div>
+              </section>
+            </div>
           </div>
-        </div>
+        )}
         
         {/* Footer */}
         <footer className="footer">
@@ -141,22 +145,75 @@ export default function Home() {
         .app-container {
           min-height: 100vh;
           padding: var(--spacing-lg);
+          display: flex;
+          flex-direction: column;
+          transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .app-container.initial-view {
+          justify-content: center;
+          align-items: center;
+        }
+        
+        .app-container.has-content {
+          justify-content: flex-start;
         }
         
         .hero-section {
+          transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+          opacity: 1;
+          transform: scale(1);
+        }
+        
+        .app-container.initial-view .hero-section {
+          margin-bottom: 0;
+          width: 100%;
+          max-width: 900px;
+        }
+        
+        .app-container.has-content .hero-section {
           margin-bottom: var(--spacing-xl);
+        }
+        
+        .hero-section.compact {
+          transform: scale(0.95);
         }
         
         .hero-content {
           max-width: 900px;
           margin: 0 auto;
           text-align: center;
+          transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .app-container.initial-view .hero-content {
+          padding: var(--spacing-xl) var(--spacing-lg);
+        }
+        
+        .app-container.has-content .hero-content {
+          padding: var(--spacing-lg);
+        }
+        
+        .app-container.initial-view h1 {
+          font-size: 3.5rem;
+          margin-bottom: var(--spacing-lg);
+        }
+        
+        .app-container.has-content h1 {
+          font-size: 2.5rem;
+          margin-bottom: var(--spacing-md);
         }
         
         .hero-subtitle {
           font-size: 1.15rem;
           margin-bottom: var(--spacing-xl);
           opacity: 0.95;
+          transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .app-container.initial-view .hero-subtitle {
+          font-size: 1.25rem;
+          margin-bottom: calc(var(--spacing-xl) * 1.5);
         }
         
         .url-input-section {
@@ -167,6 +224,21 @@ export default function Home() {
         .main-content {
           max-width: 1400px;
           margin: 0 auto;
+          width: 100%;
+          animation: slideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+          opacity: 0;
+          animation-fill-mode: forwards;
+        }
+        
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(40px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
         
         .content-grid {
@@ -271,6 +343,14 @@ export default function Home() {
             position: static;
             max-height: none;
           }
+          
+          .app-container.initial-view h1 {
+            font-size: 2.5rem;
+          }
+          
+          .app-container.has-content h1 {
+            font-size: 2rem;
+          }
         }
         
         @media (max-width: 768px) {
@@ -282,8 +362,16 @@ export default function Home() {
             font-size: 2rem;
           }
           
+          .app-container.initial-view h1 {
+            font-size: 2.25rem;
+          }
+          
           .hero-subtitle {
             font-size: 1rem;
+          }
+          
+          .app-container.initial-view .hero-subtitle {
+            font-size: 1.1rem;
           }
         }
       `}</style>
