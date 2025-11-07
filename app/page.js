@@ -38,6 +38,8 @@ export default function Home() {
   const [selectedFilterInfo, setSelectedFilterInfo] = React.useState(null)
   const [showFilterPopover, setShowFilterPopover] = React.useState(false)
   const filterPopoverRef = React.useRef(null)
+  const [showHistoryDropdown, setShowHistoryDropdown] = React.useState(false)
+  const historyDropdownRef = React.useRef(null)
   
   // Close popover when clicking outside
   React.useEffect(() => {
@@ -48,13 +50,19 @@ export default function Home() {
           setShowFilterPopover(false)
         }
       }
+      if (historyDropdownRef.current && !historyDropdownRef.current.contains(event.target)) {
+        // Check if click is not on the history button
+        if (!event.target.closest('.history-dropdown-btn')) {
+          setShowHistoryDropdown(false)
+        }
+      }
     }
     
-    if (showFilterPopover) {
+    if (showFilterPopover || showHistoryDropdown) {
       document.addEventListener('mousedown', handleClickOutside)
       return () => document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [showFilterPopover])
+  }, [showFilterPopover, showHistoryDropdown])
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -196,15 +204,6 @@ export default function Home() {
                   onFilterInfo={setSelectedFilterInfo}
                 />
                 
-                <div className="mt-lg">
-                  {history.length > 0 && (
-                    <HistorySection
-                      history={history}
-                      onSelectUrl={handleUrlSubmit}
-                      onRemoveUrl={removeFromHistory}
-                    />
-                  )}
-                </div>
               </aside>
               
               {/* Right Column - Website Viewer */}
@@ -212,38 +211,87 @@ export default function Home() {
                 <div className="glass-card">
                   <div className="viewer-header">
                     <h2>Preview</h2>
-                    {activeFilter !== 'none' && (
-                      <div className="active-filter-info">
-                        <div className="filter-badge-wrapper" ref={filterPopoverRef}>
-                          <span 
-                            className="filter-badge clickable"
-                            onClick={() => setShowFilterPopover(!showFilterPopover)}
-                            role="button"
-                            tabIndex={0}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault()
-                                setShowFilterPopover(!showFilterPopover)
-                              }
-                            }}
+                    <div className="viewer-header-actions">
+                      {history.length > 0 && (
+                        <div className="history-dropdown-wrapper" ref={historyDropdownRef}>
+                          <button
+                            className="history-dropdown-btn"
+                            onClick={() => setShowHistoryDropdown(!showHistoryDropdown)}
+                            aria-label="Recent sites"
+                            title="Recent sites"
                           >
-                            {getFilterName(activeFilter)}
-                          </span>
-                          <span className="filter-explanation">
-                            {getFilterExplanation(activeFilter)}
-                          </span>
-                          {showFilterPopover && (
-                            <div className="filter-popover">
-                              <InfoPanel 
-                                activeFilter={activeFilter} 
-                                showHeader={false}
-                                onClose={() => setShowFilterPopover(false)}
-                              />
+                            <span className="history-icon-small">🕒</span>
+                            <span className="history-count">{history.length}</span>
+                          </button>
+                          {showHistoryDropdown && (
+                            <div className="history-dropdown">
+                              <div className="history-dropdown-header">
+                                <span>Recent Sites</span>
+                              </div>
+                              <div className="history-dropdown-list">
+                                {history.slice(0, 5).map((url, index) => (
+                                  <button
+                                    key={`${url}-${index}`}
+                                    onClick={() => {
+                                      handleUrlSubmit(url)
+                                      setShowHistoryDropdown(false)
+                                    }}
+                                    className="history-dropdown-item"
+                                    title={`Load ${url}`}
+                                  >
+                                    <span className="history-item-icon">🌐</span>
+                                    <span className="history-item-url">{url}</span>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        removeFromHistory(url)
+                                      }}
+                                      className="history-item-remove"
+                                      aria-label={`Remove ${url}`}
+                                      title="Remove"
+                                    >
+                                      ✕
+                                    </button>
+                                  </button>
+                                ))}
+                              </div>
                             </div>
                           )}
                         </div>
-                      </div>
-                    )}
+                      )}
+                      {activeFilter !== 'none' && (
+                        <div className="active-filter-info">
+                          <div className="filter-badge-wrapper" ref={filterPopoverRef}>
+                            <span 
+                              className="filter-badge clickable"
+                              onClick={() => setShowFilterPopover(!showFilterPopover)}
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault()
+                                  setShowFilterPopover(!showFilterPopover)
+                                }
+                              }}
+                            >
+                              {getFilterName(activeFilter)}
+                            </span>
+                            <span className="filter-explanation">
+                              {getFilterExplanation(activeFilter)}
+                            </span>
+                            {showFilterPopover && (
+                              <div className="filter-popover">
+                                <InfoPanel 
+                                  activeFilter={activeFilter} 
+                                  showHeader={false}
+                                  onClose={() => setShowFilterPopover(false)}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <WebsiteViewer
                     url={loadedUrl}
@@ -392,6 +440,133 @@ export default function Home() {
           margin-bottom: var(--spacing-md);
           flex-wrap: wrap;
           gap: var(--spacing-sm);
+        }
+        
+        .viewer-header-actions {
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-md);
+        }
+        
+        .history-dropdown-wrapper {
+          position: relative;
+        }
+        
+        .history-dropdown-btn {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: var(--spacing-xs) var(--spacing-sm);
+          background: rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 20px;
+          color: rgba(255, 255, 255, 0.9);
+          cursor: pointer;
+          transition: all var(--transition-fast);
+          font-size: 0.85rem;
+        }
+        
+        .history-dropdown-btn:hover {
+          background: rgba(255, 255, 255, 0.15);
+          border-color: rgba(255, 255, 255, 0.3);
+          transform: translateY(-1px);
+        }
+        
+        .history-icon-small {
+          font-size: 1rem;
+        }
+        
+        .history-count {
+          background: rgba(110, 198, 255, 0.3);
+          border-radius: 10px;
+          padding: 2px 6px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          min-width: 18px;
+          text-align: center;
+        }
+        
+        .history-dropdown {
+          position: absolute;
+          top: calc(100% + var(--spacing-sm));
+          right: 0;
+          width: 320px;
+          max-width: 90vw;
+          z-index: 1000;
+          background: rgba(0, 0, 0, 0.95);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: var(--radius-md);
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+          animation: popoverFadeIn 0.2s ease-out;
+          overflow: hidden;
+        }
+        
+        .history-dropdown-header {
+          padding: var(--spacing-sm) var(--spacing-md);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .history-dropdown-list {
+          max-height: 300px;
+          overflow-y: auto;
+        }
+        
+        .history-dropdown-item {
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-sm);
+          width: 100%;
+          padding: var(--spacing-sm) var(--spacing-md);
+          background: transparent;
+          border: none;
+          color: rgba(255, 255, 255, 0.9);
+          cursor: pointer;
+          transition: background var(--transition-fast);
+          text-align: left;
+          font-size: 0.9rem;
+        }
+        
+        .history-dropdown-item:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .history-item-icon {
+          font-size: 1rem;
+          flex-shrink: 0;
+        }
+        
+        .history-item-url {
+          flex: 1;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        
+        .history-item-remove {
+          flex-shrink: 0;
+          background: transparent;
+          border: none;
+          color: rgba(255, 255, 255, 0.5);
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 4px;
+          transition: all var(--transition-fast);
+          font-size: 0.9rem;
+          opacity: 0;
+        }
+        
+        .history-dropdown-item:hover .history-item-remove {
+          opacity: 1;
+        }
+        
+        .history-item-remove:hover {
+          background: rgba(255, 0, 0, 0.2);
+          color: rgba(255, 255, 255, 0.9);
         }
         
         .viewer-header h2 {
