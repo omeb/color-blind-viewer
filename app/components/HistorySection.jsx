@@ -4,14 +4,14 @@ import React from 'react'
 
 // Example sites to always show (colorful sites for testing colorblind filters)
 const EXAMPLE_SITES = [
-  'https://www.wix.com',
-  'https://www.spotify.com',
-  'https://www.dribbble.com',
-  'https://www.behance.net',
-  'https://www.airbnb.com',
-  'https://www.stripe.com',
-  'https://www.notion.so',
-  'https://www.unsplash.com'
+  'https://activetheory.net',
+  'https://dogstudio.co',
+  'https://bruno-simon.com',
+  'https://press.stripe.com',
+  'https://rive.app',
+  'https://pitch.com',
+  'https://superlist.com',
+  'https://nifti.com'
 ]
 
 /**
