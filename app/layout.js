@@ -3,7 +3,7 @@ import './globals.css'
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://color-blind-viewer.vercel.app'
 const siteName = 'Colorblind Viewer'
 const siteDescription = 'Experience how websites appear to people with vision impairments. Test your website\'s accessibility with colorblindness, cataracts, glaucoma, and other vision condition simulators. Free tool for designers and developers.'
-const siteImage = `${siteUrl}/og-image.png`
+const siteImage = `${siteUrl}/opengraph-image`
 
 export const metadata = {
   metadataBase: new URL(siteUrl),
@@ -77,7 +77,7 @@ export const metadata = {
   category: 'Accessibility',
   classification: 'Web Accessibility Tool',
   icons: {
-    icon: '/favicon.ico',
+    icon: '/favicon.svg',
     apple: '/apple-touch-icon.png',
   },
   manifest: '/manifest.json',
