@@ -10,11 +10,17 @@ import FilterInfoModal from './components/FilterInfoModal'
 import { generateSVGFilters, getFilter } from './lib/filters'
 
 function getFilterName(filterId) {
+  if (filterId === 'none') {
+    return 'Original Site'
+  }
   const filter = getFilter(filterId)
   return filter ? filter.name : filterId
 }
 
 function getFilterExplanation(filterId) {
+  if (filterId === 'none') {
+    return 'No filter applied - viewing site as-is'
+  }
   const explanations = {
     protanopia: 'Cannot distinguish red from green',
     deuteranopia: 'Most common - green color blindness',
@@ -204,38 +210,36 @@ export default function Home() {
                   <div className="viewer-header">
                     <h2>Preview</h2>
                     <div className="viewer-header-actions">
-                      {activeFilter !== 'none' && (
-                        <div className="active-filter-info">
-                          <div className="filter-badge-wrapper" ref={filterPopoverRef}>
-                            <span 
-                              className="filter-badge clickable"
-                              onClick={() => setShowFilterPopover(!showFilterPopover)}
-                              role="button"
-                              tabIndex={0}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                  e.preventDefault()
-                                  setShowFilterPopover(!showFilterPopover)
-                                }
-                              }}
-                            >
-                              {getFilterName(activeFilter)}
-                            </span>
-                            <span className="filter-explanation">
-                              {getFilterExplanation(activeFilter)}
-                            </span>
-                            {showFilterPopover && (
-                              <div className="filter-popover">
-                                <InfoPanel 
-                                  activeFilter={activeFilter} 
-                                  showHeader={false}
-                                  onClose={() => setShowFilterPopover(false)}
-                                />
-                              </div>
-                            )}
-                          </div>
+                      <div className="active-filter-info">
+                        <div className="filter-badge-wrapper" ref={filterPopoverRef}>
+                          <span 
+                            className={`filter-badge ${activeFilter !== 'none' ? 'clickable' : ''}`}
+                            onClick={() => activeFilter !== 'none' && setShowFilterPopover(!showFilterPopover)}
+                            role={activeFilter !== 'none' ? 'button' : undefined}
+                            tabIndex={activeFilter !== 'none' ? 0 : undefined}
+                            onKeyDown={(e) => {
+                              if (activeFilter !== 'none' && (e.key === 'Enter' || e.key === ' ')) {
+                                e.preventDefault()
+                                setShowFilterPopover(!showFilterPopover)
+                              }
+                            }}
+                          >
+                            {getFilterName(activeFilter)}
+                          </span>
+                          <span className="filter-explanation">
+                            {getFilterExplanation(activeFilter)}
+                          </span>
+                          {showFilterPopover && activeFilter !== 'none' && (
+                            <div className="filter-popover">
+                              <InfoPanel 
+                                activeFilter={activeFilter} 
+                                showHeader={false}
+                                onClose={() => setShowFilterPopover(false)}
+                              />
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
                   <WebsiteViewer
