@@ -1088,6 +1088,238 @@ export default function Home() {
           }
         }
         
+        .filter-info-popover {
+          position: absolute;
+          top: calc(100% + var(--spacing-sm));
+          right: 0;
+          width: 400px;
+          max-width: 90vw;
+          max-height: calc(100vh - 200px);
+          z-index: 1000;
+          background: rgba(0, 0, 0, 0.95);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: var(--radius-md);
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+          animation: popoverFadeIn 0.2s ease-out;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        }
+        
+        .filter-popover-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          padding: var(--spacing-sm) var(--spacing-md);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          flex-shrink: 0;
+        }
+        
+        .filter-popover-title-row {
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-sm);
+          flex-wrap: wrap;
+        }
+        
+        .filter-popover-title {
+          margin: 0;
+          font-size: 0.9rem;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .filter-popover-severity {
+          padding: 2px 8px;
+          background: rgba(110, 198, 255, 0.15);
+          border: 1px solid rgba(110, 198, 255, 0.3);
+          border-radius: 8px;
+          font-size: 0.7rem;
+          font-weight: 600;
+          color: rgba(110, 198, 255, 1);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        
+        .filter-popover-close {
+          background: transparent;
+          border: none;
+          color: rgba(255, 255, 255, 0.7);
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 4px;
+          transition: all var(--transition-fast);
+          font-size: 1rem;
+          line-height: 1;
+          width: 24px;
+          height: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        
+        .filter-popover-close:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .filter-popover-body {
+          max-height: calc(100vh - 300px);
+          overflow-y: auto;
+          padding: var(--spacing-xs);
+        }
+        
+        .filter-popover-description {
+          margin: 0 0 var(--spacing-sm) 0;
+          padding: 0 var(--spacing-sm);
+          font-size: 0.75rem;
+          color: rgba(255, 255, 255, 0.7);
+          line-height: 1.5;
+        }
+        
+        .filter-popover-stats {
+          display: flex;
+          gap: var(--spacing-md);
+          margin-bottom: var(--spacing-sm);
+          padding: 0 var(--spacing-sm);
+          flex-wrap: wrap;
+        }
+        
+        .filter-popover-stat {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        
+        .filter-popover-stat .stat-label {
+          font-size: 0.65rem;
+          color: rgba(255, 255, 255, 0.5);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          font-weight: 500;
+        }
+        
+        .filter-popover-stat .stat-value {
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .filter-popover-section {
+          margin-bottom: var(--spacing-md);
+          padding: 0 var(--spacing-sm);
+        }
+        
+        .filter-popover-section:last-child {
+          margin-bottom: 0;
+        }
+        
+        .filter-popover-section h4 {
+          margin: 0 0 var(--spacing-xs) 0;
+          font-size: 0.7rem;
+          font-weight: 700;
+          color: rgba(255, 255, 255, 0.9);
+          text-transform: uppercase;
+          letter-spacing: 0.8px;
+        }
+        
+        .filter-popover-section p {
+          margin: 0;
+          font-size: 0.75rem;
+          color: rgba(255, 255, 255, 0.8);
+          line-height: 1.5;
+        }
+        
+        .filter-popover-section ul {
+          margin: 0;
+          padding: 0;
+          list-style: none;
+        }
+        
+        .filter-popover-section ul li {
+          position: relative;
+          padding-left: 18px;
+          margin-bottom: var(--spacing-xs);
+          font-size: 0.75rem;
+          color: rgba(255, 255, 255, 0.8);
+          line-height: 1.5;
+        }
+        
+        .filter-popover-section ul li:before {
+          content: '✓';
+          position: absolute;
+          left: 0;
+          top: 0;
+          color: rgba(110, 198, 255, 1);
+          font-weight: 600;
+          font-size: 0.75rem;
+        }
+        
+        .filter-popover-section ul li:last-child {
+          margin-bottom: 0;
+        }
+        
+        @media (max-width: 768px) {
+          .filter-info-popover {
+            width: calc(100vw - 40px);
+            max-width: calc(100vw - 40px);
+            max-height: calc(100vh - 150px);
+          }
+          
+          .filter-popover-header {
+            padding: var(--spacing-xs) var(--spacing-sm);
+          }
+          
+          .filter-popover-title {
+            font-size: 0.85rem;
+          }
+          
+          .filter-popover-body {
+            padding: var(--spacing-xs);
+            max-height: calc(100vh - 250px);
+          }
+          
+          .filter-popover-description {
+            font-size: 0.7rem;
+            margin-bottom: var(--spacing-xs);
+          }
+          
+          .filter-popover-stats {
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-xs);
+          }
+          
+          .filter-popover-stat .stat-label {
+            font-size: 0.6rem;
+          }
+          
+          .filter-popover-stat .stat-value {
+            font-size: 0.7rem;
+          }
+          
+          .filter-popover-section {
+            margin-bottom: var(--spacing-sm);
+          }
+          
+          .filter-popover-section h4 {
+            font-size: 0.65rem;
+            margin-bottom: 4px;
+          }
+          
+          .filter-popover-section p,
+          .filter-popover-section ul li {
+            font-size: 0.7rem;
+          }
+          
+          .filter-popover-section ul li {
+            padding-left: 16px;
+            margin-bottom: 4px;
+          }
+        }
+        
         .footer {
           margin-top: auto;
           padding-top: var(--spacing-xl);
