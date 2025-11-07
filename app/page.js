@@ -7,7 +7,7 @@ import ImpairmentControls from './components/ImpairmentControls'
 import InfoPanel from './components/InfoPanel'
 import HistorySection from './components/HistorySection'
 import FilterInfoModal from './components/FilterInfoModal'
-import { generateSVGFilters, getFilter } from './lib/filters'
+import { generateSVGFilters, getFilter, getCategorizedFilters } from './lib/filters'
 
 function getFilterName(filterId) {
   if (filterId === 'none') {
@@ -218,12 +218,12 @@ export default function Home() {
                       <div className="active-filter-info">
                         <div className="filter-badge-wrapper" ref={filterPopoverRef}>
                           <span 
-                            className={`filter-badge ${activeFilter !== 'none' ? 'clickable' : ''}`}
-                            onClick={() => activeFilter !== 'none' && setShowFilterPopover(!showFilterPopover)}
-                            role={activeFilter !== 'none' ? 'button' : undefined}
-                            tabIndex={activeFilter !== 'none' ? 0 : undefined}
+                            className="filter-badge clickable"
+                            onClick={() => setShowFilterPopover(!showFilterPopover)}
+                            role="button"
+                            tabIndex={0}
                             onKeyDown={(e) => {
-                              if (activeFilter !== 'none' && (e.key === 'Enter' || e.key === ' ')) {
+                              if (e.key === 'Enter' || e.key === ' ') {
                                 e.preventDefault()
                                 setShowFilterPopover(!showFilterPopover)
                               }
@@ -234,13 +234,56 @@ export default function Home() {
                           <span className="filter-explanation">
                             {getFilterExplanation(activeFilter)}
                           </span>
-                          {showFilterPopover && activeFilter !== 'none' && (
-                            <div className="filter-popover">
-                              <InfoPanel 
-                                activeFilter={activeFilter} 
-                                showHeader={false}
-                                onClose={() => setShowFilterPopover(false)}
-                              />
+                          {showFilterPopover && (
+                            <div className="filter-picker-popover">
+                              <div className="filter-picker-header">
+                                <span>Select Filter</span>
+                                <button
+                                  onClick={() => setShowFilterPopover(false)}
+                                  className="filter-picker-close"
+                                  aria-label="Close"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                              <div className="filter-picker-content">
+                                <button
+                                  onClick={() => {
+                                    handleFilterChange('none')
+                                    setShowFilterPopover(false)
+                                  }}
+                                  className={`filter-picker-item ${activeFilter === 'none' ? 'active' : ''}`}
+                                >
+                                  <span className="filter-picker-name">Original Site</span>
+                                  <span className="filter-picker-desc">No filter applied</span>
+                                </button>
+                                {getCategorizedFilters().colorblind.map((filter) => (
+                                  <button
+                                    key={filter.id}
+                                    onClick={() => {
+                                      handleFilterChange(filter.id)
+                                      setShowFilterPopover(false)
+                                    }}
+                                    className={`filter-picker-item ${activeFilter === filter.id ? 'active' : ''}`}
+                                  >
+                                    <span className="filter-picker-name">{filter.name}</span>
+                                    <span className="filter-picker-desc">{filter.prevalence}</span>
+                                  </button>
+                                ))}
+                                {getCategorizedFilters().other.map((filter) => (
+                                  <button
+                                    key={filter.id}
+                                    onClick={() => {
+                                      handleFilterChange(filter.id)
+                                      setShowFilterPopover(false)
+                                    }}
+                                    className={`filter-picker-item ${activeFilter === filter.id ? 'active' : ''}`}
+                                  >
+                                    <span className="filter-picker-name">{filter.name}</span>
+                                    <span className="filter-picker-desc">{filter.prevalence}</span>
+                                  </button>
+                                ))}
+                              </div>
                             </div>
                           )}
                         </div>
