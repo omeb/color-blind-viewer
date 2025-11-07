@@ -270,23 +270,29 @@ export default function Home() {
         {/* Footer */}
         <footer className="footer">
           <div className="glass-card footer-content">
-            <p>
-              Making the web accessible for everyone.{' '}
+            <div className="footer-main">
+              <h3 className="footer-title">Making the web accessible for everyone</h3>
               <a 
                 href="https://github.com/omeb/color-blind-viewer" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="footer-link"
               >
+                <span className="footer-link-icon">🔗</span>
                 Open Source on GitHub
               </a>
-            </p>
-            <p className="footer-note">
-              Some sites may restrict embedding for security. Try different URLs if needed.
-            </p>
-            <p className="footer-love">
-              Made with ❤️ by the Wix Accessibility team
-            </p>
+            </div>
+            
+            <div className="footer-divider"></div>
+            
+            <div className="footer-secondary">
+              <p className="footer-note">
+                Some sites may restrict embedding for security. Try different URLs if needed.
+              </p>
+              <p className="footer-love">
+                Made with <span className="heart">❤️</span> by the Wix Accessibility team
+              </p>
+            </div>
           </div>
         </footer>
         
@@ -520,35 +526,99 @@ export default function Home() {
         }
         
         .footer-content {
-          text-align: center;
-          padding: var(--spacing-lg);
+          padding: var(--spacing-xl) var(--spacing-lg);
+          display: flex;
+          flex-direction: column;
+          gap: var(--spacing-md);
         }
         
-        .footer-content p {
-          margin: var(--spacing-xs) 0;
+        .footer-main {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: var(--spacing-md);
+        }
+        
+        .footer-title {
+          font-size: 1.4rem;
+          font-weight: 700;
+          margin: 0;
+          color: rgba(255, 255, 255, 0.95);
+          letter-spacing: -0.02em;
         }
         
         .footer-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
           color: #6EC6FF;
           text-decoration: none;
-          border-bottom: 1px solid transparent;
-          transition: border-color var(--transition-fast);
+          font-size: 1rem;
+          font-weight: 600;
+          padding: var(--spacing-xs) var(--spacing-md);
+          border-radius: 8px;
+          background: rgba(110, 198, 255, 0.1);
+          border: 1px solid rgba(110, 198, 255, 0.2);
+          transition: all var(--transition-fast);
         }
         
         .footer-link:hover {
-          border-bottom-color: #6EC6FF;
+          background: rgba(110, 198, 255, 0.2);
+          border-color: rgba(110, 198, 255, 0.4);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(110, 198, 255, 0.3);
+        }
+        
+        .footer-link-icon {
+          font-size: 1.1rem;
+        }
+        
+        .footer-divider {
+          width: 60px;
+          height: 2px;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+          margin: var(--spacing-xs) auto;
+        }
+        
+        .footer-secondary {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: var(--spacing-sm);
+          opacity: 0.75;
         }
         
         .footer-note {
-          font-size: 0.85rem;
-          opacity: 0.8;
+          font-size: 0.875rem;
+          margin: 0;
+          color: rgba(255, 255, 255, 0.85);
+          line-height: 1.5;
         }
         
         .footer-love {
           font-size: 0.9rem;
-          opacity: 0.85;
-          margin-top: var(--spacing-sm);
+          margin: 0;
           color: rgba(255, 255, 255, 0.9);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        
+        .footer-love .heart {
+          display: inline-block;
+          animation: heartbeat 2s ease-in-out infinite;
+        }
+        
+        @keyframes heartbeat {
+          0%, 100% {
+            transform: scale(1);
+          }
+          10%, 30% {
+            transform: scale(1.1);
+          }
+          20%, 40% {
+            transform: scale(1);
+          }
         }
         
         @media (max-width: 1200px) {
