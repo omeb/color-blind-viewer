@@ -1369,6 +1369,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         }
         
         .quick-filters {
+          margin-top: var(--spacing-md);
           margin-bottom: var(--spacing-sm);
           width: 100%;
           max-width: 100%;
