@@ -128,6 +128,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
       }
     }
   }, [isSplitView, activeFilter, iframeLoaded])
+  
+  // Handle split view toggle
   const handleSplitViewToggle = () => {
     const newValue = !isSplitView
     setIsSplitView(newValue)
