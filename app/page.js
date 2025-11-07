@@ -592,41 +592,6 @@ export default function Home() {
               </div>
             </div>
             
-            {/* Quick Filter Buttons */}
-            {hasLoadedSite && (
-              <div className="footer-filters">
-                <div className="footer-filters-scroll">
-                  <button
-                    onClick={() => handleFilterChange('none')}
-                    className={`footer-filter-btn ${activeFilter === 'none' ? 'active' : ''}`}
-                    title="Click to apply filter"
-                  >
-                    None
-                  </button>
-                  {getCategorizedFilters().colorblind.map((filter) => (
-                    <button
-                      key={filter.id}
-                      onClick={() => handleFilterChange(filter.id)}
-                      className={`footer-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
-                      title="Click to apply filter"
-                    >
-                      {filter.name}
-                    </button>
-                  ))}
-                  {getCategorizedFilters().other.map((filter) => (
-                    <button
-                      key={filter.id}
-                      onClick={() => handleFilterChange(filter.id)}
-                      className={`footer-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
-                      title="Click to apply filter"
-                    >
-                      {filter.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            
             <div className="footer-bottom">
               <p className="footer-note">
                 🌐 Some sites may restrict embedding for security. Try different URLs if needed.
