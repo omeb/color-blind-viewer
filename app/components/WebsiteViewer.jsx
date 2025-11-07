@@ -828,83 +828,60 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
       {url && (
         <div className="quick-filters">
           <div className="quick-filters-scroll">
-            <div className="quick-filter-wrapper">
+            <button
+              onClick={() => {
+                onFilterChange && onFilterChange('none')
+                setFilterPopoverInfo(null)
+              }}
+              className={`quick-filter-btn ${activeFilter === 'none' ? 'active' : ''}`}
+              title="Click to apply filter"
+            >
+              None
+            </button>
+            {getCategorizedFilters().colorblind.map((filter) => (
               <button
+                key={filter.id}
                 onClick={() => {
-                  onFilterChange && onFilterChange('none')
+                  onFilterChange && onFilterChange(filter.id)
                   setFilterPopoverInfo(null)
                 }}
-                className={`quick-filter-btn ${activeFilter === 'none' ? 'active' : ''}`}
+                className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
                 title="Click to apply filter"
               >
-                None
+                {filter.name}
               </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  const rect = e.currentTarget.closest('.quick-filter-wrapper').querySelector('.quick-filter-btn').getBoundingClientRect()
-                  setFilterPopoverInfo({ filterId: 'none', position: { x: rect.left + rect.width / 2, y: rect.bottom + 8 } })
-                }}
-                className="quick-filter-info-btn"
-                title="Show filter information"
-                aria-label="Show filter information"
-              >
-                ℹ
-              </button>
-            </div>
-            {getCategorizedFilters().colorblind.map((filter) => (
-              <div key={filter.id} className="quick-filter-wrapper">
-                <button
-                  onClick={() => {
-                    onFilterChange && onFilterChange(filter.id)
-                    setFilterPopoverInfo(null)
-                  }}
-                  className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
-                  title="Click to apply filter"
-                >
-                  {filter.name}
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    const rect = e.currentTarget.closest('.quick-filter-wrapper').querySelector('.quick-filter-btn').getBoundingClientRect()
-                    setFilterPopoverInfo({ filterId: filter.id, position: { x: rect.left + rect.width / 2, y: rect.bottom + 8 } })
-                  }}
-                  className="quick-filter-info-btn"
-                  title="Show filter information"
-                  aria-label="Show filter information"
-                >
-                  ℹ
-                </button>
-              </div>
             ))}
             {getCategorizedFilters().other.map((filter) => (
-              <div key={filter.id} className="quick-filter-wrapper">
-                <button
-                  onClick={() => {
-                    onFilterChange && onFilterChange(filter.id)
-                    setFilterPopoverInfo(null)
-                  }}
-                  className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
-                  title="Click to apply filter"
-                >
-                  {filter.name}
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    const rect = e.currentTarget.closest('.quick-filter-wrapper').querySelector('.quick-filter-btn').getBoundingClientRect()
-                    setFilterPopoverInfo({ filterId: filter.id, position: { x: rect.left + rect.width / 2, y: rect.bottom + 8 } })
-                  }}
-                  className="quick-filter-info-btn"
-                  title="Show filter information"
-                  aria-label="Show filter information"
-                >
-                  ℹ
-                </button>
-              </div>
+              <button
+                key={filter.id}
+                onClick={() => {
+                  onFilterChange && onFilterChange(filter.id)
+                  setFilterPopoverInfo(null)
+                }}
+                className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
+                title="Click to apply filter"
+              >
+                {filter.name}
+              </button>
             ))}
           </div>
+          {activeFilter !== 'none' && (
+            <button
+              onClick={(e) => {
+                const quickFiltersEl = e.currentTarget.closest('.quick-filters')
+                const activeBtn = quickFiltersEl?.querySelector('.quick-filter-btn.active')
+                if (activeBtn) {
+                  const rect = activeBtn.getBoundingClientRect()
+                  setFilterPopoverInfo({ filterId: activeFilter, position: { x: rect.left + rect.width / 2, y: rect.bottom + 8 } })
+                }
+              }}
+              className="filter-info-icon-btn"
+              title="Show information about current filter"
+              aria-label="Show filter information"
+            >
+              ℹ
+            </button>
+          )}
         </div>
       )}
       
@@ -1586,6 +1563,9 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           scrollbar-width: thin;
           scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
           min-width: 0;
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-sm);
         }
         
         .quick-filters::-webkit-scrollbar {
@@ -1606,13 +1586,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           gap: 12px;
           padding-bottom: 4px;
           min-width: 0;
-        }
-        
-        .quick-filter-wrapper {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          position: relative;
+          flex: 1;
         }
         
         .quick-filter-btn {
@@ -1632,38 +1606,6 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           outline-offset: 2px;
         }
         
-        .quick-filter-info-btn {
-          flex-shrink: 0;
-          width: 20px;
-          height: 20px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 50%;
-          color: rgba(255, 255, 255, 0.7);
-          cursor: pointer;
-          font-size: 0.7rem;
-          font-weight: 600;
-          transition: all 0.2s ease;
-          padding: 0;
-          outline-offset: 2px;
-        }
-        
-        .quick-filter-info-btn:hover {
-          background: rgba(110, 198, 255, 0.3);
-          border-color: rgba(110, 198, 255, 0.6);
-          color: rgba(255, 255, 255, 1);
-          transform: scale(1.1);
-        }
-        
-        .quick-filter-info-btn:active {
-          transform: scale(0.95);
-        }
-        
         .quick-filter-btn:hover {
           background: rgba(255, 255, 255, 0.15);
           border-color: rgba(255, 255, 255, 0.3);
@@ -1681,6 +1623,38 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           transform: translateY(0);
         }
         
+        .filter-info-icon-btn {
+          flex-shrink: 0;
+          width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(110, 198, 255, 0.2);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 1px solid rgba(110, 198, 255, 0.4);
+          border-radius: 50%;
+          color: rgba(110, 198, 255, 1);
+          cursor: pointer;
+          font-size: 0.85rem;
+          font-weight: 600;
+          transition: all 0.2s ease;
+          padding: 0;
+          outline-offset: 2px;
+        }
+        
+        .filter-info-icon-btn:hover {
+          background: rgba(110, 198, 255, 0.3);
+          border-color: rgba(110, 198, 255, 0.6);
+          transform: scale(1.1);
+          box-shadow: 0 2px 8px rgba(110, 198, 255, 0.4);
+        }
+        
+        .filter-info-icon-btn:active {
+          transform: scale(0.95);
+        }
+        
         @media (max-width: 768px) {
           .quick-filters {
             margin-bottom: var(--spacing-xs);
@@ -1691,10 +1665,10 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
             font-size: 0.7rem;
           }
           
-          .quick-filter-info-btn {
-            width: 18px;
-            height: 18px;
-            font-size: 0.65rem;
+          .filter-info-icon-btn {
+            width: 24px;
+            height: 24px;
+            font-size: 0.75rem;
           }
         }
         
