@@ -378,41 +378,6 @@ export default function Home() {
             <DarkModeToggle />
           </div>
           
-          {/* Quick Filter Buttons - Floating next to dark mode toggle */}
-          {hasLoadedSite && (
-            <div className="filter-buttons-wrapper">
-              <div className="filter-buttons-container">
-                <button
-                  onClick={() => handleFilterChange('none')}
-                  className={`filter-button ${activeFilter === 'none' ? 'active' : ''}`}
-                  title="No filter"
-                >
-                  None
-                </button>
-                {getCategorizedFilters().colorblind.map((filter) => (
-                  <button
-                    key={filter.id}
-                    onClick={() => handleFilterChange(filter.id)}
-                    className={`filter-button ${activeFilter === filter.id ? 'active' : ''}`}
-                    title={filter.name}
-                  >
-                    {filter.name}
-                  </button>
-                ))}
-                {getCategorizedFilters().other.map((filter) => (
-                  <button
-                    key={filter.id}
-                    onClick={() => handleFilterChange(filter.id)}
-                    className={`filter-button ${activeFilter === filter.id ? 'active' : ''}`}
-                    title={filter.name}
-                  >
-                    {filter.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          
           <main id="main-content" className={`app-container ${hasLoadedSite ? 'has-content' : 'initial-view'}`}>
         {/* Hero Section - Only shown initially */}
         {!hasLoadedSite && (
@@ -835,93 +800,10 @@ export default function Home() {
           z-index: 1000;
         }
         
-        .filter-buttons-wrapper {
-          position: fixed;
-          top: 20px;
-          right: 120px;
-          z-index: 1000;
-          max-width: calc(100vw - 160px);
-        }
-        
-        .filter-buttons-container {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          background: rgba(0, 0, 0, 0.25);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          border-radius: 10px;
-          padding: 3px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-          overflow-x: auto;
-          overflow-y: hidden;
-          -webkit-overflow-scrolling: touch;
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-          max-width: 100%;
-        }
-        
-        .filter-buttons-container::-webkit-scrollbar {
-          height: 3px;
-        }
-        
-        .filter-buttons-container::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        
-        .filter-buttons-container::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 2px;
-        }
-        
-        .filter-button {
-          background: transparent;
-          border: none;
-          color: rgba(255, 255, 255, 0.65);
-          cursor: pointer;
-          padding: 6px 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 7px;
-          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-          position: relative;
-          z-index: 1;
-          white-space: nowrap;
-          font-size: 0.75rem;
-          font-weight: 500;
-          flex-shrink: 0;
-        }
-        
-        .filter-button:hover {
-          color: rgba(255, 255, 255, 0.95);
-        }
-        
-        .filter-button.active {
-          color: rgba(255, 255, 255, 1);
-          background: rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.25);
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-        }
-        
         @media (max-width: 968px) {
           .dark-mode-toggle-wrapper {
             top: 16px;
             right: 16px;
-          }
-          
-          .filter-buttons-wrapper {
-            top: 16px;
-            right: 16px;
-            left: 16px;
-            max-width: calc(100vw - 32px);
-          }
-          
-          .filter-buttons-container {
-            justify-content: flex-start;
           }
         }
         
