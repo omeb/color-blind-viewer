@@ -1047,22 +1047,26 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         .split-container {
           width: 100%;
           height: 100%;
-          flex: 1;
           position: relative;
-          display: flex;
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: var(--radius-md);
           overflow: hidden;
         }
         
         .split-pane {
-          height: 100%;
+          position: absolute;
+          top: 0;
+          bottom: 0;
           overflow: hidden;
-          position: relative;
         }
         
         .split-pane-left {
+          left: 0;
+          width: 50%;
           border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .split-pane-right {
+          right: 0;
+          width: 50%;
         }
         
         .split-label {
@@ -1082,26 +1086,13 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         .split-divider {
           position: absolute;
           top: 0;
-          width: 6px;
+          left: 50%;
+          width: 2px;
           height: 100%;
-          background: rgba(255, 255, 255, 0.2);
-          cursor: ew-resize;
-          z-index: 10;
+          background: rgba(255, 255, 255, 0.3);
           transform: translateX(-50%);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: background var(--transition-fast);
-        }
-        
-        .split-divider:hover {
-          background: rgba(110, 198, 255, 0.5);
-        }
-        
-        .split-handle {
-          font-size: 1.5rem;
-          color: white;
-          text-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+          z-index: 10;
+          pointer-events: none;
         }
         
         @media (max-width: 768px) {
