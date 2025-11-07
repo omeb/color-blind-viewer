@@ -55,6 +55,7 @@ export default function Home() {
   const [filterPopoverInfo, setFilterPopoverInfo] = React.useState(null)
   const filterPopoverRef = React.useRef(null)
   const filterInfoPopoverRef = React.useRef(null)
+  const infoIconRef = React.useRef(null)
   const isInitialMount = React.useRef(true)
   const [isInitialDelayComplete, setIsInitialDelayComplete] = React.useState(false)
   
@@ -399,20 +400,21 @@ export default function Home() {
                             </span>
                             {activeFilter !== 'none' && (
                               <button
+                                ref={(el) => {
+                                  if (el) {
+                                    infoIconRef.current = el
+                                  }
+                                }}
                                 onClick={(e) => {
                                   e.stopPropagation()
-                                  const badgeWrapper = e.currentTarget.closest('.filter-badge-wrapper')
-                                  const badge = badgeWrapper?.querySelector('.filter-badge')
-                                  if (badge) {
-                                    const badgeRect = badge.getBoundingClientRect()
-                                    setFilterPopoverInfo({ 
-                                      filterId: activeFilter, 
-                                      position: { 
-                                        x: badgeRect.left + badgeRect.width / 2, 
-                                        y: badgeRect.bottom + 8 
-                                      } 
-                                    })
-                                  }
+                                  const iconRect = e.currentTarget.getBoundingClientRect()
+                                  setFilterPopoverInfo({ 
+                                    filterId: activeFilter, 
+                                    position: { 
+                                      x: iconRect.left + iconRect.width / 2, 
+                                      y: iconRect.bottom + 8 
+                                    } 
+                                  })
                                 }}
                                 className="filter-info-icon-btn"
                                 title="Show information about current filter"
