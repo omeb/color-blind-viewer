@@ -47,6 +47,7 @@ export default function Home() {
   const [hasLoadedSite, setHasLoadedSite] = React.useState(false)
   const [history, setHistory] = React.useState([])
   const [selectedFilterInfo, setSelectedFilterInfo] = React.useState(null)
+  const [filterPopoverPosition, setFilterPopoverPosition] = React.useState(null)
   const [showFilterPopover, setShowFilterPopover] = React.useState(false)
   const filterPopoverRef = React.useRef(null)
   
@@ -204,7 +205,10 @@ export default function Home() {
                 <ImpairmentControls
                   activeFilter={activeFilter}
                   onFilterChange={handleFilterChange}
-                  onFilterInfo={setSelectedFilterInfo}
+                  onFilterInfo={(filterId, position) => {
+                    setSelectedFilterInfo(filterId)
+                    setFilterPopoverPosition(position)
+                  }}
                 />
                 
               </aside>
@@ -346,8 +350,12 @@ export default function Home() {
         <FilterInfoPopover
           filterId={selectedFilterInfo}
           isOpen={selectedFilterInfo !== null}
-          onClose={() => setSelectedFilterInfo(null)}
+          onClose={() => {
+            setSelectedFilterInfo(null)
+            setFilterPopoverPosition(null)
+          }}
           onApplyFilter={handleFilterChange}
+          position={filterPopoverPosition}
         />
       </main>
       

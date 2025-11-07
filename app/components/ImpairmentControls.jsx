@@ -27,7 +27,11 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
     e.stopPropagation()
     e.preventDefault()
     if (onFilterInfo) {
-      onFilterInfo(filterId)
+      const rect = e.currentTarget.getBoundingClientRect()
+      onFilterInfo(filterId, {
+        x: rect.left + rect.width / 2,
+        y: rect.bottom + 8
+      })
     }
   }
   

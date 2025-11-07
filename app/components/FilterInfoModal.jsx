@@ -13,10 +13,12 @@ import { getFilter } from '../lib/filters'
  * @param {boolean} props.isOpen - Whether the popover is open
  * @param {Function} props.onClose - Callback to close the popover
  * @param {Function} props.onApplyFilter - Optional callback to apply the filter
+ * @param {Object} props.position - Optional position {x, y} for the popover
  */
-export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFilter }) {
+export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFilter, position }) {
   const filter = getFilter(filterId)
   const popoverRef = React.useRef(null)
+  const [popoverStyle, setPopoverStyle] = React.useState({})
   
   React.useEffect(() => {
     if (!isOpen) return
@@ -28,10 +30,30 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
     }
     
     document.addEventListener('keydown', handleEscape)
+    
+    // Calculate position with viewport constraints
+    if (position && typeof window !== 'undefined') {
+      const maxWidth = window.innerWidth > 768 ? 500 : window.innerWidth - 20
+      const x = Math.min(Math.max(position.x, maxWidth / 2), window.innerWidth - maxWidth / 2)
+      const y = position.y
+      
+      setPopoverStyle({
+        left: `${x}px`,
+        top: `${y}px`,
+        transform: 'translateX(-50%)'
+      })
+    } else {
+      setPopoverStyle({
+        left: '50%',
+        top: window.innerWidth > 768 ? '100px' : '80px',
+        transform: 'translateX(-50%)'
+      })
+    }
+    
     return () => {
       document.removeEventListener('keydown', handleEscape)
     }
-  }, [isOpen, onClose])
+  }, [isOpen, onClose, position])
   
   if (!isOpen || !filter) return null
   
@@ -47,6 +69,7 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
       <div 
         ref={popoverRef}
         className="filter-info-popover" 
+        style={popoverStyle}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -151,8 +174,7 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
           z-index: 2000;
           display: flex;
           align-items: flex-start;
-          justify-content: center;
-          padding-top: 100px;
+          justify-content: flex-start;
           pointer-events: none;
         }
         
@@ -169,6 +191,7 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
           overflow-y: auto;
           box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
           animation: popoverSlideIn 0.2s ease-out;
+          position: absolute;
         }
         
         @keyframes popoverSlideIn {
