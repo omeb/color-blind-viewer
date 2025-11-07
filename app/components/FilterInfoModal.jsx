@@ -18,22 +18,22 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
   const filter = getFilter(filterId)
   const popoverRef = React.useRef(null)
   
-  if (!isOpen || !filter) return null
-  
-  const handleEscape = (e) => {
-    if (e.key === 'Escape') {
-      onClose()
-    }
-  }
-  
   React.useEffect(() => {
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape)
-      return () => {
-        document.removeEventListener('keydown', handleEscape)
+    if (!isOpen) return
+    
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        onClose()
       }
     }
-  }, [isOpen])
+    
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen, onClose])
+  
+  if (!isOpen || !filter) return null
   
   return (
     <div 
