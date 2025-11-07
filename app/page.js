@@ -62,7 +62,14 @@ export default function Home() {
   
   // Recalculate popover position after it's rendered
   React.useEffect(() => {
-    if (filterPopoverInfo && filterInfoPopoverRef.current) {
+    if (!filterPopoverInfo) {
+      setPopoverPosition(null)
+      return
+    }
+    
+    const calculatePosition = () => {
+      if (!filterInfoPopoverRef.current) return
+      
       const viewportWidth = window.innerWidth
       const viewportHeight = window.innerHeight
       const popoverWidth = 400
@@ -95,9 +102,14 @@ export default function Home() {
       }
       
       setPopoverPosition({ x, y })
-    } else {
-      setPopoverPosition(null)
     }
+    
+    // Wait for DOM to be ready, then calculate position
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        calculatePosition()
+      })
+    })
   }, [filterPopoverInfo])
   
   // Hide all content for 0.7 seconds on initial load
