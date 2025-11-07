@@ -298,6 +298,12 @@ export default function Home() {
           font-size: 1.25rem;
           margin-bottom: calc(var(--spacing-xl) * 1.5);
           opacity: 0.95;
+          line-height: 1.6;
+        }
+        
+        .hero-subtitle .highlight {
+          color: #6EC6FF;
+          font-weight: 600;
         }
         
         .url-input-section {
