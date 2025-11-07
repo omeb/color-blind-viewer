@@ -171,11 +171,14 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
                         <button
                           key={`${historyUrl}-${index}`}
                           onClick={() => {
+                            // Update input value immediately
+                            setEditedUrl(historyUrl)
+                            setShowHistoryDropdown(false)
+                            setIsEditingUrl(false)
+                            // Then trigger the callback
                             if (onSelectUrl) {
                               onSelectUrl(historyUrl)
                             }
-                            setShowHistoryDropdown(false)
-                            setIsEditingUrl(false)
                           }}
                           className="history-dropdown-item"
                           title={`Load ${historyUrl}`}
