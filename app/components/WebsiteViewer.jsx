@@ -1447,10 +1447,23 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           position: absolute;
           top: 0;
           left: 0;
-          width: 200px;
-          height: 50px;
+          width: 300px;
+          height: 80px;
           background: white;
           z-index: 1000;
+          pointer-events: none;
+        }
+        
+        /* Additional CSS to inject into iframe to hide skip links */
+        .iframe-wrapper::before {
+          content: '';
+          position: absolute;
+          top: -10px;
+          left: -10px;
+          width: 320px;
+          height: 100px;
+          background: white;
+          z-index: 999;
           pointer-events: none;
         }
         

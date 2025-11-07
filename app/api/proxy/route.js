@@ -47,7 +47,7 @@ function validateUrl(urlString) {
 }
 
 /**
- * Injects base tag into HTML to fix relative URLs
+ * Injects base tag and CSS to hide skip links into HTML
  * @param {string} html - Original HTML
  * @param {string} baseUrl - Base URL to inject
  * @returns {string} Modified HTML
@@ -55,18 +55,57 @@ function validateUrl(urlString) {
 function injectBaseTag(html, baseUrl) {
   const baseTag = `<base href="${baseUrl}" target="_parent">`
   
+  // CSS to hide skip links and accessibility elements that shouldn't be visible
+  const hideSkipLinksCSS = `
+    <style>
+      /* Hide skip navigation links */
+      a[href="#main"],
+      a[href="#content"], 
+      a[href="#main-content"],
+      a[class*="skip"],
+      a[class*="sr-only"]:not(:focus),
+      .skip-link:not(:focus),
+      .screen-reader-text:not(:focus),
+      .visually-hidden:not(:focus),
+      .sr-only:not(:focus) {
+        position: absolute !important;
+        left: -10000px !important;
+        top: -10000px !important;
+        width: 1px !important;
+        height: 1px !important;
+        overflow: hidden !important;
+        clip: rect(1px, 1px, 1px, 1px) !important;
+        clip-path: inset(50%) !important;
+      }
+      
+      /* Specifically target common skip link patterns */
+      a[href*="skip"]:not(:focus),
+      a[aria-label*="skip"]:not(:focus),
+      a[title*="skip"]:not(:focus) {
+        position: absolute !important;
+        left: -10000px !important;
+        top: -10000px !important;
+        width: 1px !important;
+        height: 1px !important;
+        overflow: hidden !important;
+      }
+    </style>
+  `
+  
+  const injectionContent = baseTag + hideSkipLinksCSS
+  
   // Try to inject after <head> tag
   if (html.includes('<head>')) {
-    return html.replace('<head>', `<head>${baseTag}`)
+    return html.replace('<head>', `<head>${injectionContent}`)
   }
   
   // Try to inject after <head ...> tag with attributes
   if (html.match(/<head[^>]*>/i)) {
-    return html.replace(/<head[^>]*>/i, match => `${match}${baseTag}`)
+    return html.replace(/<head[^>]*>/i, match => `${match}${injectionContent}`)
   }
   
   // If no head tag, inject at the beginning
-  return baseTag + html
+  return injectionContent + html
 }
 
 /**
