@@ -1,4 +1,5 @@
-:root {
+:root,
+[data-theme="light"] {
   --color-primary: #4A90E2;
   --color-primary-dark: #357ABD;
   --color-success: #5CB85C;
@@ -74,20 +75,7 @@
   box-shadow: 0 0 0 3px rgba(110, 198, 255, 0.15);
 }
 
-/* Light mode theme (explicit) */
-[data-theme="light"] {
-  /* Keep default light theme values */
-  --glass-bg: rgba(255, 255, 255, 0.1);
-  --glass-border: rgba(255, 255, 255, 0.2);
-  --glass-shadow: rgba(0, 0, 0, 0.1);
-  
-  --text-primary: #1a1a1a;
-  --text-secondary: #4a4a4a;
-  --text-light: #ffffff;
-  
-  --bg-gradient-start: #667eea;
-  --bg-gradient-end: #764ba2;
-}
+/* Light mode theme (explicit) - values already set in :root above */
 
 /* Reset and base styles */
 * {
