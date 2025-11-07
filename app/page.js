@@ -405,6 +405,8 @@ export default function Home() {
           box-shadow: none;
           padding: 0;
         }
+        
+        .footer {
           margin-top: auto;
           padding-top: var(--spacing-xl);
           max-width: 1400px;
