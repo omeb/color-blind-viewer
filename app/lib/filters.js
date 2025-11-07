@@ -82,6 +82,51 @@ export const VISION_FILTERS = {
     prevalence: 'Common with aging',
     severity: 'Moderate',
   },
+  
+  protanomaly: {
+    id: 'protanomaly',
+    name: 'Protanomaly',
+    description: 'Red-weak. Milder form of red colorblindness.',
+    filter: 'url(#protanomaly)',
+    prevalence: '~1% of males',
+    severity: 'Mild',
+  },
+  
+  deuteranomaly: {
+    id: 'deuteranomaly',
+    name: 'Deuteranomaly',
+    description: 'Green-weak. Most common color vision deficiency.',
+    filter: 'url(#deuteranomaly)',
+    prevalence: '~5% of males',
+    severity: 'Mild',
+  },
+  
+  glaucoma: {
+    id: 'glaucoma',
+    name: 'Glaucoma',
+    description: 'Tunnel vision and reduced peripheral vision.',
+    filter: 'brightness(0.7) contrast(0.8)',
+    prevalence: '~3% over age 40',
+    severity: 'Progressive',
+  },
+  
+  macularDegeneration: {
+    id: 'macularDegeneration',
+    name: 'Macular Degeneration',
+    description: 'Central vision loss with blurred or dark spots.',
+    filter: 'blur(4px) contrast(0.6) brightness(0.7)',
+    prevalence: '~10% over age 65',
+    severity: 'Progressive',
+  },
+  
+  diabeticRetinopathy: {
+    id: 'diabeticRetinopathy',
+    name: 'Diabetic Retinopathy',
+    description: 'Blurred vision, floaters, and reduced contrast.',
+    filter: 'blur(2px) contrast(0.7) brightness(0.85)',
+    prevalence: 'Common in diabetics',
+    severity: 'Variable',
+  },
 }
 
 /**
@@ -110,6 +155,8 @@ export function getCategorizedFilters() {
     colorblind: [
       VISION_FILTERS.protanopia,
       VISION_FILTERS.deuteranopia,
+      VISION_FILTERS.protanomaly,
+      VISION_FILTERS.deuteranomaly,
       VISION_FILTERS.tritanopia,
       VISION_FILTERS.achromatopsia,
     ],
@@ -117,6 +164,9 @@ export function getCategorizedFilters() {
       VISION_FILTERS.cataracts,
       VISION_FILTERS.lowVision,
       VISION_FILTERS.lowContrast,
+      VISION_FILTERS.glaucoma,
+      VISION_FILTERS.macularDegeneration,
+      VISION_FILTERS.diabeticRetinopathy,
     ],
   }
 }
@@ -146,6 +196,22 @@ export const SVG_FILTER_MATRICES = {
     0.950, 0.050, 0.000, 0, 0,
     0.000, 0.433, 0.567, 0, 0,
     0.000, 0.475, 0.525, 0, 0,
+    0, 0, 0, 1, 0
+  ],
+  
+  // Protanomaly - milder red deficiency (partial protanopia)
+  protanomaly: [
+    0.817, 0.183, 0.000, 0, 0,
+    0.333, 0.667, 0.000, 0, 0,
+    0.000, 0.125, 0.875, 0, 0,
+    0, 0, 0, 1, 0
+  ],
+  
+  // Deuteranomaly - milder green deficiency (partial deuteranopia)
+  deuteranomaly: [
+    0.800, 0.200, 0.000, 0, 0,
+    0.258, 0.742, 0.000, 0, 0,
+    0.000, 0.142, 0.858, 0, 0,
     0, 0, 0, 1, 0
   ],
 }

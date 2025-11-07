@@ -12,11 +12,16 @@ describe('VISION_FILTERS', () => {
     expect(VISION_FILTERS.none).toBeDefined()
     expect(VISION_FILTERS.protanopia).toBeDefined()
     expect(VISION_FILTERS.deuteranopia).toBeDefined()
+    expect(VISION_FILTERS.protanomaly).toBeDefined()
+    expect(VISION_FILTERS.deuteranomaly).toBeDefined()
     expect(VISION_FILTERS.tritanopia).toBeDefined()
     expect(VISION_FILTERS.achromatopsia).toBeDefined()
     expect(VISION_FILTERS.cataracts).toBeDefined()
     expect(VISION_FILTERS.lowVision).toBeDefined()
     expect(VISION_FILTERS.lowContrast).toBeDefined()
+    expect(VISION_FILTERS.glaucoma).toBeDefined()
+    expect(VISION_FILTERS.macularDegeneration).toBeDefined()
+    expect(VISION_FILTERS.diabeticRetinopathy).toBeDefined()
   })
   
   it('has correct structure for each filter', () => {
@@ -71,8 +76,16 @@ describe('getAllFilterIds', () => {
     expect(ids).toContain('none')
     expect(ids).toContain('protanopia')
     expect(ids).toContain('deuteranopia')
+    expect(ids).toContain('protanomaly')
+    expect(ids).toContain('deuteranomaly')
     expect(ids).toContain('tritanopia')
     expect(ids).toContain('achromatopsia')
+    expect(ids).toContain('glaucoma')
+    expect(ids).toContain('macularDegeneration')
+    expect(ids).toContain('diabeticRetinopathy')
+    expect(ids).toContain('astigmatism')
+    expect(ids).toContain('photophobia')
+    expect(ids).toContain('presbyopia')
   })
 })
 
@@ -85,21 +98,26 @@ describe('getCategorizedFilters', () => {
   
   it('has correct filters in colorblind category', () => {
     const { colorblind } = getCategorizedFilters()
-    expect(colorblind).toHaveLength(4)
+    expect(colorblind).toHaveLength(6)
     const ids = colorblind.map(f => f.id)
     expect(ids).toContain('protanopia')
     expect(ids).toContain('deuteranopia')
+    expect(ids).toContain('protanomaly')
+    expect(ids).toContain('deuteranomaly')
     expect(ids).toContain('tritanopia')
     expect(ids).toContain('achromatopsia')
   })
   
   it('has correct filters in other category', () => {
     const { other } = getCategorizedFilters()
-    expect(other).toHaveLength(3)
+    expect(other).toHaveLength(6)
     const ids = other.map(f => f.id)
     expect(ids).toContain('cataracts')
     expect(ids).toContain('lowVision')
     expect(ids).toContain('lowContrast')
+    expect(ids).toContain('glaucoma')
+    expect(ids).toContain('macularDegeneration')
+    expect(ids).toContain('diabeticRetinopathy')
   })
 })
 
@@ -107,6 +125,8 @@ describe('SVG_FILTER_MATRICES', () => {
   it('has matrices for colorblind filters', () => {
     expect(SVG_FILTER_MATRICES.protanopia).toBeDefined()
     expect(SVG_FILTER_MATRICES.deuteranopia).toBeDefined()
+    expect(SVG_FILTER_MATRICES.protanomaly).toBeDefined()
+    expect(SVG_FILTER_MATRICES.deuteranomaly).toBeDefined()
     expect(SVG_FILTER_MATRICES.tritanopia).toBeDefined()
   })
   
@@ -130,6 +150,8 @@ describe('generateSVGFilters', () => {
     const svg = generateSVGFilters()
     expect(svg).toContain('id="protanopia"')
     expect(svg).toContain('id="deuteranopia"')
+    expect(svg).toContain('id="protanomaly"')
+    expect(svg).toContain('id="deuteranomaly"')
     expect(svg).toContain('id="tritanopia"')
   })
   

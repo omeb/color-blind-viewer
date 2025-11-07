@@ -24,11 +24,16 @@ function getFilterExplanation(filterId) {
   const explanations = {
     protanopia: 'Cannot distinguish red from green',
     deuteranopia: 'Most common - green color blindness',
+    protanomaly: 'Red-weak color vision deficiency',
+    deuteranomaly: 'Green-weak - most common color deficiency',
     tritanopia: 'Blue-yellow color blindness',
     achromatopsia: 'Sees only in grayscale',
     cataracts: 'Cloudy, blurred vision',
     lowVision: 'Significantly reduced clarity',
     lowContrast: 'Difficulty seeing similar shades',
+    glaucoma: 'Tunnel vision and reduced peripheral vision',
+    macularDegeneration: 'Central vision loss with blurred spots',
+    diabeticRetinopathy: 'Blurred vision and reduced contrast',
   }
   return explanations[filterId] || ''
 }

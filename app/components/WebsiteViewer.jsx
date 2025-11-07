@@ -375,7 +375,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         </div>
       )}
       
-      {proxyUrl && !loading && !error && (
+      {proxyUrl && !loading && !iframeLoading && !error && (
         <div className="iframe-content">
           {isSplitView && activeFilter !== 'none' ? (
             <div className="split-container">
