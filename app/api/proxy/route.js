@@ -69,23 +69,38 @@ function injectBaseTag(html, baseUrl) {
   cleanedHtml = cleanedHtml.replace(/<[^>]*class\s*=\s*["'][^"']*screen-reader[^"']*["'][^>]*>.*?<\/[^>]*>/gi, '')
   cleanedHtml = cleanedHtml.replace(/<[^>]*class\s*=\s*["'][^"']*visually-hidden[^"']*["'][^>]*>.*?<\/[^>]*>/gi, '')
   
-  // CSS to hide ONLY the specific skip link
-  const hideSkipLinksCSS = `
-    <style>
-      /* Hide only the specific skip to main content link */
-      a[href="#main-content"].skip-link {
-        display: none !important;
+  // JavaScript to directly hide skip links
+  const hideSkipLinksScript = `
+    <script>
+      // Hide skip links immediately when DOM loads
+      function hideSkipLinks() {
+        // Target the exact skip link element
+        const skipLinks = document.querySelectorAll('a[href="#main-content"]');
+        skipLinks.forEach(link => {
+          if (link.classList.contains('skip-link')) {
+            link.style.display = 'none';
+          }
+        });
+        
+        // Also target any element with skip-link class
+        const skipLinkElements = document.querySelectorAll('.skip-link');
+        skipLinkElements.forEach(element => {
+          element.style.display = 'none';
+        });
       }
-      a[class*="jsx-"][class*="skip-link"] {
-        display: none !important;
+      
+      // Run immediately and on DOM ready
+      hideSkipLinks();
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideSkipLinks);
       }
-      .jsx-62f8948cafdfa7f.skip-link {
-        display: none !important;
-      }
-    </style>
+      
+      // Also run after a short delay to catch dynamically added elements
+      setTimeout(hideSkipLinks, 100);
+    </script>
   `
   
-  const injectionContent = baseTag + hideSkipLinksCSS
+  const injectionContent = baseTag + hideSkipLinksScript
   
   // Try to inject after <head> tag
   if (cleanedHtml.includes('<head>')) {
