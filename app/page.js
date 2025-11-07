@@ -72,7 +72,7 @@ export default function Home() {
       
       const viewportWidth = window.innerWidth
       const viewportHeight = window.innerHeight
-      const popoverWidth = 280
+      const popoverWidth = 260
       const minMargin = 20
       
       let x = filterPopoverInfo.position.x
@@ -1149,7 +1149,7 @@ export default function Home() {
         
         .filter-info-popover {
           position: fixed;
-          width: 280px;
+          width: 260px;
           max-width: 90vw;
           max-height: calc(100vh - 200px);
           z-index: 1000;
