@@ -1149,7 +1149,7 @@ export default function Home() {
         
         .filter-info-popover {
           position: fixed;
-          width: 400px;
+          width: 320px;
           max-width: 90vw;
           max-height: calc(100vh - 200px);
           z-index: 1000;
