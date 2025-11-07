@@ -1,14 +1,13 @@
 [build]
-  # Clear npm cache and install dependencies with flags, then build
-  # This ensures a clean install with --legacy-peer-deps
-  command = "npm cache clean --force || true && npm install --legacy-peer-deps --no-audit && npm run build"
+  # Since .npmrc has legacy-peer-deps=true, we don't need the flag here
+  # This simpler command should be more reliable
+  command = "npm install --no-audit && npm run build"
   publish = ".next"
 
 [build.environment]
   NODE_VERSION = "20"
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1"
-  NPM_FLAGS = "--legacy-peer-deps --no-audit"
-  # Ensure npm uses the correct registry
+  NPM_FLAGS = "--no-audit"
   NPM_CONFIG_REGISTRY = "https://registry.npmjs.org/"
 
 [[plugins]]
