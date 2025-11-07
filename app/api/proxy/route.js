@@ -73,8 +73,14 @@ function injectBaseTag(html, baseUrl) {
   const hideSkipLinksCSS = `
     <style>
       /* Hide only the specific skip to main content link */
-      a[href="#main-content"][class*="skip-link"] {
-        visibility: hidden !important;
+      a[href="#main-content"].skip-link {
+        display: none !important;
+      }
+      a[class*="jsx-"][class*="skip-link"] {
+        display: none !important;
+      }
+      .jsx-62f8948cafdfa7f.skip-link {
+        display: none !important;
       }
     </style>
   `
