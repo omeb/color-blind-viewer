@@ -828,6 +828,21 @@ export default function Home() {
           padding: var(--spacing-xs);
         }
         
+        .filter-picker-section-header {
+          padding: var(--spacing-sm) var(--spacing-md);
+          font-size: 0.75rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: rgba(255, 255, 255, 0.6);
+          margin-top: var(--spacing-sm);
+          margin-bottom: var(--spacing-xs);
+        }
+        
+        .filter-picker-section-header:first-of-type {
+          margin-top: 0;
+        }
+        
         .filter-picker-item {
           width: 100%;
           display: flex;
