@@ -607,10 +607,6 @@ export default function Home() {
             <div 
               ref={filterInfoPopoverRef}
               className="filter-info-popover"
-              style={{
-                left: `${filterPopoverInfo.position.x}px`,
-                top: `${filterPopoverInfo.position.y}px`,
-              }}
             >
               <div className="filter-popover-header">
                 <div className="filter-popover-title-row">
