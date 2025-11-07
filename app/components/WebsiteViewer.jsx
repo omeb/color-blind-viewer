@@ -554,16 +554,17 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         
         .website-viewer-wrapper.expanded {
           position: fixed;
-          top: var(--spacing-md);
-          left: var(--spacing-md);
-          right: var(--spacing-md);
-          bottom: var(--spacing-md);
+          top: 20px;
+          left: 20px;
+          right: 20px;
+          bottom: 20px;
           z-index: 1000;
           margin: 0;
           padding: 0;
           overflow: hidden;
           border-radius: var(--radius-md);
           box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+          background: rgba(255, 255, 255, 0.05);
         }
         
         .website-viewer-container {
@@ -1417,13 +1418,16 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           flex: 1;
           position: relative;
           width: 100%;
-          height: 100%;
+          min-height: 0;
           overflow: hidden;
+          display: flex;
+          flex-direction: column;
         }
         
         .iframe-wrapper {
           width: 100%;
           height: 100%;
+          flex: 1;
           background: white;
           transition: filter var(--transition-normal);
           position: relative;
@@ -1453,6 +1457,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         .split-container {
           width: 100%;
           height: 100%;
+          flex: 1;
           position: relative;
           display: flex;
         }
