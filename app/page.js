@@ -7,7 +7,6 @@ import ImpairmentControls from './components/ImpairmentControls'
 import InfoPanel from './components/InfoPanel'
 import HistorySection from './components/HistorySection'
 import FilterInfoModal from './components/FilterInfoModal'
-import Header from './components/Header'
 import { generateSVGFilters, getFilter } from './lib/filters'
 
 function getFilterName(filterId) {
@@ -199,7 +198,6 @@ export default function Home() {
         {/* Main Content - Only shown after first site load */}
         {hasLoadedSite && (
           <div className="main-content">
-            <Header />
             <div className="content-grid">
               {/* Left Column - Controls and Info */}
               <aside className="sidebar glass-card">
@@ -272,21 +270,32 @@ export default function Home() {
         {/* Footer */}
         <footer className="footer">
           <div className="glass-card footer-content">
-            <p className="footer-love">
-              Made with <span className="heart">❤️</span> by the Wix Accessibility team
-              {' · '}
-              <a 
-                href="https://github.com/omeb/color-blind-viewer" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="footer-link-inline"
-              >
-                <svg className="footer-github-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-                </svg>
-                View on GitHub
-              </a>
-            </p>
+            <div className="footer-main">
+              <h3 className="footer-title">Making the web accessible for everyone</h3>
+              <p className="footer-note">
+                Some sites may restrict embedding for security. Try different URLs if needed.
+              </p>
+            </div>
+            
+            <div className="footer-divider"></div>
+            
+            <div className="footer-secondary">
+              <p className="footer-love">
+                Made with <span className="heart">❤️</span> by the Wix Accessibility team
+                {' · '}
+                <a 
+                  href="https://github.com/omeb/color-blind-viewer" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="footer-link-inline"
+                >
+                  <svg className="footer-github-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                  </svg>
+                  View on GitHub
+                </a>
+              </p>
+            </div>
           </div>
         </footer>
         
@@ -520,8 +529,47 @@ export default function Home() {
         }
         
         .footer-content {
-          padding: var(--spacing-md);
-          text-align: center;
+          padding: var(--spacing-lg) var(--spacing-md);
+          display: flex;
+          flex-direction: column;
+          gap: var(--spacing-sm);
+        }
+        
+        .footer-main {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: var(--spacing-xs);
+        }
+        
+        .footer-title {
+          font-size: 1.1rem;
+          font-weight: 600;
+          margin: 0;
+          color: rgba(255, 255, 255, 0.95);
+          letter-spacing: -0.01em;
+        }
+        
+        .footer-note {
+          font-size: 0.8rem;
+          margin: 0;
+          color: rgba(255, 255, 255, 0.8);
+          line-height: 1.4;
+        }
+        
+        .footer-divider {
+          width: 40px;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+          margin: var(--spacing-xs) auto;
+        }
+        
+        .footer-secondary {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: var(--spacing-xs);
+          opacity: 0.7;
         }
         
         .footer-link-inline {
