@@ -216,30 +216,104 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
       const filter = getFilter(activeFilter)
       const filterName = filter ? filter.name : activeFilter
       
-      // Capture the split container
-      const canvas = await html2canvas(splitContainerRef.current, {
-        backgroundColor: null,
-        useCORS: true,
-        allowTaint: true,
-        scale: 2, // Higher quality
-        logging: false,
-        width: splitContainerRef.current.offsetWidth,
-        height: splitContainerRef.current.offsetHeight,
-      })
+      const originalIframe = originalIframeRef.current
+      const filteredIframe = filteredIframeRef.current
       
-      // Create a new canvas with extra space for the filter name
+      if (!originalIframe || !filteredIframe) return
+      
+      // Capture each iframe's content separately
+      let originalCanvas = null
+      let filteredCanvas = null
+      
+      try {
+        const originalDoc = originalIframe.contentDocument || originalIframe.contentWindow.document
+        const filteredDoc = filteredIframe.contentDocument || filteredIframe.contentWindow.document
+        
+        if (originalDoc && filteredDoc) {
+          // Capture the document body of each iframe
+          originalCanvas = await html2canvas(originalDoc.body, {
+            backgroundColor: '#ffffff',
+            useCORS: true,
+            allowTaint: true,
+            scale: 2,
+            logging: false,
+            width: originalIframe.offsetWidth,
+            height: Math.max(originalDoc.body.scrollHeight, originalIframe.offsetHeight),
+          })
+          
+          filteredCanvas = await html2canvas(filteredDoc.body, {
+            backgroundColor: '#ffffff',
+            useCORS: true,
+            allowTaint: true,
+            scale: 2,
+            logging: false,
+            width: filteredIframe.offsetWidth,
+            height: Math.max(filteredDoc.body.scrollHeight, filteredIframe.offsetHeight),
+          })
+        }
+      } catch (e) {
+        console.warn('Could not access iframe content directly, trying alternative method:', e)
+        // Fallback: try capturing the iframe elements themselves
+        originalCanvas = await html2canvas(originalIframe, {
+          backgroundColor: '#ffffff',
+          useCORS: true,
+          allowTaint: true,
+          scale: 2,
+          logging: false,
+        })
+        
+        filteredCanvas = await html2canvas(filteredIframe, {
+          backgroundColor: '#ffffff',
+          useCORS: true,
+          allowTaint: true,
+          scale: 2,
+          logging: false,
+        })
+      }
+      
+      if (!originalCanvas || !filteredCanvas) {
+        throw new Error('Failed to capture iframe content')
+      }
+      
+      // Determine the height (use the taller one)
+      const maxHeight = Math.max(originalCanvas.height, filteredCanvas.height)
+      const paneWidth = originalCanvas.width
+      
+      // Create a new canvas for the combined image
       const padding = 60
+      const labelHeight = 40
       const finalCanvas = document.createElement('canvas')
-      finalCanvas.width = canvas.width
-      finalCanvas.height = canvas.height + padding
+      finalCanvas.width = paneWidth * 2 + 2 // 2 panes + divider
+      finalCanvas.height = maxHeight + padding + labelHeight
       const ctx = finalCanvas.getContext('2d')
       
       // Fill background
       ctx.fillStyle = '#1a1a2e'
       ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height)
       
-      // Draw the captured canvas
-      ctx.drawImage(canvas, 0, padding)
+      // Draw the captured canvases side by side
+      ctx.drawImage(originalCanvas, 0, padding + labelHeight, paneWidth, maxHeight)
+      ctx.drawImage(filteredCanvas, paneWidth + 2, padding + labelHeight, paneWidth, maxHeight)
+      
+      // Draw divider line
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.moveTo(paneWidth + 1, padding + labelHeight)
+      ctx.lineTo(paneWidth + 1, padding + labelHeight + maxHeight)
+      ctx.stroke()
+      
+      // Add labels
+      ctx.fillStyle = '#000000'
+      ctx.fillRect(8, padding + 8, 100, labelHeight - 16)
+      ctx.fillRect(paneWidth + 10, padding + 8, 120, labelHeight - 16)
+      
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      ctx.textAlign = 'left'
+      ctx.textBaseline = 'middle'
+      ctx.fillText('Original', 16, padding + labelHeight / 2)
+      ctx.fillText('With Filter', paneWidth + 18, padding + labelHeight / 2)
       
       // Add filter name text at the top
       ctx.fillStyle = '#ffffff'
@@ -263,7 +337,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
       }, 'image/png')
     } catch (error) {
       console.error('Failed to capture snapshot:', error)
-      alert('Failed to capture snapshot. Please try again.')
+      alert('Failed to capture snapshot. This may be due to cross-origin restrictions. Please try a different website.')
     }
   }
   
