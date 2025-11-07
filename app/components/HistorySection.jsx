@@ -9,7 +9,8 @@ const EXAMPLE_SITES = [
   'https://rive.app',
   'https://pitch.com',
   'https://superlist.com',
-  'https://nifti.com'
+  'https://nifti.com',
+  'https://www.wix.com'
 ]
 
 /**
