@@ -839,8 +839,13 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
                   setFilterPopoverInfo(null)
                 }
               }}
+              onContextMenu={(e) => {
+                e.preventDefault()
+                const rect = e.currentTarget.getBoundingClientRect()
+                setFilterPopoverInfo({ filterId: 'none', position: { x: rect.left + rect.width / 2, y: rect.bottom + 8 } })
+              }}
               className={`quick-filter-btn ${activeFilter === 'none' ? 'active' : ''}`}
-              title="Double-click for info"
+              title="Click to apply • Double-click or right-click for info"
             >
               None
             </button>
@@ -857,8 +862,13 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
                     setFilterPopoverInfo(null)
                   }
                 }}
+                onContextMenu={(e) => {
+                  e.preventDefault()
+                  const rect = e.currentTarget.getBoundingClientRect()
+                  setFilterPopoverInfo({ filterId: filter.id, position: { x: rect.left + rect.width / 2, y: rect.bottom + 8 } })
+                }}
                 className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
-                title={`Double-click for info`}
+                title={`Click to apply • Double-click or right-click for info`}
               >
                 {filter.name}
               </button>
@@ -876,8 +886,13 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
                     setFilterPopoverInfo(null)
                   }
                 }}
+                onContextMenu={(e) => {
+                  e.preventDefault()
+                  const rect = e.currentTarget.getBoundingClientRect()
+                  setFilterPopoverInfo({ filterId: filter.id, position: { x: rect.left + rect.width / 2, y: rect.bottom + 8 } })
+                }}
                 className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
-                title={`Double-click for info`}
+                title={`Click to apply • Double-click or right-click for info`}
               >
                 {filter.name}
               </button>
