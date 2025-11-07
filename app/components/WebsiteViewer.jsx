@@ -19,8 +19,6 @@ import { getCategorizedFilters } from '../lib/filters'
 export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemove, onFilterChange, onFilterInfo, onChangeUrl, loading = false, error = null, onUrlChange }) {
   const [iframeKey, setIframeKey] = React.useState(0)
   const [isSplitView, setIsSplitView] = React.useState(false)
-  const [splitPosition, setSplitPosition] = React.useState(50)
-  const [isDragging, setIsDragging] = React.useState(false)
   const [iframeLoading, setIframeLoading] = React.useState(false)
   const [iframeLoaded, setIframeLoaded] = React.useState(false)
   const [isEditingUrl, setIsEditingUrl] = React.useState(false)
@@ -115,34 +113,6 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
     }
   }
   
-  // Handle split view dragging
-  const handleMouseDown = () => {
-    setIsDragging(true)
-  }
-  
-  const handleMouseMove = (e) => {
-    if (!isDragging || !containerRef.current) return
-    
-    const rect = containerRef.current.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const percentage = (x / rect.width) * 100
-    setSplitPosition(Math.min(Math.max(percentage, 10), 90))
-  }
-  
-  const handleMouseUp = () => {
-    setIsDragging(false)
-  }
-  
-  React.useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove)
-        document.removeEventListener('mouseup', handleMouseUp)
-      }
-    }
-  }, [isDragging])
   
   return (
     <div className="website-viewer-wrapper">
@@ -243,7 +213,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
       <div 
         ref={containerRef}
         className={`website-viewer-container ${isSplitView ? 'split-view' : ''}`}
-        style={{ cursor: isDragging ? 'ew-resize' : 'default' }}
+        style={{}}
       >
       
       {!url && !loading && !error && (
@@ -315,7 +285,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         <div className="iframe-content">
           {isSplitView && activeFilter !== 'none' ? (
             <div className="split-container">
-              <div className="split-pane split-pane-left" style={{ width: `${splitPosition}%` }}>
+              <div className="split-pane split-pane-left">
                 <div className="split-label">Original</div>
                 <iframe
                   key={`${iframeKey}-original`}
@@ -328,15 +298,9 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
                 />
               </div>
               
-              <div 
-                className="split-divider"
-                onMouseDown={handleMouseDown}
-                style={{ left: `${splitPosition}%` }}
-              >
-                <div className="split-handle">⋮</div>
-              </div>
+              <div className="split-divider"></div>
               
-              <div className="split-pane split-pane-right" style={{ width: `${100 - splitPosition}%` }}>
+              <div className="split-pane split-pane-right">
                 <div className="split-label">With Filter</div>
                 <div 
                   className="iframe-wrapper filtered"
