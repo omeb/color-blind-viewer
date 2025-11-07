@@ -525,11 +525,11 @@ export default function Home() {
           transform: translateY(-1px);
         }
         
-        .filter-popover {
+        .filter-picker-popover {
           position: absolute;
           top: calc(100% + var(--spacing-sm));
           right: 0;
-          width: 400px;
+          width: 280px;
           max-width: 90vw;
           z-index: 1000;
           background: rgba(0, 0, 0, 0.95);
@@ -539,6 +539,84 @@ export default function Home() {
           border-radius: var(--radius-md);
           box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
           animation: popoverFadeIn 0.2s ease-out;
+          overflow: hidden;
+        }
+        
+        .filter-picker-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: var(--spacing-sm) var(--spacing-md);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .filter-picker-header span {
+          font-size: 0.9rem;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .filter-picker-close {
+          background: transparent;
+          border: none;
+          color: rgba(255, 255, 255, 0.7);
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 4px;
+          transition: all var(--transition-fast);
+          font-size: 1rem;
+          line-height: 1;
+          width: 24px;
+          height: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .filter-picker-close:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .filter-picker-content {
+          max-height: 400px;
+          overflow-y: auto;
+          padding: var(--spacing-xs);
+        }
+        
+        .filter-picker-item {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          padding: var(--spacing-sm) var(--spacing-md);
+          background: transparent;
+          border: none;
+          border-radius: var(--radius-sm);
+          color: rgba(255, 255, 255, 0.9);
+          cursor: pointer;
+          transition: all var(--transition-fast);
+          text-align: left;
+          gap: 2px;
+        }
+        
+        .filter-picker-item:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .filter-picker-item.active {
+          background: rgba(110, 198, 255, 0.2);
+          border: 1px solid rgba(110, 198, 255, 0.4);
+        }
+        
+        .filter-picker-name {
+          font-size: 0.9rem;
+          font-weight: 600;
+        }
+        
+        .filter-picker-desc {
+          font-size: 0.75rem;
+          opacity: 0.7;
         }
         
         @keyframes popoverFadeIn {
@@ -550,16 +628,6 @@ export default function Home() {
             opacity: 1;
             transform: translateY(0);
           }
-        }
-        
-        .filter-popover :global(.info-panel) {
-          margin: 0;
-        }
-        
-        .filter-popover :global(.glass-card) {
-          background: transparent;
-          box-shadow: none;
-          padding: 0;
         }
         
         .footer {
