@@ -910,6 +910,47 @@ export default function Home() {
           align-items: flex-end;
         }
         
+        .filter-badge-container {
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-xs);
+          position: relative;
+        }
+        
+        .filter-info-icon-btn {
+          flex-shrink: 0;
+          width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(110, 198, 255, 0.2);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 1px solid rgba(110, 198, 255, 0.4);
+          border-radius: 50%;
+          color: rgba(110, 198, 255, 1);
+          cursor: pointer;
+          font-size: 0.85rem;
+          font-weight: 600;
+          transition: all 0.2s ease;
+          padding: 0;
+          outline-offset: 2px;
+          position: relative;
+          z-index: 10;
+        }
+        
+        .filter-info-icon-btn:hover {
+          background: rgba(110, 198, 255, 0.3);
+          border-color: rgba(110, 198, 255, 0.6);
+          transform: scale(1.1);
+          box-shadow: 0 2px 8px rgba(110, 198, 255, 0.4);
+        }
+        
+        .filter-info-icon-btn:active {
+          transform: scale(0.95);
+        }
+        
         .filter-badge.clickable {
           cursor: pointer;
           transition: all var(--transition-fast);
