@@ -6,7 +6,6 @@ import React from 'react'
 const EXAMPLE_SITES = [
   'https://bruno-simon.com',
   'https://dogstudio.co',
-  'https://press.stripe.com',
   'https://rive.app',
   'https://pitch.com',
   'https://superlist.com',
