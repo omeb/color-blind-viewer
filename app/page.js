@@ -206,11 +206,6 @@ export default function Home() {
                       </div>
                     )}
                   </div>
-                  {activeFilter !== 'none' && (
-                    <div className="viewer-info-section">
-                      <InfoPanel activeFilter={activeFilter} />
-                    </div>
-                  )}
                   <WebsiteViewer
                     url={loadedUrl}
                     activeFilter={activeFilter}
@@ -222,6 +217,11 @@ export default function Home() {
                     loading={loading}
                     error={error}
                   />
+                  {activeFilter !== 'none' && (
+                    <div className="viewer-info-section">
+                      <InfoPanel activeFilter={activeFilter} />
+                    </div>
+                  )}
                 </div>
               </section>
             </div>
@@ -389,7 +389,7 @@ export default function Home() {
         }
         
         .viewer-info-section {
-          margin-bottom: var(--spacing-md);
+          margin-top: var(--spacing-md);
           padding: var(--spacing-md);
           background: rgba(255, 255, 255, 0.03);
           border-radius: var(--radius-md);
