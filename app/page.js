@@ -43,7 +43,7 @@ export default function Home() {
   const [targetUrl, setTargetUrl] = React.useState('')
   const [urlInputValue, setUrlInputValue] = React.useState('')
   const [loadedUrl, setLoadedUrl] = React.useState('')
-  const [activeFilter, setActiveFilter] = React.useState('none')
+  const [activeFilter, setActiveFilter] = React.useState('tritanopia')
   const [isSplitView, setIsSplitView] = React.useState(true)
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState(null)
@@ -200,6 +200,9 @@ export default function Home() {
     
     if (activeFilter && activeFilter !== 'none') {
       newParams.set('filter', activeFilter)
+    } else if (activeFilter === 'tritanopia') {
+      // Set tritanopia as default in URL if no other filter is set
+      newParams.set('filter', 'tritanopia')
     }
     
     if (isSplitView) {
