@@ -16,7 +16,7 @@ import { getCategorizedFilters } from '../lib/filters'
  * @param {boolean} props.loading - Whether the website is loading
  * @param {string} props.error - Error message if loading failed
  */
-export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemove, onFilterChange, onChangeUrl, loading = false, error = null, onUrlChange, onExpandedChange }) {
+export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemove, onFilterChange, onFilterInfo, onChangeUrl, loading = false, error = null, onUrlChange, onExpandedChange }) {
   const [iframeKey, setIframeKey] = React.useState(0)
   const [isExpanded, setIsExpanded] = React.useState(false)
   const [isSplitView, setIsSplitView] = React.useState(false)
@@ -254,7 +254,13 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
             {getCategorizedFilters().colorblind.map((filter) => (
               <button
                 key={filter.id}
-                onClick={() => onFilterChange(filter.id === activeFilter ? 'none' : filter.id)}
+                onClick={() => {
+                  if (onFilterInfo) {
+                    onFilterInfo(filter.id)
+                  } else {
+                    onFilterChange(filter.id === activeFilter ? 'none' : filter.id)
+                  }
+                }}
                 className={`expanded-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
                 title={filter.description}
               >
@@ -264,7 +270,13 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
             {getCategorizedFilters().other.map((filter) => (
               <button
                 key={filter.id}
-                onClick={() => onFilterChange(filter.id === activeFilter ? 'none' : filter.id)}
+                onClick={() => {
+                  if (onFilterInfo) {
+                    onFilterInfo(filter.id)
+                  } else {
+                    onFilterChange(filter.id === activeFilter ? 'none' : filter.id)
+                  }
+                }}
                 className={`expanded-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
                 title={filter.description}
               >

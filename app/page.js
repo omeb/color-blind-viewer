@@ -6,6 +6,7 @@ import WebsiteViewer from './components/WebsiteViewer'
 import ImpairmentControls from './components/ImpairmentControls'
 import InfoPanel from './components/InfoPanel'
 import HistorySection from './components/HistorySection'
+import FilterInfoModal from './components/FilterInfoModal'
 import { generateSVGFilters, getFilter } from './lib/filters'
 
 function getFilterName(filterId) {
@@ -35,6 +36,7 @@ export default function Home() {
   const [hasLoadedSite, setHasLoadedSite] = React.useState(false)
   const [history, setHistory] = React.useState([])
   const [isViewerExpanded, setIsViewerExpanded] = React.useState(false)
+  const [selectedFilterInfo, setSelectedFilterInfo] = React.useState(null)
   
   // Load history from localStorage on mount
   React.useEffect(() => {
@@ -156,6 +158,7 @@ export default function Home() {
                 <ImpairmentControls
                   activeFilter={activeFilter}
                   onFilterChange={handleFilterChange}
+                  onFilterInfo={setSelectedFilterInfo}
                 />
                 
                 {history.length > 0 && (
@@ -195,6 +198,7 @@ export default function Home() {
                     activeFilter={activeFilter}
                     onFilterRemove={() => setActiveFilter('none')}
                     onFilterChange={handleFilterChange}
+                    onFilterInfo={setSelectedFilterInfo}
                     onExpandedChange={setIsViewerExpanded}
                     onChangeUrl={() => setHasLoadedSite(false)}
                     onUrlChange={handleUrlSubmit}

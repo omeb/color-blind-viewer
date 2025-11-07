@@ -12,14 +12,31 @@ import { getCategorizedFilters } from '../lib/filters'
  * @param {Object} props
  * @param {string} props.activeFilter - Currently active filter ID
  * @param {Function} props.onFilterChange - Callback when filter changes (filterId: string) => void
+ * @param {Function} props.onFilterInfo - Callback when filter info is requested (filterId: string) => void
  */
-export default function ImpairmentControls({ activeFilter = 'none', onFilterChange }) {
+export default function ImpairmentControls({ activeFilter = 'none', onFilterChange, onFilterInfo }) {
   const filters = getCategorizedFilters()
   
-  const handleFilterClick = (filterId) => {
-    // Toggle off if clicking active filter, otherwise activate clicked filter
+  const handleFilterClick = (filterId, e) => {
+    // If right-click or Ctrl/Cmd+click, show info modal
+    if (e.ctrlKey || e.metaKey || e.button === 2) {
+      e.preventDefault()
+      if (onFilterInfo) {
+        onFilterInfo(filterId)
+      }
+      return
+    }
+    
+    // Regular click - toggle filter
     const newFilter = activeFilter === filterId ? 'none' : filterId
     onFilterChange(newFilter)
+  }
+  
+  const handleInfoClick = (filterId, e) => {
+    e.stopPropagation()
+    if (onFilterInfo) {
+      onFilterInfo(filterId)
+    }
   }
   
   return (
@@ -37,13 +54,25 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
           {filters.colorblind.map((filter) => (
             <button
               key={filter.id}
-              onClick={() => handleFilterClick(filter.id)}
+              onClick={(e) => handleFilterClick(filter.id, e)}
+              onContextMenu={(e) => {
+                e.preventDefault()
+                handleInfoClick(filter.id, e)
+              }}
               className={`filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
               aria-pressed={activeFilter === filter.id}
-              title={filter.description}
+              title={`${filter.description} (Click for info)`}
             >
               <span className="filter-name">{filter.name}</span>
               <span className="filter-prevalence">{filter.prevalence}</span>
+              <button
+                onClick={(e) => handleInfoClick(filter.id, e)}
+                className="filter-info-btn"
+                aria-label={`Learn more about ${filter.name}`}
+                title="Learn more"
+              >
+                ℹ️
+              </button>
             </button>
           ))}
         </div>
@@ -55,13 +84,25 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
           {filters.other.map((filter) => (
             <button
               key={filter.id}
-              onClick={() => handleFilterClick(filter.id)}
+              onClick={(e) => handleFilterClick(filter.id, e)}
+              onContextMenu={(e) => {
+                e.preventDefault()
+                handleInfoClick(filter.id, e)
+              }}
               className={`filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
               aria-pressed={activeFilter === filter.id}
-              title={filter.description}
+              title={`${filter.description} (Click for info)`}
             >
               <span className="filter-name">{filter.name}</span>
               <span className="filter-prevalence">{filter.prevalence}</span>
+              <button
+                onClick={(e) => handleInfoClick(filter.id, e)}
+                className="filter-info-btn"
+                aria-label={`Learn more about ${filter.name}`}
+                title="Learn more"
+              >
+                ℹ️
+              </button>
             </button>
           ))}
         </div>
@@ -156,6 +197,34 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
         .filter-prevalence {
           font-size: 0.85rem;
           opacity: 0.8;
+        }
+        
+        .filter-info-btn {
+          position: absolute;
+          top: 4px;
+          right: 4px;
+          background: rgba(110, 198, 255, 0.2);
+          border: none;
+          border-radius: 50%;
+          width: 20px;
+          height: 20px;
+          font-size: 0.7rem;
+          cursor: pointer;
+          opacity: 0;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0;
+        }
+        
+        .filter-btn:hover .filter-info-btn {
+          opacity: 1;
+        }
+        
+        .filter-info-btn:hover {
+          background: rgba(110, 198, 255, 0.4);
+          transform: scale(1.1);
         }
         
         .reset-btn {
