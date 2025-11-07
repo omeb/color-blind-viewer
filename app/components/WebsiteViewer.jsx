@@ -221,6 +221,15 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
       
       if (!originalIframe || !filteredIframe) return
       
+      // Ensure iframes are loaded
+      if (!iframeLoaded) {
+        alert('Please wait for the page to finish loading before taking a screenshot.')
+        return
+      }
+      
+      // Wait for iframes to be fully loaded and rendered
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
       // Capture each iframe's content separately
       let originalCanvas = null
       let filteredCanvas = null
@@ -229,87 +238,131 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         const originalDoc = originalIframe.contentDocument || originalIframe.contentWindow.document
         const filteredDoc = filteredIframe.contentDocument || filteredIframe.contentWindow.document
         
-        if (originalDoc && filteredDoc) {
-          // Capture the document body of each iframe
-          originalCanvas = await html2canvas(originalDoc.body, {
-            backgroundColor: '#ffffff',
-            useCORS: true,
-            allowTaint: true,
-            scale: 2,
-            logging: false,
-            width: originalIframe.offsetWidth,
-            height: Math.max(originalDoc.body.scrollHeight, originalIframe.offsetHeight),
-          })
+        if (!originalDoc || !filteredDoc) {
+          throw new Error('Cannot access iframe documents - they may not be fully loaded')
+        }
+        
+        // Ensure documents are ready
+        if (originalDoc.readyState !== 'complete' || filteredDoc.readyState !== 'complete') {
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+        
+        // Scroll to top to ensure we capture from the beginning
+        try {
+          originalDoc.documentElement.scrollTop = 0
+          originalDoc.body.scrollTop = 0
+          filteredDoc.documentElement.scrollTop = 0
+          filteredDoc.body.scrollTop = 0
+          await new Promise(resolve => setTimeout(resolve, 100))
+        } catch (e) {
+          // Ignore scroll errors
+        }
+        
+        // Try capturing documentElement first (more reliable than body)
+        const originalElement = originalDoc.documentElement || originalDoc.body
+        const filteredElement = filteredDoc.documentElement || filteredDoc.body
+        
+        if (!originalElement || !filteredElement) {
+          throw new Error('Cannot access iframe document elements')
+        }
+        
+        // Calculate dimensions
+        const originalWidth = originalIframe.offsetWidth || originalElement.scrollWidth || 800
+        const originalHeight = Math.max(
+          originalDoc.documentElement.scrollHeight || originalDoc.body.scrollHeight || 600,
+          originalIframe.offsetHeight || 600
+        )
+        
+        const filteredWidth = filteredIframe.offsetWidth || filteredElement.scrollWidth || 800
+        const filteredHeight = Math.max(
+          filteredDoc.documentElement.scrollHeight || filteredDoc.body.scrollHeight || 600,
+          filteredIframe.offsetHeight || 600
+        )
+        
+        // Capture the document element of each iframe with improved options
+        originalCanvas = await html2canvas(originalElement, {
+          backgroundColor: '#ffffff',
+          useCORS: true,
+          allowTaint: true,
+          scale: 2,
+          logging: false,
+          foreignObjectRendering: true,
+          removeContainer: false,
+          windowWidth: originalWidth,
+          windowHeight: originalHeight,
+        })
+        
+        // Capture filtered iframe content
+        filteredCanvas = await html2canvas(filteredElement, {
+          backgroundColor: '#ffffff',
+          useCORS: true,
+          allowTaint: true,
+          scale: 2,
+          logging: false,
+          foreignObjectRendering: true,
+          removeContainer: false,
+          windowWidth: filteredWidth,
+          windowHeight: filteredHeight,
+        })
+        
+        // Apply the filter to the filtered canvas
+        const filterStyle = getFilterStyle(activeFilter)
+        if (filterStyle && filterStyle !== 'none') {
+          // Create a temporary canvas to apply the filter
+          const tempCanvas = document.createElement('canvas')
+          tempCanvas.width = filteredCanvas.width
+          tempCanvas.height = filteredCanvas.height
+          const tempCtx = tempCanvas.getContext('2d')
           
-          // Capture filtered iframe content
-          filteredCanvas = await html2canvas(filteredDoc.body, {
-            backgroundColor: '#ffffff',
-            useCORS: true,
-            allowTaint: true,
-            scale: 2,
-            logging: false,
-            width: filteredIframe.offsetWidth,
-            height: Math.max(filteredDoc.body.scrollHeight, filteredIframe.offsetHeight),
-          })
-          
-          // Apply the filter to the filtered canvas
-          const filterStyle = getFilterStyle(activeFilter)
-          if (filterStyle && filterStyle !== 'none') {
-            // Create a temporary canvas to apply the filter
-            const tempCanvas = document.createElement('canvas')
-            tempCanvas.width = filteredCanvas.width
-            tempCanvas.height = filteredCanvas.height
-            const tempCtx = tempCanvas.getContext('2d')
+          // Apply CSS filter using canvas filter property (if supported) or manual processing
+          // For SVG filters, we need to use a different approach
+          if (filterStyle.startsWith('url(')) {
+            // SVG filter - create a wrapper and apply it
+            const wrapper = document.createElement('div')
+            wrapper.style.filter = filterStyle
+            wrapper.style.width = filteredCanvas.width + 'px'
+            wrapper.style.height = filteredCanvas.height + 'px'
+            wrapper.style.position = 'absolute'
+            wrapper.style.left = '-9999px'
+            document.body.appendChild(wrapper)
             
-            // Apply CSS filter using canvas filter property (if supported) or manual processing
-            // For SVG filters, we need to use a different approach
-            if (filterStyle.startsWith('url(')) {
-              // SVG filter - create a wrapper and apply it
-              const wrapper = document.createElement('div')
-              wrapper.style.filter = filterStyle
-              wrapper.style.width = filteredCanvas.width + 'px'
-              wrapper.style.height = filteredCanvas.height + 'px'
-              wrapper.style.position = 'absolute'
-              wrapper.style.left = '-9999px'
-              document.body.appendChild(wrapper)
-              
-              const img = document.createElement('img')
-              img.src = filteredCanvas.toDataURL()
-              img.style.width = '100%'
-              img.style.height = '100%'
-              wrapper.appendChild(img)
-              
-              // Wait for image to load and capture the wrapper
-              await new Promise((resolve) => {
-                img.onload = () => {
-                  setTimeout(() => {
-                    html2canvas(wrapper, {
-                      backgroundColor: '#ffffff',
-                      useCORS: true,
-                      allowTaint: true,
-                      scale: 2,
-                      logging: false,
-                    }).then((canvas) => {
-                      filteredCanvas = canvas
-                      document.body.removeChild(wrapper)
-                      resolve()
-                    }).catch(() => {
-                      document.body.removeChild(wrapper)
-                      resolve()
-                    })
-                  }, 100)
-                }
-                img.onerror = () => {
-                  document.body.removeChild(wrapper)
-                  resolve()
-                }
-              })
-            } else {
-              // CSS filter - apply directly to canvas context
-              tempCtx.filter = filterStyle
-              tempCtx.drawImage(filteredCanvas, 0, 0)
-              filteredCanvas = tempCanvas
-            }
+            const img = document.createElement('img')
+            img.src = filteredCanvas.toDataURL()
+            img.style.width = '100%'
+            img.style.height = '100%'
+            wrapper.appendChild(img)
+            
+            // Wait for image to load and capture the wrapper
+            await new Promise((resolve) => {
+              img.onload = () => {
+                setTimeout(() => {
+                  html2canvas(wrapper, {
+                    backgroundColor: '#ffffff',
+                    useCORS: true,
+                    allowTaint: true,
+                    scale: 2,
+                    logging: false,
+                    foreignObjectRendering: true,
+                  }).then((canvas) => {
+                    filteredCanvas = canvas
+                    document.body.removeChild(wrapper)
+                    resolve()
+                  }).catch(() => {
+                    document.body.removeChild(wrapper)
+                    resolve()
+                  })
+                }, 100)
+              }
+              img.onerror = () => {
+                document.body.removeChild(wrapper)
+                resolve()
+              }
+            })
+          } else {
+            // CSS filter - apply directly to canvas context
+            tempCtx.filter = filterStyle
+            tempCtx.drawImage(filteredCanvas, 0, 0)
+            filteredCanvas = tempCanvas
           }
         }
       } catch (e) {
@@ -326,6 +379,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
             allowTaint: true,
             scale: 2,
             logging: false,
+            foreignObjectRendering: true,
             ignoreElements: (element) => {
               // Ignore the label overlay
               return element.classList?.contains('split-label')
@@ -340,6 +394,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
               allowTaint: true,
               scale: 2,
               logging: false,
+              foreignObjectRendering: true,
             })
           } else {
             // Fallback to capturing the right pane
@@ -349,6 +404,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
               allowTaint: true,
               scale: 2,
               logging: false,
+              foreignObjectRendering: true,
               ignoreElements: (element) => {
                 return element.classList?.contains('split-label')
               },
@@ -362,6 +418,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
             allowTaint: true,
             scale: 2,
             logging: false,
+            foreignObjectRendering: true,
           })
           
           filteredCanvas = await html2canvas(filteredIframe, {
@@ -370,12 +427,19 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
             allowTaint: true,
             scale: 2,
             logging: false,
+            foreignObjectRendering: true,
           })
         }
       }
       
       if (!originalCanvas || !filteredCanvas) {
         throw new Error('Failed to capture iframe content')
+      }
+      
+      // Validate that canvases have content (not just white/empty)
+      if (originalCanvas.width === 0 || originalCanvas.height === 0 ||
+          filteredCanvas.width === 0 || filteredCanvas.height === 0) {
+        throw new Error('Captured canvases are empty')
       }
       
       // Determine the height (use the taller one)
@@ -440,7 +504,14 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
       }, 'image/png')
     } catch (error) {
       console.error('Failed to capture snapshot:', error)
-      alert('Failed to capture snapshot. This may be due to cross-origin restrictions. Please try a different website.')
+      const errorMessage = error.message || 'Unknown error'
+      if (errorMessage.includes('Cannot access iframe')) {
+        alert('Failed to capture snapshot: The page may not be fully loaded yet. Please wait a moment and try again.')
+      } else if (errorMessage.includes('empty')) {
+        alert('Failed to capture snapshot: The captured content appears to be empty. This may happen if the page uses advanced security features or iframes.')
+      } else {
+        alert(`Failed to capture snapshot: ${errorMessage}. Please ensure the page is fully loaded and try again.`)
+      }
     }
   }
   
@@ -1324,7 +1395,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         
         .quick-filters-scroll {
           display: flex;
-          gap: 8px;
+          gap: 12px;
           padding-bottom: 4px;
           min-width: 0;
         }
@@ -1343,6 +1414,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           cursor: pointer;
           transition: all 0.2s ease;
           white-space: nowrap;
+          outline-offset: 2px;
         }
         
         .quick-filter-btn:hover {
