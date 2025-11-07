@@ -314,22 +314,64 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         }
       } catch (e) {
         console.warn('Could not access iframe content directly, trying alternative method:', e)
-        // Fallback: try capturing the iframe elements themselves
-        originalCanvas = await html2canvas(originalIframe, {
-          backgroundColor: '#ffffff',
-          useCORS: true,
-          allowTaint: true,
-          scale: 2,
-          logging: false,
-        })
+        // Fallback: try capturing the wrapper divs that contain the iframes
+        const leftPane = splitContainerRef.current?.querySelector('.split-pane-left')
+        const rightPane = splitContainerRef.current?.querySelector('.split-pane-right')
+        const filteredWrapper = rightPane?.querySelector('.iframe-wrapper.filtered')
         
-        filteredCanvas = await html2canvas(filteredIframe, {
-          backgroundColor: '#ffffff',
-          useCORS: true,
-          allowTaint: true,
-          scale: 2,
-          logging: false,
-        })
+        if (leftPane && rightPane) {
+          originalCanvas = await html2canvas(leftPane, {
+            backgroundColor: '#ffffff',
+            useCORS: true,
+            allowTaint: true,
+            scale: 2,
+            logging: false,
+            ignoreElements: (element) => {
+              // Ignore the label overlay
+              return element.classList?.contains('split-label')
+            },
+          })
+          
+          // Capture the filtered wrapper which has the filter applied
+          if (filteredWrapper) {
+            filteredCanvas = await html2canvas(filteredWrapper, {
+              backgroundColor: '#ffffff',
+              useCORS: true,
+              allowTaint: true,
+              scale: 2,
+              logging: false,
+            })
+          } else {
+            // Fallback to capturing the right pane
+            filteredCanvas = await html2canvas(rightPane, {
+              backgroundColor: '#ffffff',
+              useCORS: true,
+              allowTaint: true,
+              scale: 2,
+              logging: false,
+              ignoreElements: (element) => {
+                return element.classList?.contains('split-label')
+              },
+            })
+          }
+        } else {
+          // Last resort: capture iframe elements themselves
+          originalCanvas = await html2canvas(originalIframe, {
+            backgroundColor: '#ffffff',
+            useCORS: true,
+            allowTaint: true,
+            scale: 2,
+            logging: false,
+          })
+          
+          filteredCanvas = await html2canvas(filteredIframe, {
+            backgroundColor: '#ffffff',
+            useCORS: true,
+            allowTaint: true,
+            scale: 2,
+            logging: false,
+          })
+        }
       }
       
       if (!originalCanvas || !filteredCanvas) {
