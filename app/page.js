@@ -34,6 +34,7 @@ export default function Home() {
   const [error, setError] = React.useState(null)
   const [hasLoadedSite, setHasLoadedSite] = React.useState(false)
   const [history, setHistory] = React.useState([])
+  const [isViewerExpanded, setIsViewerExpanded] = React.useState(false)
   
   // Load history from localStorage on mount
   React.useEffect(() => {
@@ -149,7 +150,7 @@ export default function Home() {
         {/* Main Content - Only shown after first site load */}
         {hasLoadedSite && (
           <div className="main-content">
-            <div className="content-grid">
+            <div className={`content-grid ${isViewerExpanded ? 'hide-sidebar' : ''}`}>
               {/* Left Column - Controls and Info */}
               <aside className="sidebar glass-card">
                 <ImpairmentControls
@@ -193,6 +194,8 @@ export default function Home() {
                     url={loadedUrl}
                     activeFilter={activeFilter}
                     onFilterRemove={() => setActiveFilter('none')}
+                    onFilterChange={handleFilterChange}
+                    onExpandedChange={setIsViewerExpanded}
                     onChangeUrl={() => setHasLoadedSite(false)}
                     onUrlChange={handleUrlSubmit}
                     loading={loading}
@@ -297,6 +300,14 @@ export default function Home() {
           display: grid;
           grid-template-columns: 350px 1fr;
           gap: var(--spacing-lg);
+        }
+        
+        .content-grid.hide-sidebar {
+          grid-template-columns: 1fr;
+        }
+        
+        .content-grid.hide-sidebar .sidebar {
+          display: none;
         }
         
         .sidebar {

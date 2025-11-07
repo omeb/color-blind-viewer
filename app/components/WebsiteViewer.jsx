@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { getCategorizedFilters } from '../lib/filters'
 
 /**
  * Website Viewer Component
@@ -15,7 +16,7 @@ import React from 'react'
  * @param {boolean} props.loading - Whether the website is loading
  * @param {string} props.error - Error message if loading failed
  */
-export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemove, onChangeUrl, loading = false, error = null }) {
+export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemove, onFilterChange, onChangeUrl, loading = false, error = null, onUrlChange, onExpandedChange }) {
   const [iframeKey, setIframeKey] = React.useState(0)
   const [isExpanded, setIsExpanded] = React.useState(false)
   const [isSplitView, setIsSplitView] = React.useState(false)
@@ -23,11 +24,27 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
   const [isDragging, setIsDragging] = React.useState(false)
   const [iframeLoading, setIframeLoading] = React.useState(false)
   const [iframeLoaded, setIframeLoaded] = React.useState(false)
+  const [isEditingUrl, setIsEditingUrl] = React.useState(false)
+  const [editedUrl, setEditedUrl] = React.useState(url)
   const iframeRef = React.useRef(null)
   const containerRef = React.useRef(null)
+  const urlInputRef = React.useRef(null)
   
   // Build proxy URL
   const proxyUrl = url ? `/api/proxy?url=${encodeURIComponent(url)}` : null
+  
+  // Update edited URL when url prop changes
+  React.useEffect(() => {
+    setEditedUrl(url)
+  }, [url])
+  
+  // Focus input when editing mode is activated
+  React.useEffect(() => {
+    if (isEditingUrl && urlInputRef.current) {
+      urlInputRef.current.focus()
+      urlInputRef.current.select()
+    }
+  }, [isEditingUrl])
   
   // Reload iframe when URL changes
   React.useEffect(() => {
@@ -45,6 +62,51 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
       setIframeLoading(false)
       setIframeLoaded(true)
     }, 300)
+  }
+  
+  // Handle URL edit activation
+  const handleUrlClick = () => {
+    setIsEditingUrl(true)
+  }
+  
+  // Handle URL change
+  const handleUrlInputChange = (e) => {
+    setEditedUrl(e.target.value)
+  }
+  
+  // Handle URL submit
+  const handleUrlSubmit = (e) => {
+    e.preventDefault()
+    if (editedUrl.trim() && onUrlChange) {
+      let formattedUrl = editedUrl.trim()
+      
+      // Remove spaces
+      formattedUrl = formattedUrl.replace(/\s+/g, '')
+      
+      // Fix common typos: replace -com, -org, -net with .com, .org, .net
+      formattedUrl = formattedUrl.replace(/-(com|org|net|io|co|edu|gov)$/i, '.$1')
+      
+      // Always add https:// if no protocol specified
+      if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+        formattedUrl = 'https://' + formattedUrl
+      }
+      
+      onUrlChange(formattedUrl)
+      setIsEditingUrl(false)
+    }
+  }
+  
+  // Handle URL cancel
+  const handleUrlCancel = () => {
+    setEditedUrl(url)
+    setIsEditingUrl(false)
+  }
+  
+  // Handle keydown for escape key
+  const handleUrlKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      handleUrlCancel()
+    }
   }
   
   // Handle split view dragging
@@ -90,24 +152,68 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
     <div className={`website-viewer-wrapper ${isExpanded ? 'expanded' : ''}`}>
       {proxyUrl && !loading && !error && iframeLoaded && (
         <div className="viewer-header">
-          <div className="url-display">
-            <span className="url-icon">🌐</span>
-            <span className="url-text">{url}</span>
-            {onChangeUrl && (
-              <button
-                onClick={onChangeUrl}
-                className="url-change-btn"
-                aria-label="Change URL"
-                title="Change URL"
-              >
-                ✎
-              </button>
-            )}
-          </div>
+          {isEditingUrl ? (
+            <form onSubmit={handleUrlSubmit} className={`url-edit-form ${isEditingUrl ? 'editing' : ''}`}>
+              <input
+                ref={urlInputRef}
+                type="text"
+                value={editedUrl}
+                onChange={handleUrlInputChange}
+                onKeyDown={handleUrlKeyDown}
+                className="url-edit-input"
+                placeholder="Enter website URL"
+                aria-label="Edit website URL"
+              />
+              <div className="url-edit-actions">
+                <button
+                  type="submit"
+                  className="url-action-btn url-action-submit"
+                  aria-label="Apply URL change"
+                  title="Apply (Enter)"
+                >
+                  ✓
+                </button>
+                <button
+                  type="button"
+                  onClick={handleUrlCancel}
+                  className="url-action-btn url-action-cancel"
+                  aria-label="Cancel URL change"
+                  title="Cancel (Escape)"
+                >
+                  ✕
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div 
+              className="url-display clickable" 
+              onClick={handleUrlClick}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  handleUrlClick()
+                }
+              }}
+              aria-label="Click to edit URL"
+              title="Click to edit URL"
+            >
+              <span className="url-icon">🌐</span>
+              <span className="url-text">{url}</span>
+              <span className="url-edit-hint">✎</span>
+            </div>
+          )}
           
           <div className="viewer-controls">
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={() => {
+                const newExpanded = !isExpanded
+                setIsExpanded(newExpanded)
+                if (onExpandedChange) {
+                  onExpandedChange(newExpanded)
+                }
+              }}
               className="control-btn"
               aria-label={isExpanded ? 'Exit fullscreen view' : 'View in fullscreen'}
               title={isExpanded ? 'Exit Fullscreen' : 'Fullscreen'}
@@ -141,6 +247,34 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         </div>
       )}
       
+      {/* Filter buttons shown when expanded */}
+      {isExpanded && onFilterChange && (
+        <div className="expanded-filters">
+          <div className="expanded-filters-content">
+            {getCategorizedFilters().colorblind.map((filter) => (
+              <button
+                key={filter.id}
+                onClick={() => onFilterChange(filter.id === activeFilter ? 'none' : filter.id)}
+                className={`expanded-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
+                title={filter.description}
+              >
+                {filter.name}
+              </button>
+            ))}
+            {getCategorizedFilters().other.map((filter) => (
+              <button
+                key={filter.id}
+                onClick={() => onFilterChange(filter.id === activeFilter ? 'none' : filter.id)}
+                className={`expanded-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
+                title={filter.description}
+              >
+                {filter.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      
       <div 
         ref={containerRef}
         className={`website-viewer-container ${isExpanded ? 'expanded' : ''} ${isSplitView ? 'split-view' : ''}`}
@@ -155,18 +289,49 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
       )}
       
       {loading && (
-        <div className="loading-state">
+        <div className="loading-state" role="status" aria-live="polite">
           <div className="loading-content">
-            <div className="minimal-spinner"></div>
+            <div className="loading-orb">
+              <div className="orb-inner"></div>
+              <div className="orb-pulse"></div>
+              <div className="orb-glow"></div>
+            </div>
+            <div className="loading-text-wrapper">
+              <h3 className="loading-title">Preparing your view</h3>
+              <p className="loading-subtitle">Setting up the accessibility viewer</p>
+            </div>
+            <div className="loading-dots">
+              <span className="dot"></span>
+              <span className="dot"></span>
+              <span className="dot"></span>
+            </div>
           </div>
         </div>
       )}
       
       {!loading && iframeLoading && (
-        <div className="loading-state iframe-loading">
+        <div className="loading-state iframe-loading" role="status" aria-live="polite">
           <div className="loading-content">
-            <div className="minimal-spinner"></div>
-            <p className="loading-text">Loading...</p>
+            <div className="loading-skeleton">
+              <div className="skeleton-header">
+                <div className="skeleton-line skeleton-line-short"></div>
+                <div className="skeleton-circle"></div>
+              </div>
+              <div className="skeleton-body">
+                <div className="skeleton-line"></div>
+                <div className="skeleton-line"></div>
+                <div className="skeleton-line skeleton-line-medium"></div>
+                <div className="skeleton-box"></div>
+                <div className="skeleton-line"></div>
+                <div className="skeleton-line skeleton-line-short"></div>
+              </div>
+            </div>
+            <div className="loading-text-wrapper">
+              <p className="loading-text">Loading website</p>
+              <div className="loading-progress">
+                <div className="progress-bar"></div>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -281,6 +446,71 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           border-radius: 0;
         }
         
+        .expanded-filters {
+          position: fixed;
+          bottom: var(--spacing-lg);
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 1002;
+          animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+          }
+        }
+        
+        .expanded-filters-content {
+          display: flex;
+          gap: var(--spacing-xs);
+          flex-wrap: wrap;
+          justify-content: center;
+          background: rgba(0, 0, 0, 0.85);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          border-radius: 12px;
+          padding: var(--spacing-sm);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+          max-width: 90vw;
+        }
+        
+        .expanded-filter-btn {
+          background: rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 8px;
+          color: rgba(255, 255, 255, 0.9);
+          padding: 8px 16px;
+          font-size: 0.85rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          white-space: nowrap;
+        }
+        
+        .expanded-filter-btn:hover {
+          background: rgba(255, 255, 255, 0.2);
+          border-color: rgba(255, 255, 255, 0.3);
+          transform: translateY(-2px);
+        }
+        
+        .expanded-filter-btn.active {
+          background: linear-gradient(135deg, rgba(110, 198, 255, 0.3) 0%, rgba(147, 112, 219, 0.3) 100%);
+          border-color: rgba(110, 198, 255, 0.6);
+          color: white;
+          box-shadow: 0 0 20px rgba(110, 198, 255, 0.4);
+        }
+        
+        .expanded-filter-btn:active {
+          transform: translateY(0);
+        }
+        
         .viewer-header {
           display: flex;
           align-items: center;
@@ -312,6 +542,109 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           border-radius: 6px;
           padding: 8px 12px;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .url-display.clickable {
+          cursor: pointer;
+        }
+        
+        .url-display.clickable:hover {
+          background: rgba(255, 255, 255, 1);
+          border-color: rgba(74, 144, 226, 0.3);
+          box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+          transform: translateY(-1px);
+        }
+        
+        .url-display.clickable:active {
+          transform: translateY(0);
+        }
+        
+        .url-edit-form {
+          flex: 1;
+          min-width: 200px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 2px solid rgba(74, 144, 226, 0.6);
+          border-radius: 8px;
+          padding: 10px 14px;
+          box-shadow: 0 6px 20px rgba(74, 144, 226, 0.3);
+          animation: expandIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes expandIn {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+            border-color: rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+            border-color: rgba(74, 144, 226, 0.6);
+            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.3);
+          }
+        }
+        
+        .url-edit-input {
+          flex: 1;
+          border: none;
+          background: transparent;
+          font-size: 0.9rem;
+          color: rgba(0, 0, 0, 0.9);
+          font-family: monospace;
+          letter-spacing: -0.3px;
+          outline: none;
+          padding: 0;
+        }
+        
+        .url-edit-input::placeholder {
+          color: rgba(0, 0, 0, 0.4);
+        }
+        
+        .url-edit-actions {
+          display: flex;
+          gap: 6px;
+        }
+        
+        .url-action-btn {
+          border: none;
+          border-radius: 4px;
+          padding: 6px 10px;
+          font-size: 1rem;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          line-height: 1;
+          font-weight: 600;
+        }
+        
+        .url-action-submit {
+          background: rgba(74, 144, 226, 0.9);
+          color: white;
+        }
+        
+        .url-action-submit:hover {
+          background: rgba(74, 144, 226, 1);
+          transform: scale(1.05);
+        }
+        
+        .url-action-cancel {
+          background: rgba(220, 38, 38, 0.9);
+          color: white;
+        }
+        
+        .url-action-cancel:hover {
+          background: rgba(220, 38, 38, 1);
+          transform: scale(1.05);
+        }
+        
+        .url-action-btn:active {
+          transform: scale(0.95);
         }
         
         .url-icon {
@@ -331,26 +664,17 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           letter-spacing: -0.3px;
         }
         
-        .url-change-btn {
+        .url-edit-hint {
           flex-shrink: 0;
-          background: rgba(0, 0, 0, 0.1);
-          border: none;
-          border-radius: 4px;
-          padding: 4px 8px;
           font-size: 1rem;
-          color: rgba(0, 0, 0, 0.6);
-          cursor: pointer;
+          color: rgba(0, 0, 0, 0.4);
           transition: all 0.2s ease;
-          line-height: 1;
+          opacity: 0;
         }
         
-        .url-change-btn:hover {
-          background: rgba(0, 0, 0, 0.15);
-          color: rgba(0, 0, 0, 0.8);
-        }
-        
-        .url-change-btn:active {
-          transform: scale(0.95);
+        .url-display.clickable:hover .url-edit-hint {
+          opacity: 1;
+          color: rgba(74, 144, 226, 0.8);
         }
         
         .viewer-controls {
@@ -443,23 +767,31 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           display: flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
+          background: linear-gradient(135deg, 
+            rgba(102, 126, 234, 0.95) 0%, 
+            rgba(118, 75, 162, 0.95) 100%
+          );
+          backdrop-filter: blur(40px);
+          -webkit-backdrop-filter: blur(40px);
           z-index: 5;
-          animation: fadeIn 0.2s ease;
+          animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .loading-state.iframe-loading {
-          animation: none;
+          background: linear-gradient(135deg, 
+            rgba(255, 255, 255, 0.98) 0%, 
+            rgba(250, 250, 255, 0.98) 100%
+          );
         }
         
         @keyframes fadeIn {
           from {
             opacity: 0;
+            transform: scale(0.96);
           }
           to {
             opacity: 1;
+            transform: scale(1);
           }
         }
         
@@ -467,30 +799,314 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: var(--spacing-md);
+          gap: var(--spacing-lg);
+          padding: var(--spacing-xl);
         }
         
-        .minimal-spinner {
-          width: 48px;
-          height: 48px;
-          border: 3px solid rgba(110, 198, 255, 0.2);
-          border-top-color: rgba(110, 198, 255, 0.9);
+        /* Orb Loading Animation - Initial Load */
+        .loading-orb {
+          position: relative;
+          width: 120px;
+          height: 120px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .orb-inner {
+          width: 80px;
+          height: 80px;
           border-radius: 50%;
-          animation: spin 0.8s linear infinite;
+          background: linear-gradient(135deg, 
+            rgba(255, 255, 255, 0.9) 0%, 
+            rgba(110, 198, 255, 0.8) 50%,
+            rgba(255, 255, 255, 0.9) 100%
+          );
+          box-shadow: 
+            0 0 40px rgba(110, 198, 255, 0.6),
+            inset 0 0 30px rgba(255, 255, 255, 0.5),
+            0 10px 40px rgba(0, 0, 0, 0.2);
+          animation: orbFloat 3s ease-in-out infinite;
+          position: relative;
+          z-index: 3;
         }
         
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
+        .orb-inner::before {
+          content: '';
+          position: absolute;
+          top: 20%;
+          left: 20%;
+          width: 30px;
+          height: 30px;
+          background: rgba(255, 255, 255, 0.8);
+          border-radius: 50%;
+          filter: blur(8px);
+        }
+        
+        .orb-pulse {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          border: 3px solid rgba(110, 198, 255, 0.6);
+          animation: orbPulse 2s ease-out infinite;
+        }
+        
+        .orb-glow {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 100px;
+          height: 100px;
+          border-radius: 50%;
+          background: radial-gradient(circle, 
+            rgba(110, 198, 255, 0.4) 0%, 
+            transparent 70%
+          );
+          animation: orbGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes orbFloat {
+          0%, 100% {
+            transform: translateY(0) scale(1);
           }
+          50% {
+            transform: translateY(-10px) scale(1.05);
+          }
+        }
+        
+        @keyframes orbPulse {
+          0% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+          }
+          100% {
+            transform: translate(-50%, -50%) scale(1.8);
+            opacity: 0;
+          }
+        }
+        
+        @keyframes orbGlow {
+          0%, 100% {
+            opacity: 0.4;
+            transform: translate(-50%, -50%) scale(1);
+          }
+          50% {
+            opacity: 0.8;
+            transform: translate(-50%, -50%) scale(1.1);
+          }
+        }
+        
+        /* Skeleton Loading Animation - Iframe Load */
+        .loading-skeleton {
+          width: 100%;
+          max-width: 500px;
+          padding: var(--spacing-lg);
+          background: rgba(255, 255, 255, 0.6);
+          border-radius: 16px;
+          backdrop-filter: blur(10px);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .skeleton-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: var(--spacing-lg);
+        }
+        
+        .skeleton-body {
+          display: flex;
+          flex-direction: column;
+          gap: var(--spacing-sm);
+        }
+        
+        .skeleton-line,
+        .skeleton-circle,
+        .skeleton-box {
+          background: linear-gradient(
+            90deg,
+            rgba(200, 200, 220, 0.3) 0%,
+            rgba(220, 220, 240, 0.5) 50%,
+            rgba(200, 200, 220, 0.3) 100%
+          );
+          background-size: 200% 100%;
+          animation: shimmer 1.5s ease-in-out infinite;
+          border-radius: 8px;
+        }
+        
+        .skeleton-line {
+          height: 16px;
+          width: 100%;
+        }
+        
+        .skeleton-line-short {
+          width: 60%;
+        }
+        
+        .skeleton-line-medium {
+          width: 80%;
+        }
+        
+        .skeleton-circle {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+        }
+        
+        .skeleton-box {
+          height: 120px;
+          width: 100%;
+          margin: var(--spacing-sm) 0;
+        }
+        
+        @keyframes shimmer {
+          0% {
+            background-position: -200% 0;
+          }
+          100% {
+            background-position: 200% 0;
+          }
+        }
+        
+        /* Loading Text */
+        .loading-text-wrapper {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: var(--spacing-xs);
+          text-align: center;
+        }
+        
+        .loading-title {
+          margin: 0;
+          color: rgba(255, 255, 255, 0.95);
+          font-size: 1.5rem;
+          font-weight: 700;
+          letter-spacing: -0.5px;
+          text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+          animation: titleFade 2s ease-in-out infinite;
+        }
+        
+        .loading-subtitle {
+          margin: 0;
+          color: rgba(255, 255, 255, 0.85);
+          font-size: 0.95rem;
+          font-weight: 400;
+          letter-spacing: 0.5px;
         }
         
         .loading-text {
           margin: 0;
-          color: rgba(110, 198, 255, 0.9);
-          font-size: 0.95rem;
-          font-weight: 500;
-          letter-spacing: -0.2px;
+          color: rgba(100, 100, 120, 0.9);
+          font-size: 1rem;
+          font-weight: 600;
+          letter-spacing: 0.5px;
+        }
+        
+        @keyframes titleFade {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.7;
+          }
+        }
+        
+        /* Loading Dots */
+        .loading-dots {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+        }
+        
+        .dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.9);
+          box-shadow: 0 0 10px rgba(110, 198, 255, 0.6);
+          animation: dotBounce 1.4s ease-in-out infinite;
+        }
+        
+        .dot:nth-child(1) {
+          animation-delay: 0s;
+        }
+        
+        .dot:nth-child(2) {
+          animation-delay: 0.2s;
+        }
+        
+        .dot:nth-child(3) {
+          animation-delay: 0.4s;
+        }
+        
+        @keyframes dotBounce {
+          0%, 80%, 100% {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+          }
+          40% {
+            transform: translateY(-15px) scale(1.2);
+            opacity: 0.8;
+          }
+        }
+        
+        /* Progress Bar */
+        .loading-progress {
+          width: 240px;
+          height: 4px;
+          background: rgba(200, 200, 220, 0.3);
+          border-radius: 2px;
+          overflow: hidden;
+          margin-top: var(--spacing-xs);
+        }
+        
+        .progress-bar {
+          height: 100%;
+          background: linear-gradient(
+            90deg,
+            rgba(102, 126, 234, 0.8) 0%,
+            rgba(110, 198, 255, 0.9) 50%,
+            rgba(118, 75, 162, 0.8) 100%
+          );
+          background-size: 200% 100%;
+          animation: progressSlide 1.5s ease-in-out infinite;
+          border-radius: 2px;
+          box-shadow: 0 0 10px rgba(110, 198, 255, 0.5);
+        }
+        
+        @keyframes progressSlide {
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(100%);
+          }
+        }
+        
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+          .loading-state,
+          .orb-inner,
+          .orb-pulse,
+          .orb-glow,
+          .skeleton-line,
+          .skeleton-circle,
+          .skeleton-box,
+          .loading-title,
+          .dot,
+          .progress-bar {
+            animation: none !important;
+          }
+          
+          .loading-text::after {
+            content: '...';
+          }
         }
         
         .error-state {
@@ -633,4 +1249,5 @@ function getFilterStyle(filterId) {
   
   return filters[filterId] || 'none'
 }
+
 
