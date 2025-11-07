@@ -359,15 +359,6 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
         }
         
         .website-viewer-container.split-view {
-          height: 700px;
-          min-height: 700px;
-          position: relative;
-          left: 50%;
-          right: 50%;
-          margin-left: -50vw;
-          margin-right: -50vw;
-          width: 100vw;
-          max-width: none;
         }
         
         
