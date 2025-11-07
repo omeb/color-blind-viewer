@@ -58,47 +58,20 @@ function injectBaseTag(html, baseUrl) {
   // Remove skip navigation links entirely from HTML
   let cleanedHtml = html
   
-  // Remove common skip link patterns
-  cleanedHtml = cleanedHtml.replace(/<a[^>]*href\s*=\s*["'][#]?(main|content|main-content|skip)[^"']*["'][^>]*>.*?<\/a>/gi, '')
-  cleanedHtml = cleanedHtml.replace(/<a[^>]*class\s*=\s*["'][^"']*skip[^"']*["'][^>]*>.*?<\/a>/gi, '')
-  cleanedHtml = cleanedHtml.replace(/<a[^>]*class\s*=\s*["'][^"']*sr-only[^"']*["'][^>]*>.*?<\/a>/gi, '')
-  cleanedHtml = cleanedHtml.replace(/<a[^>]*aria-label\s*=\s*["'][^"']*skip[^"']*["'][^>]*>.*?<\/a>/gi, '')
+  // Remove the exact skip link pattern we see in DevTools
+  cleanedHtml = cleanedHtml.replace(/<a\s+href="#main-content"\s+class="[^"]*skip-link[^"]*"[^>]*>.*?<\/a>/gi, '')
   
-  // Remove elements with skip-related classes
-  cleanedHtml = cleanedHtml.replace(/<[^>]*class\s*=\s*["'][^"']*skip-link[^"']*["'][^>]*>.*?<\/[^>]*>/gi, '')
-  cleanedHtml = cleanedHtml.replace(/<[^>]*class\s*=\s*["'][^"']*screen-reader[^"']*["'][^>]*>.*?<\/[^>]*>/gi, '')
-  cleanedHtml = cleanedHtml.replace(/<[^>]*class\s*=\s*["'][^"']*visually-hidden[^"']*["'][^>]*>.*?<\/[^>]*>/gi, '')
+  // Remove any anchor tag that contains "Skip to main content"
+  cleanedHtml = cleanedHtml.replace(/<a[^>]*>[^<]*Skip to main content[^<]*<\/a>/gi, '')
   
-  // JavaScript to directly hide skip links
-  const hideSkipLinksScript = `
-    <script>
-      // Hide skip links immediately when DOM loads
-      function hideSkipLinks() {
-        // Target the exact skip link element
-        const skipLinks = document.querySelectorAll('a[href="#main-content"]');
-        skipLinks.forEach(link => {
-          if (link.classList.contains('skip-link')) {
-            link.style.display = 'none';
-          }
-        });
-        
-        // Also target any element with skip-link class
-        const skipLinkElements = document.querySelectorAll('.skip-link');
-        skipLinkElements.forEach(element => {
-          element.style.display = 'none';
-        });
-      }
-      
-      // Run immediately and on DOM ready
-      hideSkipLinks();
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', hideSkipLinks);
-      }
-      
-      // Also run after a short delay to catch dynamically added elements
-      setTimeout(hideSkipLinks, 100);
-    </script>
-  `
+  // Remove any element with skip-link class
+  cleanedHtml = cleanedHtml.replace(/<a[^>]*class="[^"]*skip-link[^"]*"[^>]*>.*?<\/a>/gi, '')
+  
+  // Remove href="#main-content" links
+  cleanedHtml = cleanedHtml.replace(/<a[^>]*href="#main-content"[^>]*>.*?<\/a>/gi, '')
+  
+  // Empty - we're removing elements from HTML instead
+  const hideSkipLinksScript = ``
   
   const injectionContent = baseTag + hideSkipLinksScript
   
