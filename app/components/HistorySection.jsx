@@ -16,17 +16,48 @@ import React from 'react'
  * @param {Function} props.onRemoveUrl - Callback to remove URL from history
  */
 export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl }) {
-  if (!history || history.length === 0) {
-    return null
+  const exampleSites = [
+    'https://www.wix.com',
+    'https://www.github.com',
+    'https://www.wikipedia.org',
+    'https://www.reddit.com',
+    'https://www.stackoverflow.com'
+  ]
+  
+  // Ensure history is an array and show examples if empty
+  // Handle cases where history might be null, undefined, or not an array
+  const historyArray = React.useMemo(() => {
+    if (!history) return []
+    if (!Array.isArray(history)) return []
+    // Filter out any invalid entries
+    return history.filter(url => url && typeof url === 'string' && url.trim().length > 0)
+  }, [history])
+  
+  const sitesToShow = historyArray.length > 0 ? historyArray : exampleSites
+  const isShowingExamples = historyArray.length === 0
+  
+  // Extract domain name from URL for display
+  const getDisplayUrl = (url) => {
+    try {
+      // Remove protocol
+      let domain = url.replace(/^https?:\/\//, '')
+      // Remove www. prefix
+      domain = domain.replace(/^www\./, '')
+      // Remove path, query, hash
+      domain = domain.split('/')[0].split('?')[0].split('#')[0]
+      return domain
+    } catch (e) {
+      return url
+    }
   }
-
+  
   return (
     <div className="history-section">
       <div className="history-header">
-        <h3 className="history-title">Recent Sites</h3>
+        <h3 className="history-title">{isShowingExamples ? 'Example Sites' : 'Recent Sites'}</h3>
       </div>
       <div className="history-list">
-        {history.map((url, index) => (
+        {sitesToShow.map((url, index) => (
           <div key={`${url}-${index}`} className="history-item">
             <button
               onClick={() => onSelectUrl(url)}
@@ -34,19 +65,21 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
               title={`Load ${url}`}
             >
               <span className="history-icon">🌐</span>
-              <span className="history-url">{url}</span>
+              <span className="history-url">{getDisplayUrl(url)}</span>
             </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onRemoveUrl(url)
-              }}
-              className="history-remove"
-              aria-label={`Remove ${url} from history`}
-              title="Remove from history"
-            >
-              ✕
-            </button>
+            {!isShowingExamples && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRemoveUrl(url)
+                }}
+                className="history-remove"
+                aria-label={`Remove ${url} from history`}
+                title="Remove from history"
+              >
+                ✕
+              </button>
+            )}
           </div>
         ))}
       </div>
@@ -63,7 +96,7 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
         .history-title {
           font-size: 0.9rem;
           font-weight: 600;
-          color: rgba(255, 255, 255, 0.9);
+          color: rgba(255, 255, 255, 1);
           margin: 0;
           text-align: left;
         }
@@ -78,18 +111,18 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
           position: relative;
           display: inline-flex;
           align-items: center;
-          background: rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.15);
           backdrop-filter: blur(10px);
           -webkit-backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
+          border: 1px solid rgba(255, 255, 255, 0.25);
           border-radius: 20px;
           overflow: hidden;
           transition: all 0.2s ease;
         }
-
+        
         .history-item:hover {
-          background: rgba(255, 255, 255, 0.15);
-          border-color: rgba(255, 255, 255, 0.3);
+          background: rgba(255, 255, 255, 0.2);
+          border-color: rgba(255, 255, 255, 0.35);
           transform: translateY(-1px);
         }
 
@@ -99,21 +132,34 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
           gap: 6px;
           background: none;
           border: none;
-          color: rgba(255, 255, 255, 0.95);
+          color: rgba(255, 255, 255, 1);
           padding: 8px 12px;
           font-size: 0.85rem;
           cursor: pointer;
           font-family: inherit;
-          transition: color 0.2s ease;
+          transition: all 0.2s ease;
         }
-
+        
         .history-button:hover {
-          color: white;
+          color: rgba(255, 255, 255, 1);
+        }
+        
+        .history-button:hover .history-url {
+          text-decoration: underline;
+          text-decoration-thickness: 1.5px;
+          text-underline-offset: 2px;
+        }
+        
+        .history-button:focus-visible {
+          outline: 2px solid rgba(255, 255, 255, 0.8);
+          outline-offset: 2px;
+          border-radius: 4px;
         }
 
         .history-icon {
           font-size: 0.9rem;
           line-height: 1;
+          flex-shrink: 0;
         }
 
         .history-url {
@@ -152,7 +198,7 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
         .history-remove:active {
           transform: translateX(0) scale(0.95);
         }
-
+        
         @media (max-width: 768px) {
           .history-url {
             max-width: 140px;
