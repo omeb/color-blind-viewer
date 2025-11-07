@@ -17,16 +17,7 @@ import { getCategorizedFilters } from '../lib/filters'
 export default function ImpairmentControls({ activeFilter = 'none', onFilterChange, onFilterInfo }) {
   const filters = getCategorizedFilters()
   
-  const handleFilterClick = (filterId, e) => {
-    // If right-click or Ctrl/Cmd+click, show info modal
-    if (e.ctrlKey || e.metaKey || e.button === 2) {
-      e.preventDefault()
-      if (onFilterInfo) {
-        onFilterInfo(filterId)
-      }
-      return
-    }
-    
+  const handleFilterClick = (filterId) => {
     // Regular click - toggle filter
     const newFilter = activeFilter === filterId ? 'none' : filterId
     onFilterChange(newFilter)
@@ -34,6 +25,7 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
   
   const handleInfoClick = (filterId, e) => {
     e.stopPropagation()
+    e.preventDefault()
     if (onFilterInfo) {
       onFilterInfo(filterId)
     }
@@ -52,28 +44,30 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
         <h4 className="section-title">Color Vision Deficiency</h4>
         <div className="filter-grid">
           {filters.colorblind.map((filter) => (
-            <button
-              key={filter.id}
-              onClick={(e) => handleFilterClick(filter.id, e)}
-              onContextMenu={(e) => {
-                e.preventDefault()
-                handleInfoClick(filter.id, e)
-              }}
-              className={`filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
-              aria-pressed={activeFilter === filter.id}
-              title={`${filter.description} (Click for info)`}
-            >
-              <span className="filter-name">{filter.name}</span>
-              <span className="filter-prevalence">{filter.prevalence}</span>
+            <div key={filter.id} className="filter-item-wrapper">
               <button
-                onClick={(e) => handleInfoClick(filter.id, e)}
-                className="filter-info-btn"
-                aria-label={`Learn more about ${filter.name}`}
-                title="Learn more"
+                onClick={() => handleFilterClick(filter.id)}
+                className={`filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
+                aria-pressed={activeFilter === filter.id}
+                title={filter.description}
               >
-                ℹ️
+                <span className="filter-name">{filter.name}</span>
+                <span className="filter-prevalence">{filter.prevalence}</span>
               </button>
-            </button>
+              {onFilterInfo && (
+                <button
+                  onClick={(e) => handleInfoClick(filter.id, e)}
+                  className="filter-info-btn-external"
+                  aria-label={`Learn more about ${filter.name}`}
+                  title="Learn more"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                    <path d="M8 6V8M8 10H8.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              )}
+            </div>
           ))}
         </div>
       </div>
@@ -82,28 +76,30 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
         <h4 className="section-title">Other Vision Impairments</h4>
         <div className="filter-grid">
           {filters.other.map((filter) => (
-            <button
-              key={filter.id}
-              onClick={(e) => handleFilterClick(filter.id, e)}
-              onContextMenu={(e) => {
-                e.preventDefault()
-                handleInfoClick(filter.id, e)
-              }}
-              className={`filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
-              aria-pressed={activeFilter === filter.id}
-              title={`${filter.description} (Click for info)`}
-            >
-              <span className="filter-name">{filter.name}</span>
-              <span className="filter-prevalence">{filter.prevalence}</span>
+            <div key={filter.id} className="filter-item-wrapper">
               <button
-                onClick={(e) => handleInfoClick(filter.id, e)}
-                className="filter-info-btn"
-                aria-label={`Learn more about ${filter.name}`}
-                title="Learn more"
+                onClick={() => handleFilterClick(filter.id)}
+                className={`filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
+                aria-pressed={activeFilter === filter.id}
+                title={filter.description}
               >
-                ℹ️
+                <span className="filter-name">{filter.name}</span>
+                <span className="filter-prevalence">{filter.prevalence}</span>
               </button>
-            </button>
+              {onFilterInfo && (
+                <button
+                  onClick={(e) => handleInfoClick(filter.id, e)}
+                  className="filter-info-btn-external"
+                  aria-label={`Learn more about ${filter.name}`}
+                  title="Learn more"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                    <path d="M8 6V8M8 10H8.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              )}
+            </div>
           ))}
         </div>
       </div>
@@ -154,7 +150,15 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
           gap: var(--spacing-sm);
         }
         
+        .filter-item-wrapper {
+          position: relative;
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-xs);
+        }
+        
         .filter-btn {
+          flex: 1;
           display: flex;
           flex-direction: column;
           align-items: flex-start;
@@ -199,16 +203,16 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
           opacity: 0.8;
         }
         
-        .filter-info-btn {
+        .filter-info-btn-external {
           position: absolute;
           top: 4px;
           right: 4px;
-          background: rgba(110, 198, 255, 0.2);
-          border: none;
+          background: rgba(110, 198, 255, 0.15);
+          border: 1px solid rgba(110, 198, 255, 0.3);
           border-radius: 50%;
-          width: 20px;
-          height: 20px;
-          font-size: 0.7rem;
+          width: 24px;
+          height: 24px;
+          color: rgba(110, 198, 255, 0.9);
           cursor: pointer;
           opacity: 0;
           transition: all 0.2s ease;
@@ -216,15 +220,23 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
           align-items: center;
           justify-content: center;
           padding: 0;
+          flex-shrink: 0;
         }
         
-        .filter-btn:hover .filter-info-btn {
+        .filter-item-wrapper:hover .filter-info-btn-external {
           opacity: 1;
         }
         
-        .filter-info-btn:hover {
-          background: rgba(110, 198, 255, 0.4);
+        .filter-info-btn-external:hover {
+          background: rgba(110, 198, 255, 0.3);
+          border-color: rgba(110, 198, 255, 0.5);
+          color: rgba(110, 198, 255, 1);
           transform: scale(1.1);
+        }
+        
+        .filter-info-btn-external svg {
+          width: 12px;
+          height: 12px;
         }
         
         .reset-btn {

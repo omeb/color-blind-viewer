@@ -1417,6 +1417,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           height: 100%;
           background: white;
           transition: filter var(--transition-normal);
+          position: relative;
+          overflow: hidden;
         }
         
         .website-iframe {
@@ -1424,6 +1426,9 @@ export default function WebsiteViewer({ url, activeFilter = 'none', onFilterRemo
           height: 100%;
           border: none;
           display: block;
+          position: absolute;
+          top: 0;
+          left: 0;
         }
         
         .split-container {

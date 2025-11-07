@@ -69,11 +69,34 @@ export default function Home() {
   const addToHistory = (url) => {
     if (!url) return
     
+    // Normalize URL to avoid duplicates (www vs non-www)
+    let normalizedUrl = url
+    try {
+      const urlObj = new URL(url)
+      // Remove www. prefix for normalization
+      if (urlObj.hostname.startsWith('www.')) {
+        urlObj.hostname = urlObj.hostname.replace(/^www\./, '')
+        normalizedUrl = urlObj.toString()
+      }
+    } catch (e) {
+      // If URL parsing fails, use as-is
+    }
+    
     setHistory(prevHistory => {
-      // Remove the URL if it already exists
-      const filtered = prevHistory.filter(item => item !== url)
+      // Remove the URL if it already exists (check both www and non-www versions)
+      const filtered = prevHistory.filter(item => {
+        try {
+          const itemObj = new URL(item)
+          const normalizedItem = itemObj.hostname.replace(/^www\./, '')
+          const currentObj = new URL(normalizedUrl)
+          const normalizedCurrent = currentObj.hostname.replace(/^www\./, '')
+          return normalizedItem !== normalizedCurrent
+        } catch {
+          return item !== normalizedUrl && item !== url
+        }
+      })
       // Add to the beginning and limit to 10 items
-      const newHistory = [url, ...filtered].slice(0, 10)
+      const newHistory = [normalizedUrl, ...filtered].slice(0, 10)
       
       // Save immediately to localStorage
       if (typeof window !== 'undefined') {
@@ -90,10 +113,6 @@ export default function Home() {
   
   const removeFromHistory = (url) => {
     setHistory(prevHistory => prevHistory.filter(item => item !== url))
-  }
-  
-  const clearAllHistory = () => {
-    setHistory([])
   }
   
   const handleUrlSubmit = async (url) => {
@@ -142,7 +161,6 @@ export default function Home() {
                   history={history}
                   onSelectUrl={handleUrlSubmit}
                   onRemoveUrl={removeFromHistory}
-                  onClearAll={clearAllHistory}
                 />
               </div>
             </div>
@@ -167,7 +185,6 @@ export default function Home() {
                       history={history}
                       onSelectUrl={handleUrlSubmit}
                       onRemoveUrl={removeFromHistory}
-                      onClearAll={clearAllHistory}
                     />
                   </div>
                 )}
@@ -247,6 +264,7 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
         }
         
         .app-container.initial-view {
@@ -372,10 +390,12 @@ export default function Home() {
         }
         
         .footer {
-          margin-top: var(--spacing-xl);
+          margin-top: auto;
+          padding-top: var(--spacing-xl);
           max-width: 1400px;
           margin-left: auto;
           margin-right: auto;
+          width: 100%;
         }
         
         .footer-content {
