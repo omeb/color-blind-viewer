@@ -686,47 +686,6 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
       )}
       </div>
       
-      {/* Quick Filter Buttons - Right beneath the viewer */}
-      {url && (
-        <div className="quick-filters">
-          <div className="quick-filters-scroll">
-            <button
-              onClick={() => {
-                onFilterChange && onFilterChange('none')
-              }}
-              className={`quick-filter-btn ${activeFilter === 'none' ? 'active' : ''}`}
-              title="Click to apply filter"
-            >
-              None
-            </button>
-            {getCategorizedFilters().colorblind.map((filter) => (
-              <button
-                key={filter.id}
-                onClick={() => {
-                  onFilterChange && onFilterChange(filter.id)
-                }}
-                className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
-                title="Click to apply filter"
-              >
-                {filter.name}
-              </button>
-            ))}
-            {getCategorizedFilters().other.map((filter) => (
-              <button
-                key={filter.id}
-                onClick={() => {
-                  onFilterChange && onFilterChange(filter.id)
-                }}
-                className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
-                title="Click to apply filter"
-              >
-                {filter.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-      
       <style jsx>{`
         .website-viewer-wrapper {
           position: relative;
@@ -1077,9 +1036,9 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         }
         
         .quick-filters {
-          margin-top: var(--spacing-md);
-          margin-bottom: var(--spacing-sm);
-          padding-top: 4px;
+          margin-top: 0;
+          margin-bottom: var(--spacing-md);
+          padding-top: 0;
           width: 100%;
           max-width: 100%;
           overflow-x: auto;
