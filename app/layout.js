@@ -63,6 +63,7 @@ export const metadata = {
         height: 630,
         alt: 'Accessibility Viewer - Accessibility Testing Tool',
         type: 'image/png',
+        secureUrl: siteImage,
       },
     ],
   },
@@ -129,12 +130,14 @@ export default function RootLayout({ children }) {
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               '@context': 'https://schema.org',
-              '@type': 'WebApplication',
+              '@type': 'SoftwareApplication',
               name: siteName,
               description: siteDescription,
               url: siteUrl,
               applicationCategory: 'WebApplication',
               operatingSystem: 'Web',
+              browserRequirements: 'Requires JavaScript. Requires HTML5.',
+              softwareVersion: '1.0',
               offers: {
                 '@type': 'Offer',
                 price: '0',
@@ -143,14 +146,63 @@ export default function RootLayout({ children }) {
               creator: {
                 '@type': 'Organization',
                 name: 'Wix Accessibility Team',
+                url: 'https://www.wix.com',
               },
+              publisher: {
+                '@type': 'Organization',
+                name: 'Wix Accessibility Team',
+                url: 'https://www.wix.com',
+              },
+              screenshot: siteImage,
               featureList: [
-                'Colorblindness simulation',
-                'Vision impairment filters',
-                'Accessibility testing',
-                'WCAG compliance checking',
-                'Real-time website preview',
+                'Colorblindness simulation (Protanopia, Deuteranopia, Tritanopia)',
+                'Color vision deficiency filters (Protanomaly, Deuteranomaly)',
+                'Vision impairment filters (Cataracts, Glaucoma, Macular Degeneration)',
+                'Accessibility testing and WCAG compliance checking',
+                'Real-time website preview with split-view comparison',
+                'Mobile-responsive design',
+                'Dark mode support',
               ],
+              keywords: 'accessibility, colorblind, color blindness, vision impairment, a11y, WCAG, web accessibility, accessibility testing',
+              inLanguage: 'en-US',
+            }),
+          }}
+        />
+        {/* Organization Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'Wix Accessibility Team',
+              url: 'https://www.wix.com',
+              logo: 'https://www.wix.com/favicon.ico',
+            }),
+          }}
+        />
+        {/* WebSite Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: siteName,
+              url: siteUrl,
+              description: siteDescription,
+              publisher: {
+                '@type': 'Organization',
+                name: 'Wix Accessibility Team',
+              },
+              potentialAction: {
+                '@type': 'SearchAction',
+                target: {
+                  '@type': 'EntryPoint',
+                  urlTemplate: `${siteUrl}?url={search_term_string}`,
+                },
+                'query-input': 'required name=search_term_string',
+              },
             }),
           }}
         />
