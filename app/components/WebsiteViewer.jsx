@@ -233,6 +233,36 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
     }
   }, [url]) // Re-check when URL changes (filters might change)
   
+  // Scroll active filter into view when it changes
+  React.useEffect(() => {
+    if (!activeFilter || !showQuickFilters) return
+    
+    const scrollContainer = quickFiltersScrollRef.current
+    if (!scrollContainer) return
+    
+    // Wait for DOM to update
+    requestAnimationFrame(() => {
+      const activeButton = scrollContainer.querySelector('.quick-filter-btn.active')
+      if (activeButton) {
+        const containerRect = scrollContainer.getBoundingClientRect()
+        const buttonRect = activeButton.getBoundingClientRect()
+        
+        // Check if button is out of view
+        const isOutOfViewLeft = buttonRect.left < containerRect.left
+        const isOutOfViewRight = buttonRect.right > containerRect.right
+        
+        if (isOutOfViewLeft || isOutOfViewRight) {
+          // Scroll the button into view, centered if possible
+          activeButton.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'center'
+          })
+        }
+      }
+    })
+  }, [activeFilter, showQuickFilters, url])
+  
   // Sync split view with prop
   React.useEffect(() => {
     if (isSplitViewProp !== undefined) {
@@ -1150,7 +1180,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           align-items: center;
           justify-content: space-between;
           gap: var(--spacing-sm);
-          margin-bottom: var(--spacing-md);
+          margin-bottom: var(--spacing-xs);
           flex-wrap: wrap;
           position: relative;
           z-index: 10;
@@ -1187,8 +1217,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           }
           
           .control-btn {
-            padding: 8px 12px;
-            min-width: 44px;
+            padding: 8px 16px;
+            min-width: 48px;
             height: 44px;
             border-radius: 10px;
             font-size: 0.85rem;
@@ -1497,8 +1527,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           overflow-x: auto;
           overflow-y: visible;
           -webkit-overflow-scrolling: touch;
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE and Edge */
           min-width: 0;
           display: flex;
           align-items: center;
@@ -1507,16 +1537,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         }
         
         .quick-filters::-webkit-scrollbar {
-          height: 4px;
-        }
-        
-        .quick-filters::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        
-        .quick-filters::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.3);
-          border-radius: 2px;
+          display: none; /* Chrome, Safari, Opera */
         }
         
         .quick-filters-scroll {
@@ -1959,8 +1980,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         }
         
         .control-btn:has(.btn-icon:only-child) {
-          padding: 10px;
-          min-width: 40px;
+          padding: 10px 16px;
+          min-width: 48px;
         }
         
         .control-btn.active {
@@ -2045,22 +2066,22 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           transform: none !important;
           border-width: 1px !important;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-          padding: 10px !important;
-          min-width: 40px !important;
+          padding: 10px 16px !important;
+          min-width: 48px !important;
           transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .control-btn.random-btn:active:not(:disabled) {
           transform: none !important;
-          padding: 10px !important;
-          min-width: 40px !important;
+          padding: 10px 16px !important;
+          min-width: 48px !important;
           border-width: 1px !important;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
         }
         
         .control-btn.random-btn.pulse-hint:hover:not(:disabled) {
-          padding: 10px !important;
-          min-width: 40px !important;
+          padding: 10px 16px !important;
+          min-width: 48px !important;
         }
         
         .random-hint-text {

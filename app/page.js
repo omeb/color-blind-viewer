@@ -484,9 +484,6 @@ export default function Home() {
                   </button>
                 </div>
                 
-                {/* Title */}
-                <h1 className="top-nav-title">Accessibility Viewer</h1>
-                
                 {/* Filter controls */}
                 <div className="filter-controls-toggle" ref={filterPopoverRef}>
                 <button
@@ -689,7 +686,7 @@ export default function Home() {
                   rel="noopener noreferrer"
                   className="footer-link"
                 >
-                  ♿ WCAG Guidelines
+                  <span className="footer-link-emoji">♿</span><span className="footer-link-text"> WCAG Guidelines</span>
                 </a>
                 <span className="footer-separator">·</span>
                 <a 
@@ -701,7 +698,7 @@ export default function Home() {
                   <svg className="footer-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
                   </svg>
-                  GitHub
+                  <span className="footer-link-text">GitHub</span>
                 </a>
               </div>
               <div className="footer-theme-toggle">
@@ -891,8 +888,8 @@ export default function Home() {
           max-width: 1400px;
           margin: 0 auto;
           padding: 12px var(--spacing-lg);
-          display: grid;
-          grid-template-columns: auto 1fr auto;
+          display: flex;
+          justify-content: space-between;
           align-items: center;
           gap: var(--spacing-md);
         }
@@ -1866,8 +1863,7 @@ export default function Home() {
         
         .footer-link {
           color: rgba(255, 255, 255, 1);
-          text-decoration: underline;
-          text-underline-offset: 2px;
+          text-decoration: none;
           font-size: 0.75rem;
           transition: all var(--transition-fast);
           display: inline-flex;
@@ -1877,14 +1873,30 @@ export default function Home() {
           font-weight: 500;
         }
         
+        .footer-link-emoji {
+          text-decoration: none !important;
+          display: inline-block;
+        }
+        
+        .footer-link-text {
+          text-decoration: underline;
+          text-underline-offset: 2px;
+        }
+        
         .footer-link:hover {
           color: rgba(110, 198, 255, 1);
+        }
+        
+        .footer-link:hover .footer-link-text {
           text-decoration: underline;
         }
         
         .footer-link:focus-visible {
           outline: 2px solid rgba(110, 198, 255, 1);
           outline-offset: 2px;
+        }
+        
+        .footer-link:focus-visible .footer-link-text {
           text-decoration: underline;
         }
         
