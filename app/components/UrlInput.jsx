@@ -696,6 +696,10 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
             border-left: none;
             border-top: 1px solid rgba(0, 0, 0, 0.06);
             border-radius: 0 0 15px 15px;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
             box-shadow: 0 4px 14px rgba(0, 122, 255, 0.25),
                         0 2px 6px rgba(0, 122, 255, 0.15),
                         inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -709,6 +713,10 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           
           .submit-button::before {
             border-radius: 0 0 15px 15px;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
           }
           
           .submit-button:hover:not(:disabled) {
