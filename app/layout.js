@@ -1,5 +1,7 @@
 import './globals.css'
 
+// SSR: These constants are computed at build time and included in server-rendered HTML
+// They are NOT client-side variables - WhatsApp/Facebook crawlers will see these values
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://color-blind-viewer.netlify.app'
 const siteName = 'Accessibility Viewer'
 const siteDescription = 'Experience how websites appear to people with vision impairments. Test your website\'s accessibility with colorblindness, cataracts, glaucoma, and other vision condition simulators. Free tool for designers and developers.'
@@ -98,10 +100,39 @@ export const metadata = {
   },
 }
 
+// SSR: This component is server-rendered by default (no 'use client' directive)
+// All meta tags below are included in the initial HTML response, not injected client-side
 export default function RootLayout({ children }) {
+  // SSR: These values are resolved at build/render time and embedded in HTML
+  // WhatsApp/Facebook crawlers will see these exact values in the server-rendered HTML
+  const ogTitle = 'Accessibility Viewer - See the World Through Different Eyes'
+  const ogImageUrl = siteImage
+  const ogUrl = siteUrl
+  
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* CRITICAL: OG meta tags MUST be first for WhatsApp crawler compatibility */}
+        {/* SSR: These tags are rendered server-side and appear in initial HTML */}
+        {/* WhatsApp crawler stops parsing if it encounters scripts before meta tags */}
+        {/* All values below are constants resolved at build time - no runtime dependencies */}
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={ogTitle} />
+        <meta property="og:description" content={siteDescription} />
+        <meta property="og:url" content={ogUrl} />
+        <meta property="og:image" content={ogImageUrl} />
+        <meta property="og:image:url" content={ogImageUrl} />
+        <meta property="og:image:secure_url" content={ogImageUrl} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content="Accessibility Viewer - Accessibility Testing Tool" />
+        {/* Twitter Card (helps WhatsApp too) - SSR rendered */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={ogTitle} />
+        <meta name="twitter:description" content={siteDescription} />
+        <meta name="twitter:image" content={ogImageUrl} />
+        <meta name="twitter:image:src" content={ogImageUrl} />
         {/* Apply theme immediately to prevent flash - blocking inline script */}
         <script
           dangerouslySetInnerHTML={{
@@ -124,26 +155,6 @@ export default function RootLayout({ children }) {
             `,
           }}
         />
-        {/* Explicit OG meta tags for better mobile compatibility (Facebook/WhatsApp) */}
-        {/* Essential Open Graph tags - must be in initial HTML, not injected by JS */}
-        {/* Note: fb:app_id is optional - only needed if you have a Facebook App for analytics */}
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content="Accessibility Viewer - See the World Through Different Eyes" />
-        <meta property="og:description" content={siteDescription} />
-        <meta property="og:url" content={siteUrl} />
-        <meta property="og:image" content={siteImage} />
-        <meta property="og:image:url" content={siteImage} />
-        <meta property="og:image:secure_url" content={siteImage} />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:type" content="image/png" />
-        <meta property="og:image:alt" content="Accessibility Viewer - Accessibility Testing Tool" />
-        {/* Twitter Card (helps WhatsApp too) */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Accessibility Viewer - See the World Through Different Eyes" />
-        <meta name="twitter:description" content={siteDescription} />
-        <meta name="twitter:image" content={siteImage} />
-        <meta name="twitter:image:src" content={siteImage} />
         {/* Structured Data for SEO */}
         <script
           type="application/ld+json"
