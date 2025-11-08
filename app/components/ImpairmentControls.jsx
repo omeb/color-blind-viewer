@@ -61,13 +61,13 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
               {onFilterInfo && (
                 <button
                   onClick={(e) => handleInfoClick(filter.id, e)}
-                  className="filter-info-btn-external"
+                  className="filter-info-btn"
                   aria-label={`Learn more about ${filter.name}`}
                   title="Learn more"
                 >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                    <path d="M8 6V8M8 10H8.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                    <path d="M7 5V7M7 9H7.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </button>
               )}
@@ -93,13 +93,13 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
               {onFilterInfo && (
                 <button
                   onClick={(e) => handleInfoClick(filter.id, e)}
-                  className="filter-info-btn-external"
+                  className="filter-info-btn"
                   aria-label={`Learn more about ${filter.name}`}
                   title="Learn more"
                 >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                    <path d="M8 6V8M8 10H8.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                    <path d="M7 5V7M7 9H7.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </button>
               )}
@@ -149,16 +149,16 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
         
         .filter-item-wrapper {
           position: relative;
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-xs);
         }
         
         .filter-btn {
-          flex: 1;
+          width: 100%;
+          height: 70px;
+          position: relative;
           display: flex;
           flex-direction: column;
           align-items: flex-start;
+          justify-content: center;
           padding: var(--spacing-sm);
           background: var(--glass-bg);
           backdrop-filter: blur(10px);
@@ -169,6 +169,7 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
           text-align: left;
           transition: all var(--transition-normal);
           cursor: pointer;
+          box-sizing: border-box;
         }
         
         .filter-btn:hover {
@@ -192,46 +193,69 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
         .filter-name {
           font-weight: 600;
           font-size: 0.9rem;
-          margin-bottom: 2px;
+          margin-bottom: 4px;
+          padding-right: 24px;
+          line-height: 1.2;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          display: -webkit-box;
+          -webkit-line-clamp: 1;
+          -webkit-box-orient: vertical;
         }
         
         .filter-prevalence {
           font-size: 0.75rem;
           opacity: 0.8;
+          line-height: 1.2;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
         }
         
-        .filter-info-btn-external {
+        .filter-info-btn {
           position: absolute;
-          top: 4px;
-          right: 4px;
-          background: rgba(110, 198, 255, 0.15);
-          border: 1px solid rgba(110, 198, 255, 0.3);
+          top: 6px;
+          right: 6px;
+          background: rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.15);
           border-radius: 50%;
-          width: 24px;
-          height: 24px;
-          color: rgba(110, 198, 255, 0.9);
+          width: 22px;
+          height: 22px;
+          color: rgba(255, 255, 255, 0.7);
           cursor: pointer;
-          opacity: 0;
-          transition: all 0.2s ease;
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 0;
           flex-shrink: 0;
+          z-index: 10;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          opacity: 0;
+          pointer-events: none;
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
         }
         
-        .filter-item-wrapper:hover .filter-info-btn-external {
+        .filter-item-wrapper:hover .filter-info-btn {
           opacity: 1;
+          pointer-events: auto;
         }
         
-        .filter-info-btn-external:hover {
-          background: rgba(110, 198, 255, 0.3);
-          border-color: rgba(110, 198, 255, 0.5);
+        .filter-info-btn:hover {
+          background: rgba(110, 198, 255, 0.2);
+          border-color: rgba(110, 198, 255, 0.4);
           color: rgba(110, 198, 255, 1);
           transform: scale(1.1);
+          box-shadow: 0 2px 12px rgba(110, 198, 255, 0.25);
         }
         
-        .filter-info-btn-external svg {
+        .filter-info-btn:active {
+          transform: scale(1.05);
+        }
+        
+        .filter-info-btn svg {
           width: 12px;
           height: 12px;
         }

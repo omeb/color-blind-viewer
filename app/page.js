@@ -52,13 +52,45 @@ export default function Home() {
   const [selectedFilterInfo, setSelectedFilterInfo] = React.useState(null)
   const [filterPopoverPosition, setFilterPopoverPosition] = React.useState(null)
   const [showFilterPopover, setShowFilterPopover] = React.useState(false)
+  const [isPopoverOpening, setIsPopoverOpening] = React.useState(false)
   const [filterPopoverInfo, setFilterPopoverInfo] = React.useState(null)
   const [popoverPosition, setPopoverPosition] = React.useState(null)
   const filterPopoverRef = React.useRef(null)
   const filterInfoPopoverRef = React.useRef(null)
   const infoIconRef = React.useRef(null)
+  const filterPickerContentRef = React.useRef(null)
+  const activeFilterItemRef = React.useRef(null)
   const isInitialMount = React.useRef(true)
   const [isInitialDelayComplete, setIsInitialDelayComplete] = React.useState(false)
+  const [isSidebarVisible, setIsSidebarVisible] = React.useState(false)
+  
+  // Check if sidebar is visible based on viewport width
+  React.useEffect(() => {
+    const checkSidebarVisibility = () => {
+      // Sidebar is visible on screens wider than 1200px (matches CSS media query)
+      setIsSidebarVisible(window.innerWidth > 1200 && hasLoadedSite)
+    }
+    
+    checkSidebarVisibility()
+    window.addEventListener('resize', checkSidebarVisibility)
+    
+    return () => {
+      window.removeEventListener('resize', checkSidebarVisibility)
+    }
+  }, [hasLoadedSite])
+  
+  // Prevent body scroll on mobile when popover is open
+  React.useEffect(() => {
+    if (!filterPopoverInfo) return
+    
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
+    if (isMobile) {
+      document.body.style.overflow = 'hidden'
+      return () => {
+        document.body.style.overflow = ''
+      }
+    }
+  }, [filterPopoverInfo])
   
   // Recalculate popover position after it's rendered
   React.useEffect(() => {
@@ -70,25 +102,32 @@ export default function Home() {
     const calculatePosition = () => {
       if (!filterInfoPopoverRef.current) return
       
+      // Skip positioning on mobile - it's full screen
+      const isMobile = window.innerWidth <= 768
+      if (isMobile) {
+        setPopoverPosition({ x: 0, y: 0 })
+        return
+      }
+      
       const viewportWidth = window.innerWidth
       const viewportHeight = window.innerHeight
-      const popoverWidth = 240
       const minMargin = 20
+      
+      // Get actual popover dimensions (accounts for responsive widths)
+      const actualWidth = filterInfoPopoverRef.current.offsetWidth || 240
+      const actualHeight = filterInfoPopoverRef.current.offsetHeight || 500
       
       let x = filterPopoverInfo.position.x
       let y = filterPopoverInfo.position.y
       
-      // Get actual popover height
-      const actualHeight = filterInfoPopoverRef.current.offsetHeight || 500
-      
       // Ensure popover doesn't overflow right edge
-      if (x + popoverWidth / 2 > viewportWidth - minMargin) {
-        x = viewportWidth - popoverWidth / 2 - minMargin
+      if (x + actualWidth / 2 > viewportWidth - minMargin) {
+        x = viewportWidth - actualWidth / 2 - minMargin
       }
       
       // Ensure popover doesn't overflow left edge
-      if (x - popoverWidth / 2 < minMargin) {
-        x = popoverWidth / 2 + minMargin
+      if (x - actualWidth / 2 < minMargin) {
+        x = actualWidth / 2 + minMargin
       }
       
       // Ensure popover doesn't overflow bottom edge
@@ -101,6 +140,11 @@ export default function Home() {
         y = minMargin
       }
       
+      // On very small screens, center horizontally if popover is wider than viewport
+      if (actualWidth + (minMargin * 2) > viewportWidth) {
+        x = viewportWidth / 2
+      }
+      
       setPopoverPosition({ x, y })
     }
     
@@ -110,6 +154,14 @@ export default function Home() {
         calculatePosition()
       })
     })
+    
+    // Recalculate on window resize
+    const handleResize = () => {
+      calculatePosition()
+    }
+    
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
   }, [filterPopoverInfo])
   
   // Hide all content for 0.7 seconds on initial load
@@ -121,18 +173,55 @@ export default function Home() {
     return () => clearTimeout(timer)
   }, [])
   
+  // Handle popover opening with smooth scroll
+  const handleOpenFilterPopover = () => {
+    setShowFilterPopover(true)
+    setIsPopoverOpening(true)
+    
+    // Use double requestAnimationFrame to ensure DOM is ready and rendered
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        // Set scroll position immediately (synchronously, before visual transition)
+        if (activeFilterItemRef.current && filterPickerContentRef.current) {
+          const activeItem = activeFilterItemRef.current
+          const contentContainer = filterPickerContentRef.current
+          
+          // Calculate and set scroll position instantly
+          const scrollPosition = 
+            activeItem.offsetTop - 
+            (contentContainer.clientHeight / 2) + 
+            (activeItem.offsetHeight / 2)
+          
+          // Set scroll synchronously to prevent any visual jump
+          contentContainer.scrollTop = Math.max(0, scrollPosition)
+        }
+        
+        // After scroll is set, trigger the visual transition
+        // Use a tiny delay to ensure scroll is applied
+        setTimeout(() => {
+          setIsPopoverOpening(false)
+        }, 0)
+      })
+    })
+  }
+  
+  const handleCloseFilterPopover = () => {
+    setIsPopoverOpening(false)
+    setShowFilterPopover(false)
+  }
+  
   // Close popover when clicking outside
   React.useEffect(() => {
     const handleClickOutside = (event) => {
       if (filterPopoverRef.current && !filterPopoverRef.current.contains(event.target)) {
-        // Check if click is not on the filter badge
-        if (!event.target.closest('.filter-badge')) {
-          setShowFilterPopover(false)
+        // Check if click is not on the filter control buttons
+        if (!event.target.closest('.filter-controls-toggle')) {
+          handleCloseFilterPopover()
         }
       }
       if (filterInfoPopoverRef.current && !filterInfoPopoverRef.current.contains(event.target)) {
         // Check if click is not on the filter info icon button
-        if (!event.target.closest('.filter-info-icon-btn')) {
+        if (!event.target.closest('.filter-control-info-btn')) {
           setFilterPopoverInfo(null)
         }
       }
@@ -296,6 +385,7 @@ export default function Home() {
     setLoading(true)
     setError(null)
     setTargetUrl(url)
+    setUrlInputValue(url) // Update input value
     
     // Add to history
     addToHistory(url)
@@ -358,25 +448,137 @@ export default function Home() {
           {/* SVG filters for colorblindness simulation */}
           <div dangerouslySetInnerHTML={{ __html: generateSVGFilters() }} />
           
-          {/* Home button to clear query params */}
-          {hasQueryParams && (
-            <button
-              onClick={handleClearQueryParams}
-              className="home-button"
-              aria-label="Return to home"
-              title="Return to home"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                <polyline points="9 22 9 12 15 12 15 22"></polyline>
-              </svg>
-            </button>
+          {/* Top Navigation Bar */}
+          {hasLoadedSite && (
+            <nav className="top-nav-bar" aria-label="Main navigation">
+              <div className="top-nav-content">
+                {/* Home button */}
+                <div className="top-nav-left">
+                  {hasQueryParams && (
+                    <button
+                      onClick={handleClearQueryParams}
+                      className="home-button"
+                      aria-label="Return to home"
+                      title="Return to home"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                      </svg>
+                    </button>
+                  )}
+                </div>
+                
+                {/* Title */}
+                <h1 className="top-nav-title">Accessibility Viewer</h1>
+                
+                {/* Filter controls */}
+                <div className="filter-controls-toggle" ref={filterPopoverRef}>
+                <button
+                  onClick={() => showFilterPopover ? handleCloseFilterPopover() : handleOpenFilterPopover()}
+                  className="filter-control-btn"
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      showFilterPopover ? handleCloseFilterPopover() : handleOpenFilterPopover()
+                    }
+                  }}
+                  title="Select filter"
+                  aria-label="Select filter"
+                >
+                  {getFilterName(activeFilter)}
+                </button>
+                {activeFilter !== 'none' && (
+                  <button
+                    ref={(el) => {
+                      if (el) {
+                        infoIconRef.current = el
+                      }
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      const iconRect = e.currentTarget.getBoundingClientRect()
+                      setFilterPopoverInfo({ 
+                        filterId: activeFilter, 
+                        position: { 
+                          x: iconRect.left + iconRect.width / 2, 
+                          y: iconRect.bottom + 8 
+                        } 
+                      })
+                    }}
+                    className="filter-control-info-btn"
+                    title="Show information about current filter"
+                    aria-label="Show filter information"
+                    type="button"
+                  >
+                    ℹ
+                  </button>
+                )}
+                {showFilterPopover && (
+                  <div className="filter-picker-popover" data-open={!isPopoverOpening}>
+                    <div className="filter-picker-header">
+                      <span>Select Filter</span>
+                      <button
+                        onClick={handleCloseFilterPopover}
+                        className="filter-picker-close"
+                        aria-label="Close"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <div className="filter-picker-content" ref={filterPickerContentRef}>
+                      <button
+                        ref={activeFilter === 'none' ? activeFilterItemRef : null}
+                        onClick={() => {
+                          handleFilterChange('none')
+                          handleCloseFilterPopover()
+                        }}
+                        className={`filter-picker-item ${activeFilter === 'none' ? 'active' : ''}`}
+                      >
+                        <span className="filter-picker-name">Original Site</span>
+                        <span className="filter-picker-desc">No filter applied</span>
+                      </button>
+                      
+                      <div className="filter-picker-section-header">Color Deficiency</div>
+                      {getCategorizedFilters().colorblind.map((filter) => (
+                        <button
+                          key={filter.id}
+                          ref={activeFilter === filter.id ? activeFilterItemRef : null}
+                          onClick={() => {
+                            handleFilterChange(filter.id)
+                            handleCloseFilterPopover()
+                          }}
+                          className={`filter-picker-item ${activeFilter === filter.id ? 'active' : ''}`}
+                        >
+                          <span className="filter-picker-name">{filter.name}</span>
+                          <span className="filter-picker-desc">{filter.prevalence}</span>
+                        </button>
+                      ))}
+                      
+                      <div className="filter-picker-section-header">Other</div>
+                      {getCategorizedFilters().other.map((filter) => (
+                        <button
+                          key={filter.id}
+                          ref={activeFilter === filter.id ? activeFilterItemRef : null}
+                          onClick={() => {
+                            handleFilterChange(filter.id)
+                            handleCloseFilterPopover()
+                          }}
+                          className={`filter-picker-item ${activeFilter === filter.id ? 'active' : ''}`}
+                        >
+                          <span className="filter-picker-name">{filter.name}</span>
+                          <span className="filter-picker-desc">{filter.prevalence}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                </div>
+              </div>
+            </nav>
           )}
-          
-          {/* Dark mode toggle */}
-          <div className="dark-mode-toggle-wrapper">
-            <DarkModeToggle />
-          </div>
           
           <main id="main-content" className={`app-container ${hasLoadedSite ? 'has-content' : 'initial-view'}`}>
         {/* Hero Section - Only shown initially */}
@@ -432,113 +634,9 @@ export default function Home() {
               <section className="viewer-section">
                 <div className="glass-card">
                   <div className="viewer-header">
-                    <h2>Preview</h2>
-                    <div className="viewer-header-actions">
-                      <div className="active-filter-info">
-                        <div className="filter-badge-wrapper" ref={filterPopoverRef}>
-                          <div className="filter-badge-container">
-                            <span 
-                              className="filter-badge clickable"
-                              onClick={() => setShowFilterPopover(!showFilterPopover)}
-                              role="button"
-                              tabIndex={0}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                  e.preventDefault()
-                                  setShowFilterPopover(!showFilterPopover)
-                                }
-                              }}
-                            >
-                              {getFilterName(activeFilter)}
-                            </span>
-                            {activeFilter !== 'none' && (
-                              <button
-                                ref={(el) => {
-                                  if (el) {
-                                    infoIconRef.current = el
-                                  }
-                                }}
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  const iconRect = e.currentTarget.getBoundingClientRect()
-                                  setFilterPopoverInfo({ 
-                                    filterId: activeFilter, 
-                                    position: { 
-                                      x: iconRect.left + iconRect.width / 2, 
-                                      y: iconRect.bottom + 8 
-                                    } 
-                                  })
-                                }}
-                                className="filter-info-icon-btn"
-                                title="Show information about current filter"
-                                aria-label="Show filter information"
-                                type="button"
-                              >
-                                ℹ
-                              </button>
-                            )}
-                          </div>
-                          <span className="filter-explanation">
-                            {getFilterExplanation(activeFilter)}
-                          </span>
-                          {showFilterPopover && (
-                            <div className="filter-picker-popover">
-                              <div className="filter-picker-header">
-                                <span>Select Filter</span>
-                                <button
-                                  onClick={() => setShowFilterPopover(false)}
-                                  className="filter-picker-close"
-                                  aria-label="Close"
-                                >
-                                  ✕
-                                </button>
-                              </div>
-                              <div className="filter-picker-content">
-                                <button
-                                  onClick={() => {
-                                    handleFilterChange('none')
-                                    setShowFilterPopover(false)
-                                  }}
-                                  className={`filter-picker-item ${activeFilter === 'none' ? 'active' : ''}`}
-                                >
-                                  <span className="filter-picker-name">Original Site</span>
-                                  <span className="filter-picker-desc">No filter applied</span>
-                                </button>
-                                
-                                <div className="filter-picker-section-header">Color Deficiency</div>
-                                {getCategorizedFilters().colorblind.map((filter) => (
-                                  <button
-                                    key={filter.id}
-                                    onClick={() => {
-                                      handleFilterChange(filter.id)
-                                      setShowFilterPopover(false)
-                                    }}
-                                    className={`filter-picker-item ${activeFilter === filter.id ? 'active' : ''}`}
-                                  >
-                                    <span className="filter-picker-name">{filter.name}</span>
-                                    <span className="filter-picker-desc">{filter.prevalence}</span>
-                                  </button>
-                                ))}
-                                
-                                <div className="filter-picker-section-header">Other</div>
-                                {getCategorizedFilters().other.map((filter) => (
-                                  <button
-                                    key={filter.id}
-                                    onClick={() => {
-                                      handleFilterChange(filter.id)
-                                      setShowFilterPopover(false)
-                                    }}
-                                    className={`filter-picker-item ${activeFilter === filter.id ? 'active' : ''}`}
-                                  >
-                                    <span className="filter-picker-name">{filter.name}</span>
-                                    <span className="filter-picker-desc">{filter.prevalence}</span>
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                    <div className="viewer-header-content">
+                      <h2>Preview</h2>
+                      <p className="viewer-subtitle">See the web through different eyes</p>
                     </div>
                   </div>
                   <WebsiteViewer
@@ -556,6 +654,7 @@ export default function Home() {
                     onRemoveUrl={removeFromHistory}
                     loading={loading}
                     error={error}
+                    showQuickFilters={!isSidebarVisible}
                   />
                 </div>
               </section>
@@ -590,11 +689,18 @@ export default function Home() {
                   GitHub
                 </a>
               </div>
+              <div className="footer-theme-toggle">
+                <DarkModeToggle />
+              </div>
             </div>
             
             <div className="footer-bottom">
               <p className="footer-note">
-                🌐 Some sites may restrict embedding for security. Try different URLs if needed.
+                <span className="footer-note-icon">🌐</span>
+                <span className="footer-note-text">
+                  Some sites may restrict embedding for security.<br />
+                  Try different URLs if needed.
+                </span>
               </p>
             </div>
           </div>
@@ -616,6 +722,8 @@ export default function Home() {
         {filterPopoverInfo && (() => {
           const filter = getFilter(filterPopoverInfo.filterId)
           if (!filter) return null
+          
+          const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
           
           // Helper function to get "What this means" content
           const getWhatThisMeans = (filterId) => {
@@ -659,18 +767,29 @@ export default function Home() {
           }
           
           return (
-            <div 
-              ref={filterInfoPopoverRef}
-              className="filter-info-popover"
-              style={popoverPosition ? {
-                left: `${popoverPosition.x}px`,
-                top: `${popoverPosition.y}px`,
-                transform: 'translateX(-50%)',
-              } : {
-                opacity: 0,
-                visibility: 'hidden',
-              }}
-            >
+            <>
+              {isMobile && (
+                <div 
+                  className="filter-popover-backdrop"
+                  onClick={() => setFilterPopoverInfo(null)}
+                  aria-hidden="true"
+                />
+              )}
+              <div 
+                ref={filterInfoPopoverRef}
+                className="filter-info-popover"
+                style={isMobile ? {
+                  opacity: 1,
+                  visibility: 'visible',
+                } : (popoverPosition ? {
+                  left: `${popoverPosition.x}px`,
+                  top: `${popoverPosition.y}px`,
+                  transform: 'translateX(-50%)',
+                } : {
+                  opacity: 0,
+                  visibility: 'hidden',
+                })}
+              >
               <div className="filter-popover-header">
                 <div className="filter-popover-title-row">
                   <h3 className="filter-popover-title">{filter.name}</h3>
@@ -718,6 +837,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
+            </>
           )
         })()}
       </main>
@@ -740,17 +860,55 @@ export default function Home() {
           }
         }
         
-        .home-button {
+        .top-nav-bar {
           position: fixed;
-          top: 20px;
-          left: 20px;
+          top: 0;
+          left: 0;
+          right: 0;
           z-index: 1000;
-          width: 44px;
-          height: 44px;
-          border-radius: 50%;
           background: rgba(0, 0, 0, 0.25);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .top-nav-content {
+          max-width: 1400px;
+          margin: 0 auto;
+          padding: 12px var(--spacing-lg);
+          display: grid;
+          grid-template-columns: auto 1fr auto;
+          align-items: center;
+          gap: var(--spacing-md);
+        }
+        
+        .top-nav-left {
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
+          min-width: 40px;
+        }
+        
+        .top-nav-title {
+          margin: 0;
+          font-size: 1rem;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.95);
+          text-align: center;
+          letter-spacing: -0.01em;
+          line-height: 1.2;
+          white-space: nowrap;
+          justify-self: center;
+        }
+        
+        .home-button {
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          background: transparent;
+          backdrop-filter: none;
+          -webkit-backdrop-filter: none;
           border: 1px solid rgba(255, 255, 255, 0.15);
           color: rgba(255, 255, 255, 0.9);
           cursor: pointer;
@@ -758,16 +916,15 @@ export default function Home() {
           align-items: center;
           justify-content: center;
           padding: 0;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: none;
         }
         
         .home-button:hover {
-          background: rgba(0, 0, 0, 0.3);
+          background: rgba(255, 255, 255, 0.1);
           border-color: rgba(255, 255, 255, 0.25);
           color: rgba(255, 255, 255, 1);
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+          transform: translateY(-1px);
         }
         
         .home-button:active {
@@ -780,11 +937,18 @@ export default function Home() {
         }
         
         @media (max-width: 968px) {
+          .top-nav-content {
+            padding: 10px var(--spacing-md);
+            gap: var(--spacing-sm);
+          }
+          
+          .top-nav-title {
+            font-size: 0.9rem;
+          }
+          
           .home-button {
-            top: 16px;
-            left: 16px;
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
           }
           
           .home-button svg {
@@ -793,17 +957,80 @@ export default function Home() {
           }
         }
         
-        .dark-mode-toggle-wrapper {
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          z-index: 1000;
+        @media (max-width: 600px) {
+          .top-nav-title {
+            font-size: 0.85rem;
+          }
+        }
+        
+        .filter-controls-toggle {
+          display: flex;
+          align-items: center;
+          gap: 0;
+          background: rgba(0, 0, 0, 0.25);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          border-radius: 10px;
+          padding: 3px;
+          position: relative;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .filter-control-btn {
+          background: transparent;
+          border: none;
+          color: rgba(255, 255, 255, 0.9);
+          cursor: pointer;
+          padding: 6px 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 7px;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          z-index: 1;
+          font-size: 0.85rem;
+          font-weight: 600;
+          white-space: nowrap;
+        }
+        
+        .filter-control-btn:hover {
+          color: rgba(255, 255, 255, 1);
+          background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .filter-control-info-btn {
+          background: transparent;
+          border: none;
+          color: rgba(255, 255, 255, 0.7);
+          cursor: pointer;
+          padding: 6px 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 7px;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          z-index: 1;
+          min-width: 32px;
+          font-size: 0.85rem;
+          font-weight: 600;
+        }
+        
+        .filter-control-info-btn:hover {
+          color: rgba(255, 255, 255, 0.95);
+          background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .filter-control-info-btn:active {
+          transform: scale(0.95);
         }
         
         @media (max-width: 968px) {
-          .dark-mode-toggle-wrapper {
-            top: 16px;
-            right: 16px;
+          .filter-control-btn {
+            padding: 6px 10px;
+            font-size: 0.8rem;
           }
         }
         
@@ -823,6 +1050,19 @@ export default function Home() {
         
         .app-container.has-content {
           justify-content: flex-start;
+          padding-top: calc(var(--spacing-lg) + 60px);
+        }
+        
+        @media (max-width: 968px) {
+          .app-container.has-content {
+            padding-top: calc(var(--spacing-md) + 56px);
+          }
+        }
+        
+        @media (max-width: 768px) {
+          .app-container.has-content {
+            padding-top: calc(var(--spacing-md) + 52px);
+          }
         }
         
         .hero-section {
@@ -924,107 +1164,54 @@ export default function Home() {
           min-height: 600px;
         }
         
-        .viewer-header {
+        .viewer-section .viewer-header {
           display: flex;
           justify-content: space-between;
-          align-items: center;
+          align-items: flex-start;
           margin-bottom: var(--spacing-md);
-          flex-wrap: wrap;
           gap: var(--spacing-sm);
         }
         
-        .viewer-header-actions {
+        .viewer-section .viewer-header-content {
           display: flex;
-          align-items: center;
-          gap: var(--spacing-md);
+          flex-direction: column;
+          gap: 4px;
+          flex: 1;
+          min-width: 0;
         }
         
-        .viewer-header h2 {
+        .viewer-section .viewer-header h2 {
           margin: 0;
-        }
-        
-        .active-filter-info {
-          display: flex;
-          flex-direction: column;
-          gap: var(--spacing-xs);
-          align-items: flex-end;
-        }
-        
-        .filter-badge {
-          padding: var(--spacing-xs) var(--spacing-md);
-          background: rgba(110, 198, 255, 0.25);
-          border: 1px solid rgba(110, 198, 255, 0.5);
-          border-radius: 20px;
-          font-size: 0.9rem;
+          font-size: 1.5rem;
           font-weight: 700;
-          color: var(--text-light);
-          text-transform: capitalize;
+          color: rgba(255, 255, 255, 0.98);
+          letter-spacing: -0.02em;
+          line-height: 1.2;
         }
         
-        .filter-explanation {
+        .viewer-section .viewer-subtitle {
+          margin: 0;
           font-size: 0.85rem;
-          color: rgba(255, 255, 255, 0.85);
-          font-style: italic;
+          font-weight: 400;
+          color: rgba(255, 255, 255, 0.7);
+          letter-spacing: -0.01em;
+          line-height: 1.4;
         }
         
-        .filter-badge-wrapper {
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          gap: var(--spacing-xs);
-          align-items: flex-end;
-        }
-        
-        .filter-badge-container {
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-xs);
-          position: relative;
-        }
-        
-        .filter-info-icon-btn {
-          flex-shrink: 0;
-          width: 28px;
-          height: 28px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: rgba(110, 198, 255, 0.2);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          border: 1px solid rgba(110, 198, 255, 0.4);
-          border-radius: 50%;
-          color: rgba(110, 198, 255, 1);
-          cursor: pointer;
-          font-size: 0.85rem;
-          font-weight: 600;
-          transition: all 0.2s ease;
-          padding: 0;
-          outline-offset: 2px;
-          position: relative;
-          z-index: 10;
-        }
-        
-        .filter-info-icon-btn:hover {
-          background: rgba(110, 198, 255, 0.3);
-          border-color: rgba(110, 198, 255, 0.6);
-          transform: scale(1.1);
-          box-shadow: 0 2px 8px rgba(110, 198, 255, 0.4);
-        }
-        
-        .filter-info-icon-btn:active {
-          transform: scale(0.95);
-        }
-        
-        .filter-badge.clickable {
-          cursor: pointer;
-          transition: all var(--transition-fast);
-        }
-        
-        .filter-badge.clickable:hover {
-          background: rgba(110, 198, 255, 0.35);
-          border-color: rgba(110, 198, 255, 0.7);
-          transform: translateY(-1px);
+        @media (max-width: 768px) {
+          .viewer-section .viewer-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--spacing-xs);
+          }
+          
+          .viewer-section .viewer-header h2 {
+            font-size: 1.25rem;
+          }
+          
+          .viewer-section .viewer-subtitle {
+            font-size: 0.8rem;
+          }
         }
         
         .filter-picker-popover {
@@ -1040,8 +1227,17 @@ export default function Home() {
           border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: var(--radius-md);
           box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-          animation: popoverFadeIn 0.2s ease-out;
           overflow: hidden;
+          opacity: 0;
+          transform: translateY(-8px) scale(0.98);
+          transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+          pointer-events: none;
+        }
+        
+        .filter-picker-popover[data-open="true"] {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+          pointer-events: auto;
         }
         
         .filter-picker-header {
@@ -1136,17 +1332,6 @@ export default function Home() {
           opacity: 0.7;
         }
         
-        @keyframes popoverFadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
         .filter-info-popover {
           position: fixed;
           width: 240px;
@@ -1165,6 +1350,21 @@ export default function Home() {
           flex-direction: column;
         }
         
+        @media (min-width: 1024px) {
+          .filter-info-popover {
+            width: 360px;
+            max-width: 360px;
+            max-height: calc(100vh - 120px);
+          }
+        }
+        
+        @media (min-width: 1440px) {
+          .filter-info-popover {
+            width: 420px;
+            max-width: 420px;
+          }
+        }
+        
         .filter-popover-header {
           display: flex;
           justify-content: space-between;
@@ -1172,6 +1372,12 @@ export default function Home() {
           padding: var(--spacing-xs) var(--spacing-sm);
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
           flex-shrink: 0;
+        }
+        
+        @media (min-width: 1024px) {
+          .filter-popover-header {
+            padding: var(--spacing-sm) var(--spacing-md);
+          }
         }
         
         .filter-popover-title-row {
@@ -1188,6 +1394,12 @@ export default function Home() {
           color: rgba(255, 255, 255, 0.9);
         }
         
+        @media (min-width: 1024px) {
+          .filter-popover-title {
+            font-size: 1rem;
+          }
+        }
+        
         .filter-popover-severity {
           padding: 2px 6px;
           background: rgba(110, 198, 255, 0.15);
@@ -1198,6 +1410,13 @@ export default function Home() {
           color: rgba(110, 198, 255, 1);
           text-transform: uppercase;
           letter-spacing: 0.3px;
+        }
+        
+        @media (min-width: 1024px) {
+          .filter-popover-severity {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+          }
         }
         
         .filter-popover-close {
@@ -1218,6 +1437,14 @@ export default function Home() {
           flex-shrink: 0;
         }
         
+        @media (min-width: 1024px) {
+          .filter-popover-close {
+            width: 24px;
+            height: 24px;
+            font-size: 1rem;
+          }
+        }
+        
         .filter-popover-close:hover {
           background: rgba(255, 255, 255, 0.1);
           color: rgba(255, 255, 255, 0.9);
@@ -1229,6 +1456,13 @@ export default function Home() {
           overflow-x: hidden;
           padding: var(--spacing-xs);
           flex: 1;
+        }
+        
+        @media (min-width: 1024px) {
+          .filter-popover-body {
+            padding: var(--spacing-sm) var(--spacing-md);
+            max-height: calc(100vh - 220px);
+          }
         }
         
         .filter-popover-body::-webkit-scrollbar {
@@ -1257,12 +1491,29 @@ export default function Home() {
           line-height: 1.4;
         }
         
+        @media (min-width: 1024px) {
+          .filter-popover-description {
+            padding: 0;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            margin-bottom: var(--spacing-sm);
+          }
+        }
+        
         .filter-popover-stats {
           display: flex;
           gap: var(--spacing-sm);
           margin-bottom: var(--spacing-xs);
           padding: 0 var(--spacing-xs);
           flex-wrap: wrap;
+        }
+        
+        @media (min-width: 1024px) {
+          .filter-popover-stats {
+            padding: 0;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-sm);
+          }
         }
         
         .filter-popover-stat {
@@ -1283,6 +1534,16 @@ export default function Home() {
           font-size: 0.7rem;
           font-weight: 600;
           color: rgba(255, 255, 255, 0.9);
+        }
+        
+        @media (min-width: 1024px) {
+          .filter-popover-stat .stat-label {
+            font-size: 0.7rem;
+          }
+          
+          .filter-popover-stat .stat-value {
+            font-size: 0.875rem;
+          }
         }
         
         .filter-popover-section {
@@ -1310,6 +1571,23 @@ export default function Home() {
           line-height: 1.4;
         }
         
+        @media (min-width: 1024px) {
+          .filter-popover-section {
+            padding: 0;
+            margin-bottom: var(--spacing-md);
+          }
+          
+          .filter-popover-section h4 {
+            font-size: 0.75rem;
+            margin-bottom: var(--spacing-sm);
+          }
+          
+          .filter-popover-section p {
+            font-size: 0.875rem;
+            line-height: 1.6;
+          }
+        }
+        
         .filter-popover-section ul {
           margin: 0;
           padding: 0;
@@ -1335,65 +1613,199 @@ export default function Home() {
           font-size: 0.7rem;
         }
         
+        @media (min-width: 1024px) {
+          .filter-popover-section ul li {
+            padding-left: 20px;
+            margin-bottom: var(--spacing-sm);
+            font-size: 0.875rem;
+            line-height: 1.6;
+          }
+          
+          .filter-popover-section ul li:before {
+            font-size: 0.875rem;
+          }
+        }
+        
         .filter-popover-section ul li:last-child {
           margin-bottom: 0;
         }
         
+        .filter-popover-backdrop {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.7);
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          z-index: 999;
+          animation: fadeIn 0.2s ease-out;
+        }
+        
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        
         @media (max-width: 768px) {
           .filter-info-popover {
-            width: calc(100vw - 40px);
-            max-width: calc(100vw - 40px);
-            max-height: calc(100vh - 150px);
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            min-width: 0;
+            left: 0 !important;
+            top: 0 !important;
+            transform: none !important;
+            border-radius: 0;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            animation: slideUpMobile 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+          }
+          
+          @keyframes slideUpMobile {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
           }
           
           .filter-popover-header {
-            padding: var(--spacing-xs) var(--spacing-sm);
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 10;
           }
           
           .filter-popover-title {
-            font-size: 0.85rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+          }
+          
+          .filter-popover-severity {
+            padding: 6px 12px;
+            font-size: 0.875rem;
+            border-radius: 8px;
+          }
+          
+          .filter-popover-close {
+            width: 44px;
+            height: 44px;
+            font-size: 1.5rem;
+            padding: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+          }
+          
+          .filter-popover-close:hover,
+          .filter-popover-close:active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
           }
           
           .filter-popover-body {
-            padding: var(--spacing-xs);
-            max-height: calc(100vh - 250px);
+            padding: var(--spacing-lg);
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            max-height: none;
           }
           
           .filter-popover-description {
-            font-size: 0.7rem;
-            margin-bottom: var(--spacing-xs);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: var(--spacing-md);
+            padding: 0;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
           }
           
           .filter-popover-stats {
-            gap: var(--spacing-sm);
-            margin-bottom: var(--spacing-xs);
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+            padding: var(--spacing-md);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            flex-wrap: wrap;
+          }
+          
+          .filter-popover-stat {
+            gap: 6px;
+            min-width: 120px;
           }
           
           .filter-popover-stat .stat-label {
-            font-size: 0.6rem;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
           }
           
           .filter-popover-stat .stat-value {
-            font-size: 0.7rem;
+            font-size: 1rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 1);
           }
           
           .filter-popover-section {
-            margin-bottom: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            padding: 0;
+          }
+          
+          .filter-popover-section:last-child {
+            margin-bottom: 0;
           }
           
           .filter-popover-section h4 {
-            font-size: 0.65rem;
-            margin-bottom: 4px;
+            font-size: 0.875rem;
+            margin-bottom: var(--spacing-sm);
+            color: rgba(110, 198, 255, 1);
+            font-weight: 700;
           }
           
-          .filter-popover-section p,
-          .filter-popover-section ul li {
-            font-size: 0.7rem;
+          .filter-popover-section p {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: var(--spacing-sm);
+          }
+          
+          .filter-popover-section ul {
+            margin-top: var(--spacing-sm);
           }
           
           .filter-popover-section ul li {
-            padding-left: 16px;
-            margin-bottom: 4px;
+            padding-left: 28px;
+            margin-bottom: var(--spacing-md);
+            font-size: 1rem;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.9);
+            position: relative;
+          }
+          
+          .filter-popover-section ul li:before {
+            font-size: 1.125rem;
+            left: 4px;
+            top: 2px;
+          }
+          
+          .filter-popover-section ul li:last-child {
+            margin-bottom: 0;
           }
         }
         
@@ -1465,6 +1877,13 @@ export default function Home() {
           opacity: 0.8;
         }
         
+        .footer-theme-toggle {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-top: var(--spacing-sm);
+        }
+        
         .footer-bottom {
           display: flex;
           flex-direction: column;
@@ -1492,8 +1911,66 @@ export default function Home() {
           font-size: 0.7rem;
           margin: 0;
           color: rgba(255, 255, 255, 0.85);
-          line-height: 1.4;
+          line-height: 1.6;
           text-align: center;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          max-width: 100%;
+        }
+        
+        .footer-note-icon {
+          flex-shrink: 0;
+          line-height: 1.6;
+        }
+        
+        .footer-note-text {
+          text-align: center;
+          line-height: 1.6;
+        }
+        
+        @media (max-width: 768px) {
+          .footer-content {
+            padding: var(--spacing-sm);
+            gap: var(--spacing-xs);
+          }
+          
+          .footer-main {
+            gap: var(--spacing-xs);
+          }
+          
+          .footer-title {
+            font-size: 0.85rem;
+          }
+          
+          .footer-note {
+            font-size: 0.7rem;
+            line-height: 1.8;
+            gap: 6px;
+            flex-direction: row;
+            align-items: flex-start;
+            text-align: center;
+            justify-content: center;
+            flex-wrap: wrap;
+          }
+          
+          .footer-note-icon {
+            margin-top: 2px;
+          }
+          
+          .footer-note-text {
+            text-align: center;
+            line-height: 1.8;
+            flex: 1;
+            min-width: 200px;
+          }
+          
+          .footer-bottom {
+            align-items: center;
+            padding-top: var(--spacing-xs);
+            margin-top: var(--spacing-xs);
+          }
         }
         
         @keyframes heartbeat {

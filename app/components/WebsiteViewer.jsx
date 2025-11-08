@@ -3,6 +3,17 @@
 import React from 'react'
 import { getCategorizedFilters, getFilter, getAllFilterIds } from '../lib/filters'
 
+// Example sites for random selection
+const EXAMPLE_SITES = [
+  'https://bruno-simon.com',
+  'https://dogstudio.co',
+  'https://rive.app',
+  'https://pitch.com',
+  'https://superlist.com',
+  'https://nifti.com',
+  'https://www.wix.com'
+]
+
 /**
  * Website Viewer Component
  * 
@@ -16,7 +27,7 @@ import { getCategorizedFilters, getFilter, getAllFilterIds } from '../lib/filter
  * @param {boolean} props.loading - Whether the website is loading
  * @param {string} props.error - Error message if loading failed
  */
-export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView: isSplitViewProp, onSplitViewChange, onFilterRemove, onFilterChange, onFilterInfo, onChangeUrl, loading = false, error = null, onUrlChange, history = [], onSelectUrl, onRemoveUrl }) {
+export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView: isSplitViewProp, onSplitViewChange, onFilterRemove, onFilterChange, onFilterInfo, onChangeUrl, loading = false, error = null, onUrlChange, history = [], onSelectUrl, onRemoveUrl, showQuickFilters = true }) {
   const [iframeKey, setIframeKey] = React.useState(0)
   const [isSplitView, setIsSplitView] = React.useState(isSplitViewProp || false)
   const [iframeLoading, setIframeLoading] = React.useState(false)
@@ -32,6 +43,194 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
   const containerRef = React.useRef(null)
   const urlInputRef = React.useRef(null)
   const isScrollingRef = React.useRef(false)
+  const quickFiltersScrollRef = React.useRef(null)
+  const [showScrollHint, setShowScrollHint] = React.useState(false)
+  const [isScrolledToEnd, setIsScrolledToEnd] = React.useState(false)
+  const hasUserScrolledRef = React.useRef(false) // Persist across re-renders
+  const isInitialMountRef = React.useRef(true)
+  const navigationHistoryRef = React.useRef([]) // Array of URLs
+  const navigationIndexRef = React.useRef(-1) // Current position in history
+  const isNavigatingRef = React.useRef(false) // Track if we're navigating via back/forward
+  const [canGoBack, setCanGoBack] = React.useState(false)
+  const [canGoForward, setCanGoForward] = React.useState(false)
+  const [showRandomHint, setShowRandomHint] = React.useState(false)
+  const hasSeenRandomHintRef = React.useRef(false)
+  const [showHoverHint, setShowHoverHint] = React.useState(false)
+  
+  // Check localStorage on mount to see if hint was already shown
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hasSeenHint = localStorage.getItem('colorblind-random-hint-seen') === 'true'
+      hasSeenRandomHintRef.current = hasSeenHint
+    }
+  }, [])
+  
+  // Initialize navigation history when URL changes from user input
+  React.useEffect(() => {
+    if (!url) {
+      // Reset history when URL is cleared
+      navigationHistoryRef.current = []
+      navigationIndexRef.current = -1
+      setCanGoBack(false)
+      setCanGoForward(false)
+      return
+    }
+    
+    // If we're navigating via back/forward, don't add to history
+    if (isNavigatingRef.current) {
+      isNavigatingRef.current = false
+      setCanGoBack(navigationIndexRef.current > 0)
+      setCanGoForward(navigationIndexRef.current < navigationHistoryRef.current.length - 1)
+      return
+    }
+    
+    // Initialize history with first URL if empty
+    if (navigationHistoryRef.current.length === 0) {
+      navigationHistoryRef.current = [url]
+      navigationIndexRef.current = 0
+      setCanGoBack(false)
+      setCanGoForward(false)
+      return
+    }
+    
+    // If URL changed and it's not already the current URL in history
+    const currentUrl = navigationHistoryRef.current[navigationIndexRef.current]
+    if (currentUrl !== url) {
+      // Remove any forward history if we're not at the end
+      if (navigationIndexRef.current < navigationHistoryRef.current.length - 1) {
+        navigationHistoryRef.current = navigationHistoryRef.current.slice(0, navigationIndexRef.current + 1)
+      }
+      
+      // Add new URL to history
+      navigationHistoryRef.current.push(url)
+      navigationIndexRef.current = navigationHistoryRef.current.length - 1
+    }
+    
+    // Update button states
+    setCanGoBack(navigationIndexRef.current > 0)
+    setCanGoForward(navigationIndexRef.current < navigationHistoryRef.current.length - 1)
+  }, [url])
+  
+  // Navigation handlers
+  const handleBack = () => {
+    if (navigationIndexRef.current > 0) {
+      navigationIndexRef.current--
+      isNavigatingRef.current = true
+      const previousUrl = navigationHistoryRef.current[navigationIndexRef.current]
+      if (onUrlChange) {
+        onUrlChange(previousUrl)
+      }
+    }
+  }
+  
+  const handleForward = () => {
+    if (navigationIndexRef.current < navigationHistoryRef.current.length - 1) {
+      navigationIndexRef.current++
+      isNavigatingRef.current = true
+      const nextUrl = navigationHistoryRef.current[navigationIndexRef.current]
+      if (onUrlChange) {
+        onUrlChange(nextUrl)
+      }
+    }
+  }
+  
+  const handleRandomSite = () => {
+    // Hide hint when user clicks the button and mark as seen
+    setShowRandomHint(false)
+    hasSeenRandomHintRef.current = true
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('colorblind-random-hint-seen', 'true')
+    }
+    
+    const randomIndex = Math.floor(Math.random() * EXAMPLE_SITES.length)
+    const randomSite = EXAMPLE_SITES[randomIndex]
+    if (onUrlChange) {
+      onUrlChange(randomSite)
+    }
+  }
+  
+  // Show random button hint on first URL load (after 20 seconds, only once)
+  React.useEffect(() => {
+    if (!url || hasSeenRandomHintRef.current) return
+    
+    // Show hint after 20 seconds
+    const showTimer = setTimeout(() => {
+      setShowRandomHint(true)
+      // Mark as seen in localStorage when shown
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('colorblind-random-hint-seen', 'true')
+      }
+    }, 20000) // Show after 20 seconds
+    
+    // Hide hint after 6 seconds of being visible
+    const hideTimer = setTimeout(() => {
+      setShowRandomHint(false)
+      hasSeenRandomHintRef.current = true
+    }, 26000) // Hide after 26 seconds total (20s delay + 6s visible)
+    
+    return () => {
+      clearTimeout(showTimer)
+      clearTimeout(hideTimer)
+    }
+  }, [url])
+  
+  // Check if quick filters are scrollable and update hint visibility
+  React.useEffect(() => {
+    // Reset scroll state only on very first mount (page refresh)
+    if (isInitialMountRef.current) {
+      hasUserScrolledRef.current = false
+      isInitialMountRef.current = false
+    }
+    
+    const checkScrollability = () => {
+      const scrollContainer = quickFiltersScrollRef.current
+      if (!scrollContainer) return
+      
+      const isScrollable = scrollContainer.scrollWidth > scrollContainer.clientWidth
+      const isAtEnd = scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 10
+      
+      setIsScrolledToEnd(isScrollable && isAtEnd)
+      
+      // Only show hint if scrollable, not at end, and user has NEVER scrolled
+      if (!hasUserScrolledRef.current) {
+        setShowScrollHint(isScrollable && !isAtEnd)
+      }
+    }
+    
+    const handleScroll = () => {
+      const scrollContainer = quickFiltersScrollRef.current
+      if (!scrollContainer) return
+      
+      // Mark that user has scrolled (persists across URL changes)
+      // Use a very small threshold to catch any scroll movement
+      if (scrollContainer.scrollLeft > 1 && !hasUserScrolledRef.current) {
+        hasUserScrolledRef.current = true
+        setShowScrollHint(false) // Immediately hide the hint - CSS handles fade-out
+      }
+      
+      // Update end state
+      const isAtEnd = scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 10
+      setIsScrolledToEnd(isAtEnd)
+    }
+    
+    checkScrollability()
+    
+    const scrollContainer = quickFiltersScrollRef.current
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true })
+      window.addEventListener('resize', checkScrollability)
+      
+      // Use ResizeObserver to detect content changes
+      const resizeObserver = new ResizeObserver(checkScrollability)
+      resizeObserver.observe(scrollContainer)
+      
+      return () => {
+        scrollContainer.removeEventListener('scroll', handleScroll)
+        window.removeEventListener('resize', checkScrollability)
+        resizeObserver.disconnect()
+      }
+    }
+  }, [url]) // Re-check when URL changes (filters might change)
   
   // Sync split view with prop
   React.useEffect(() => {
@@ -436,6 +635,59 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           )}
           
           <div className="viewer-controls">
+            {activeFilter !== 'none' && (
+              <button
+                onClick={handleSplitViewToggle}
+                className={`control-btn ${isSplitView ? 'active' : ''}`}
+                aria-label={isSplitView ? 'Exit split view' : 'Compare side-by-side'}
+                title={isSplitView ? 'Exit Split View' : 'Compare Side-by-Side'}
+              >
+                <span className="btn-icon">
+                  {isSplitView ? (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" fill="none"/>
+                      <line x1="12" y1="3" x2="12" y2="21" stroke="currentColor"/>
+                    </svg>
+                  ) : (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="8" height="18" rx="1" stroke="currentColor" fill="none"/>
+                      <rect x="13" y="3" width="8" height="18" rx="1" stroke="currentColor" fill="none"/>
+                    </svg>
+                  )}
+                </span>
+              </button>
+            )}
+            
+            <button
+              onClick={handleBack}
+              className="control-btn"
+              aria-label="Go back"
+              title="Go back"
+              disabled={!canGoBack || loading || iframeLoading}
+            >
+              <span className="btn-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 12H5"></path>
+                  <path d="M12 19l-7-7 7-7"></path>
+                </svg>
+              </span>
+            </button>
+            
+            <button
+              onClick={handleForward}
+              className="control-btn"
+              aria-label="Go forward"
+              title="Go forward"
+              disabled={!canGoForward || loading || iframeLoading}
+            >
+              <span className="btn-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14"></path>
+                  <path d="M12 5l7 7-7 7"></path>
+                </svg>
+              </span>
+            </button>
+            
             <button
               onClick={handleRefresh}
               className="control-btn"
@@ -446,36 +698,36 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
               <span className="btn-icon">↻</span>
             </button>
             
-            
-            {activeFilter !== 'none' && (
-              <>
-                <button
-                  onClick={handleSplitViewToggle}
-                  className="control-btn"
-                  aria-label={isSplitView ? 'Exit split view' : 'Compare side-by-side'}
-                  title={isSplitView ? 'Exit Split View' : 'Compare Side-by-Side'}
-                >
-                  <span className="btn-icon">{isSplitView ? '◫' : '◧'}</span>
-                </button>
-                
-                <button
-                  onClick={onFilterRemove}
-                  className="control-btn remove-filter-btn"
-                  aria-label="Remove filter"
-                  title="Remove Filter"
-                >
-                  <span className="btn-icon">✕</span>
-                  <span className="btn-text">Filter</span>
-                </button>
-              </>
-            )}
+            <button
+              onClick={handleRandomSite}
+              onMouseEnter={() => setShowHoverHint(true)}
+              onMouseLeave={() => setShowHoverHint(false)}
+              className={`control-btn random-btn ${showRandomHint || showHoverHint ? 'pulse-hint' : ''}`}
+              aria-label="Load random example site"
+              title="Load random example site"
+              disabled={loading || iframeLoading}
+            >
+              <span className="btn-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
+                  <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
+                  <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+              </span>
+              {(showRandomHint || showHoverHint) && (
+                <span className={`random-hint-text ${showHoverHint ? 'hover-hint' : ''}`}>✨ Try a random site!</span>
+              )}
+            </button>
           </div>
         </div>
       )}
       
       {/* Quick Filter Buttons - Above the viewer */}
-      {url && (
-        <div className="quick-filters">
+      {url && showQuickFilters && (
+        <div className="quick-filters" ref={quickFiltersScrollRef}>
           <div className="quick-filters-scroll">
             <button
               onClick={() => {
@@ -510,6 +762,16 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
                 {filter.name}
               </button>
             ))}
+          </div>
+          {/* Scroll hint - fade gradient and arrow */}
+          <div className="scroll-hint" data-hidden={!showScrollHint}>
+            <div className="scroll-hint-gradient"></div>
+            <div className="scroll-hint-arrow">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14"></path>
+                <path d="M12 5l7 7-7 7"></path>
+              </svg>
+            </div>
           </div>
         </div>
       )}
@@ -766,7 +1028,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           align-items: center;
           justify-content: space-between;
           gap: var(--spacing-sm);
-          margin-bottom: var(--spacing-sm);
+          margin-bottom: var(--spacing-md);
           flex-wrap: wrap;
           position: relative;
           z-index: 10;
@@ -778,6 +1040,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           .viewer-header {
             flex-direction: column;
             align-items: stretch;
+            gap: var(--spacing-sm);
           }
           
           .url-display,
@@ -790,9 +1053,37 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           .viewer-controls {
             width: 100%;
             display: flex;
-            justify-content: flex-start;
-            gap: var(--spacing-xs);
-            margin-top: var(--spacing-xs);
+            justify-content: center;
+            gap: 8px;
+            margin-top: 0;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+          }
+          
+          .control-btn {
+            padding: 8px 12px;
+            min-width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            flex: 0 0 auto;
+          }
+          
+          .control-btn .btn-icon {
+            font-size: 1rem;
+          }
+          
+          .control-btn .btn-text {
+            display: none;
+          }
+          
+          :global([data-theme="dark"]) .viewer-controls {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
           }
         }
         
@@ -1090,6 +1381,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           display: flex;
           align-items: center;
           gap: var(--spacing-sm);
+          position: relative;
         }
         
         .quick-filters::-webkit-scrollbar {
@@ -1110,8 +1402,108 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           gap: 12px;
           padding-bottom: 4px;
           padding-top: 4px;
+          padding-right: 60px;
           min-width: 0;
           flex: 1;
+        }
+        
+        .scroll-hint {
+          position: absolute;
+          right: 4px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: auto;
+          height: auto;
+          pointer-events: none;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          z-index: 10;
+          opacity: 1;
+          visibility: visible;
+          transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+                      visibility 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                      transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .scroll-hint[data-hidden="true"] {
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(-50%) translateX(10px);
+          transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                      visibility 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                      transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .scroll-hint-gradient {
+          position: absolute;
+          right: 0;
+          top: 0;
+          bottom: 0;
+          width: 50px;
+          background: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.2) 40%, rgba(0, 0, 0, 0.4) 100%);
+          pointer-events: none;
+          opacity: 1;
+          transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s;
+        }
+        
+        .scroll-hint[data-hidden="true"] .scroll-hint-gradient {
+          opacity: 0;
+          transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        :global([data-theme="dark"]) .scroll-hint-gradient {
+          background: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.3) 40%, rgba(0, 0, 0, 0.6) 100%);
+        }
+        
+        .scroll-hint-arrow {
+          position: relative;
+          z-index: 1;
+          color: rgba(255, 255, 255, 0.9);
+          animation: scroll-hint-pulse 2s ease-in-out infinite;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 20px;
+          height: 20px;
+          background: rgba(110, 198, 255, 0.25);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          border-radius: 50%;
+          border: 1px solid rgba(110, 198, 255, 0.4);
+          box-shadow: 0 2px 8px rgba(110, 198, 255, 0.3);
+          opacity: 1;
+          transform: scale(1);
+          transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.05s,
+                      transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.05s,
+                      box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.05s;
+        }
+        
+        .scroll-hint[data-hidden="true"] .scroll-hint-arrow {
+          opacity: 0;
+          transform: scale(0.8) translateX(12px);
+          animation: none;
+          box-shadow: 0 0 0 rgba(110, 198, 255, 0);
+          transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                      transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                      box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes scroll-hint-pulse {
+          0%, 100% {
+            transform: translateX(0) scale(1);
+            opacity: 0.9;
+          }
+          50% {
+            transform: translateX(3px) scale(1.05);
+            opacity: 1;
+          }
+        }
+        
+        .quick-filters:hover .scroll-hint-arrow {
+          animation-duration: 1s;
+          background: rgba(110, 198, 255, 0.35);
+          border-color: rgba(110, 198, 255, 0.5);
         }
         
         .quick-filter-btn {
@@ -1477,6 +1869,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         .control-btn {
           display: flex;
           align-items: center;
+          justify-content: center;
           gap: 6px;
           background: rgba(0, 0, 0, 0.85);
           backdrop-filter: blur(20px);
@@ -1493,11 +1886,34 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
         
+        .control-btn:has(.btn-icon:only-child) {
+          padding: 10px;
+          min-width: 40px;
+        }
+        
+        .control-btn.active {
+          background: rgba(110, 198, 255, 0.2);
+          border-color: rgba(110, 198, 255, 0.5);
+          box-shadow: 0 4px 12px rgba(110, 198, 255, 0.3),
+                      0 0 0 1px rgba(110, 198, 255, 0.2);
+        }
+        
+        .control-btn.active:hover:not(:disabled) {
+          background: rgba(110, 198, 255, 0.3);
+          border-color: rgba(110, 198, 255, 0.6);
+          box-shadow: 0 6px 16px rgba(110, 198, 255, 0.4),
+                      0 0 0 1px rgba(110, 198, 255, 0.3);
+        }
+        
         .control-btn:hover:not(:disabled) {
           background: rgba(0, 0, 0, 0.95);
           border-color: rgba(255, 255, 255, 0.3);
           transform: translateY(-2px);
           box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+        }
+        
+        .control-btn.active:hover:not(:disabled) {
+          transform: translateY(-2px);
         }
         
         .control-btn:active:not(:disabled) {
@@ -1516,9 +1932,16 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         .btn-icon {
           font-size: 1.1rem;
           line-height: 1;
-          display: flex;
+          display: inline-flex;
           align-items: center;
           justify-content: center;
+          text-align: center;
+          vertical-align: middle;
+        }
+        
+        .btn-icon svg {
+          display: block;
+          flex-shrink: 0;
         }
         
         .btn-text {
@@ -1526,15 +1949,142 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           letter-spacing: 0.3px;
         }
         
-        .remove-filter-btn {
-          background: linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(220, 38, 38, 0.9) 100%);
-          border-color: rgba(255, 255, 255, 0.2);
+        /* Random button hint animation */
+        @keyframes pulse-random-button {
+          0%, 100% {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+          }
+          50% {
+            box-shadow: 0 6px 20px rgba(110, 198, 255, 0.5),
+                        0 0 0 2px rgba(110, 198, 255, 0.3);
+          }
         }
         
-        .remove-filter-btn:hover {
-          background: linear-gradient(135deg, rgba(239, 68, 68, 1) 0%, rgba(220, 38, 38, 1) 100%);
-          border-color: rgba(255, 255, 255, 0.4);
-          box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        .control-btn.random-btn {
+          position: relative;
+          overflow: visible;
+        }
+        
+        .control-btn.random-btn.pulse-hint {
+          animation: pulse-random-button 1.5s ease-in-out infinite;
+        }
+        
+        .control-btn.random-btn:hover:not(:disabled) {
+          transform: none !important;
+          border-width: 1px !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+          padding: 10px !important;
+          min-width: 40px !important;
+          transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .control-btn.random-btn:active:not(:disabled) {
+          transform: none !important;
+          padding: 10px !important;
+          min-width: 40px !important;
+          border-width: 1px !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        .control-btn.random-btn.pulse-hint:hover:not(:disabled) {
+          padding: 10px !important;
+          min-width: 40px !important;
+        }
+        
+        .random-hint-text {
+          position: absolute;
+          top: -35px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: linear-gradient(135deg, rgba(110, 198, 255, 0.95) 0%, rgba(74, 144, 226, 0.95) 100%);
+          color: white;
+          padding: 6px 12px;
+          border-radius: 8px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          white-space: nowrap;
+          pointer-events: none;
+          z-index: 100;
+          box-shadow: 0 4px 12px rgba(110, 198, 255, 0.4),
+                      0 2px 6px rgba(0, 0, 0, 0.2);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+        
+        .random-hint-text:not(.hover-hint) {
+          animation: fade-in-out-hint 4s ease-in-out forwards;
+        }
+        
+        .random-hint-text.hover-hint {
+          animation: none;
+          opacity: 1;
+          transform: translateX(-50%) translateY(0) scale(1);
+        }
+        
+        .random-hint-text::after {
+          content: '';
+          position: absolute;
+          bottom: -6px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0;
+          height: 0;
+          border-left: 6px solid transparent;
+          border-right: 6px solid transparent;
+          border-top: 6px solid rgba(110, 198, 255, 0.95);
+        }
+        
+        @keyframes fade-in-out-hint {
+          0% {
+            opacity: 0;
+            transform: translateX(-50%) translateY(8px) scale(0.9);
+          }
+          15% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1);
+          }
+          85% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1);
+          }
+          100% {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-8px) scale(0.9);
+          }
+        }
+        
+        :global([data-theme="dark"]) .random-hint-text {
+          background: linear-gradient(135deg, rgba(110, 198, 255, 0.98) 0%, rgba(74, 144, 226, 0.98) 100%);
+          color: #0a0a1a;
+          box-shadow: 0 4px 16px rgba(110, 198, 255, 0.5),
+                      0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+        
+        :global([data-theme="dark"]) .random-hint-text::after {
+          border-top-color: rgba(110, 198, 255, 0.98);
+        }
+        
+        @media (max-width: 768px) {
+          .random-hint-text {
+            top: -30px;
+            font-size: 0.7rem;
+            padding: 5px 10px;
+          }
+        }
+        
+        :global([data-theme="dark"]) .control-btn.active {
+          background: rgba(110, 198, 255, 0.25);
+          border-color: rgba(110, 198, 255, 0.6);
+          box-shadow: 0 4px 12px rgba(110, 198, 255, 0.4),
+                      0 0 0 1px rgba(110, 198, 255, 0.3);
+        }
+        
+        :global([data-theme="dark"]) .control-btn.active:hover:not(:disabled) {
+          background: rgba(110, 198, 255, 0.35);
+          border-color: rgba(110, 198, 255, 0.7);
+          box-shadow: 0 6px 16px rgba(110, 198, 255, 0.5),
+                      0 0 0 1px rgba(110, 198, 255, 0.4);
         }
         
         .empty-state {
@@ -1943,7 +2493,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           .skeleton-box,
           .loading-title,
           .dot,
-          .progress-bar {
+          .progress-bar,
+          .scroll-hint-arrow {
             animation: none !important;
           }
           

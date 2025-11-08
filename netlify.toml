@@ -1,18 +1,17 @@
 [build]
-  # Since .npmrc has legacy-peer-deps=true, we don't need the flag here
-  # This simpler command should be more reliable
-  command = "npm install --no-audit && npm run build"
-  publish = ".next"
+# Since .npmrc has legacy-peer-deps=true, we don't need the flag here
+# This simpler command should be more reliable
+command = "npm install --no-audit && npm run build"
+publish = ".next"
 
 [build.environment]
-  NODE_VERSION = "20"
-  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1"
-  NPM_FLAGS = "--no-audit"
-  NPM_CONFIG_REGISTRY = "https://registry.npmjs.org/"
+NODE_VERSION = "20"
+PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1"
+NPM_FLAGS = "--no-audit"
+NPM_CONFIG_REGISTRY = "https://registry.npmjs.org/"
 
 [[plugins]]
-  package = "@netlify/plugin-nextjs"
+package = "@netlify/plugin-nextjs"
 
 [functions]
-  node_bundler = "esbuild"
-
+node_bundler = "esbuild"

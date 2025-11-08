@@ -18,10 +18,18 @@ import { getFilter } from '../lib/filters'
 export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFilter, position }) {
   const filter = getFilter(filterId)
   const popoverRef = React.useRef(null)
-  const [popoverStyle, setPopoverStyle] = React.useState({})
+  const [popoverStyle, setPopoverStyle] = React.useState({ 
+    opacity: 0,
+    visibility: 'hidden'
+  })
+  const [isPositioned, setIsPositioned] = React.useState(false)
   
   React.useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen) {
+      setIsPositioned(false)
+      setPopoverStyle({ opacity: 0, visibility: 'hidden' })
+      return
+    }
     
     const handleEscape = (e) => {
       if (e.key === 'Escape') {
@@ -31,56 +39,137 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
     
     document.addEventListener('keydown', handleEscape)
     
-    // Calculate position with viewport constraints
-    if (position && typeof window !== 'undefined') {
-      const maxWidth = window.innerWidth > 768 ? 500 : window.innerWidth - 20
-      const popoverWidth = Math.min(maxWidth, window.innerWidth - 40)
+    // Calculate position once, correctly, before showing
+    const calculatePosition = () => {
+      if (typeof window === 'undefined') return
       
-      // Position to the right of the button, but ensure it fits on screen
-      let x = position.x
-      let y = position.y
-      let arrowSide = 'left' // Arrow on left side (popover on right)
+      const viewportWidth = window.innerWidth
+      const viewportHeight = window.innerHeight
+      const minMargin = 20
+      const maxHeight = viewportHeight - minMargin * 2
       
-      // If popover would overflow right edge, position to the left instead
-      if (x + popoverWidth / 2 > window.innerWidth - 20) {
-        x = position.x - popoverWidth - 24 // Position to the left with arrow space
-        arrowSide = 'right' // Arrow on right side (popover on left)
+      if (position) {
+        // Positioned relative to a button
+        let maxWidth = 500 // default for tablets
+        if (viewportWidth >= 1440) {
+          maxWidth = 700
+        } else if (viewportWidth >= 1024) {
+          maxWidth = 600
+        } else if (viewportWidth <= 768) {
+          maxWidth = viewportWidth - 40
+        }
+        const popoverWidth = Math.min(maxWidth, viewportWidth - 40)
+        
+        let x = position.x
+        let y = position.y
+        let arrowSide = 'left'
+        
+        // Check if popover would overflow right edge
+        if (x + popoverWidth / 2 > viewportWidth - minMargin) {
+          x = position.x - popoverWidth - 24
+          arrowSide = 'right'
+        }
+        
+        // Ensure x doesn't go off left edge
+        if (x < minMargin) {
+          x = minMargin
+        }
+        
+        // Measure actual modal height - use a reasonable estimate based on content
+        // We'll use scrollHeight if available, otherwise estimate
+        let actualHeight = 500 // Conservative estimate
+        if (popoverRef.current) {
+          // Temporarily set max dimensions to measure natural height
+          const wasVisible = popoverRef.current.style.visibility !== 'hidden'
+          const originalMaxHeight = popoverRef.current.style.maxHeight
+          const originalMaxWidth = popoverRef.current.style.maxWidth
+          
+          // Set dimensions for measurement
+          popoverRef.current.style.maxHeight = `${maxHeight}px`
+          popoverRef.current.style.maxWidth = `${popoverWidth}px`
+          popoverRef.current.style.visibility = 'hidden'
+          
+          // Force layout calculation
+          const height = popoverRef.current.scrollHeight
+          actualHeight = Math.min(height, maxHeight)
+          
+          // Restore
+          popoverRef.current.style.maxHeight = originalMaxHeight
+          popoverRef.current.style.maxWidth = originalMaxWidth
+          popoverRef.current.style.visibility = wasVisible ? '' : 'hidden'
+        }
+        
+        // Calculate final position with actual height
+        const topEdgeWithCenter = y - actualHeight / 2
+        const bottomEdgeWithCenter = y + actualHeight / 2
+        
+        let finalY = y
+        let transform = 'translateY(-50%)'
+        
+        // If using center alignment would cut off top, switch to top alignment
+        if (topEdgeWithCenter < minMargin) {
+          finalY = minMargin
+          transform = 'none'
+        }
+        // If using center alignment would cut off bottom, switch to bottom alignment
+        else if (bottomEdgeWithCenter > viewportHeight - minMargin) {
+          finalY = viewportHeight - minMargin
+          transform = 'translateY(-100%)'
+        }
+        
+        const finalStyle = {
+          left: `${x}px`,
+          top: `${finalY}px`,
+          transform: transform,
+          maxHeight: `${maxHeight}px`,
+          maxWidth: `${popoverWidth}px`,
+          opacity: 1,
+          visibility: 'visible'
+        }
+        
+        // Store arrow side before setting style
+        if (popoverRef.current) {
+          popoverRef.current.setAttribute('data-arrow-side', arrowSide)
+        }
+        
+        // Set final position and show in one update
+        setPopoverStyle(finalStyle)
+        setIsPositioned(true)
+      } else {
+        // Centered positioning
+        const topMargin = viewportWidth > 768 ? 100 : 80
+        setPopoverStyle({
+          left: '50%',
+          top: `${topMargin}px`,
+          transform: 'translateX(-50%)',
+          maxHeight: `calc(100vh - ${topMargin * 2}px)`,
+          opacity: 1,
+          visibility: 'visible'
+        })
+        setIsPositioned(true)
       }
-      
-      // Ensure popover doesn't overflow top or bottom
-      const maxHeight = window.innerHeight - 40
-      const estimatedHeight = Math.min(600, maxHeight)
-      
-      if (y - estimatedHeight / 2 < 20) {
-        y = estimatedHeight / 2 + 20
-      } else if (y + estimatedHeight / 2 > window.innerHeight - 20) {
-        y = window.innerHeight - estimatedHeight / 2 - 20
-      }
-      
-      setPopoverStyle({
-        left: `${x}px`,
-        top: `${y}px`,
-        transform: 'translateY(-50%)',
-        maxHeight: `${maxHeight}px`
-      })
-      
-      // Store arrow side in a data attribute for CSS
-      if (popoverRef.current) {
-        popoverRef.current.setAttribute('data-arrow-side', arrowSide)
-      }
-    } else {
-      setPopoverStyle({
-        left: '50%',
-        top: window.innerWidth > 768 ? '100px' : '80px',
-        transform: 'translateX(-50%)',
-        maxHeight: 'calc(100vh - 120px)'
-      })
     }
+    
+    // Wait for DOM to be ready, then calculate and show
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        calculatePosition()
+      })
+    })
+    
+    // Also update on window resize
+    const handleResize = () => {
+      if (isPositioned) {
+        calculatePosition()
+      }
+    }
+    window.addEventListener('resize', handleResize)
     
     return () => {
       document.removeEventListener('keydown', handleEscape)
+      window.removeEventListener('resize', handleResize)
     }
-  }, [isOpen, onClose, position])
+  }, [isOpen, onClose, position, isPositioned])
   
   if (!isOpen || !filter) return null
   
@@ -88,7 +177,8 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
     <div 
       className="filter-info-popover-backdrop"
       onClick={(e) => {
-        if (e.target === e.currentTarget) {
+        // Close if clicking on backdrop (not on popover)
+        if (e.target === e.currentTarget || !popoverRef.current?.contains(e.target)) {
           onClose()
         }
       }}
@@ -97,6 +187,7 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
         ref={popoverRef}
         className="filter-info-popover" 
         style={popoverStyle}
+        data-positioned={isPositioned ? "true" : "false"}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -209,7 +300,8 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
           display: flex;
           align-items: flex-start;
           justify-content: flex-start;
-          pointer-events: none;
+          pointer-events: auto;
+          cursor: default;
         }
         
         .filter-info-popover {
@@ -224,8 +316,13 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
           overflow-y: auto;
           overflow-x: hidden;
           box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-          animation: popoverSlideIn 0.2s ease-out;
           position: absolute;
+          min-height: 200px;
+          transition: opacity 0.15s ease-out;
+        }
+        
+        .filter-info-popover[data-positioned="true"] {
+          animation: popoverSlideIn 0.2s ease-out;
         }
         
         .popover-arrow {
@@ -294,6 +391,12 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
           align-items: flex-start;
           padding: var(--spacing-md);
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          position: sticky;
+          top: 0;
+          background: rgba(0, 0, 0, 0.95);
+          z-index: 10;
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
         }
         
         .popover-title-section {
@@ -447,6 +550,137 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
         .popover-apply-btn:hover {
           background: rgba(110, 198, 255, 0.3);
           border-color: rgba(110, 198, 255, 0.6);
+        }
+        
+        /* Larger screens - improved readability */
+        @media (min-width: 1024px) {
+          .filter-info-popover {
+            max-width: 600px;
+          }
+          
+          .popover-header {
+            padding: calc(var(--spacing-md) * 1.25);
+          }
+          
+          .popover-body {
+            padding: calc(var(--spacing-md) * 1.25);
+          }
+          
+          .popover-title {
+            font-size: 1.75rem;
+          }
+          
+          .popover-severity {
+            font-size: 0.875rem;
+            padding: 4px 12px;
+          }
+          
+          .popover-close {
+            font-size: 1.25rem;
+            width: 32px;
+            height: 32px;
+          }
+          
+          .popover-description {
+            font-size: 1.125rem;
+            line-height: 1.7;
+            margin-bottom: calc(var(--spacing-md) * 1.25);
+          }
+          
+          .popover-stats {
+            padding: calc(var(--spacing-sm) * 1.25);
+            margin-bottom: calc(var(--spacing-md) * 1.25);
+          }
+          
+          .stat-label {
+            font-size: 0.875rem;
+          }
+          
+          .stat-value {
+            font-size: 1.125rem;
+          }
+          
+          .popover-info,
+          .popover-tips {
+            margin-bottom: calc(var(--spacing-md) * 1.25);
+          }
+          
+          .popover-info h4,
+          .popover-tips h4 {
+            font-size: 1.25rem;
+            margin-bottom: var(--spacing-md);
+          }
+          
+          .popover-info p {
+            font-size: 1rem;
+            line-height: 1.7;
+          }
+          
+          .popover-tips ul {
+            padding-left: calc(var(--spacing-md) * 1.25);
+          }
+          
+          .popover-tips li {
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: var(--spacing-sm);
+            padding-left: calc(var(--spacing-md) * 1.25);
+          }
+          
+          .popover-actions {
+            padding-top: calc(var(--spacing-md) * 1.25);
+          }
+          
+          .popover-apply-btn {
+            font-size: 1rem;
+            padding: calc(var(--spacing-sm) * 1.25) calc(var(--spacing-md) * 1.5);
+          }
+        }
+        
+        /* Extra large screens - even more spacious */
+        @media (min-width: 1440px) {
+          .filter-info-popover {
+            max-width: 700px;
+          }
+          
+          .popover-header {
+            padding: calc(var(--spacing-md) * 1.5);
+          }
+          
+          .popover-body {
+            padding: calc(var(--spacing-md) * 1.5);
+          }
+          
+          .popover-title {
+            font-size: 2rem;
+          }
+          
+          .popover-description {
+            font-size: 1.25rem;
+            margin-bottom: calc(var(--spacing-md) * 1.5);
+          }
+          
+          .popover-stats {
+            padding: calc(var(--spacing-sm) * 1.5);
+            margin-bottom: calc(var(--spacing-md) * 1.5);
+          }
+          
+          .stat-value {
+            font-size: 1.25rem;
+          }
+          
+          .popover-info h4,
+          .popover-tips h4 {
+            font-size: 1.375rem;
+          }
+          
+          .popover-info p {
+            font-size: 1.125rem;
+          }
+          
+          .popover-tips li {
+            font-size: 1.125rem;
+          }
         }
         
         @media (max-width: 768px) {
