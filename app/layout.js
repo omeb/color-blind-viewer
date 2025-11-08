@@ -51,36 +51,9 @@ export const metadata = {
       'max-snippet': -1,
     },
   },
-  openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: siteUrl,
-    siteName: siteName,
-    title: 'Accessibility Viewer - See the World Through Different Eyes',
-    description: siteDescription,
-    images: [
-      {
-        url: siteImage,
-        width: 1200,
-        height: 630,
-        alt: 'Accessibility Viewer - Accessibility Testing Tool',
-        type: 'image/png',
-        secureUrl: siteImage,
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Accessibility Viewer - See the World Through Different Eyes',
-    description: siteDescription,
-    images: [
-      {
-        url: siteImage,
-        alt: 'Accessibility Viewer - Accessibility Testing Tool',
-      },
-    ],
-    creator: '@wix',
-  },
+  // openGraph and twitter removed - using manual meta tags in <head> instead
+  // This ensures OG tags appear FIRST in <head> for WhatsApp crawler compatibility
+  // Next.js metadata API doesn't guarantee order, so manual tags are required
   alternates: {
     canonical: siteUrl,
   },
