@@ -18,9 +18,17 @@ NPM_CONFIG_REGISTRY = "https://registry.npmjs.org/"
 [functions]
 node_bundler = "esbuild"
 
-# Headers for Open Graph image route - ensure proper caching and accessibility
+# Headers for Open Graph image routes - ensure proper caching and accessibility
 [[headers]]
-  for = "/opengraph-image"
+  for = "/og-image.png"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Content-Type = "image/png"
+    X-Content-Type-Options = "nosniff"
+    X-Robots-Tag = "index, follow"
+
+[[headers]]
+  for = "/og-image"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
     Content-Type = "image/png"

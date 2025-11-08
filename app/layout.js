@@ -5,8 +5,9 @@ import './globals.css'
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://color-blind-viewer.netlify.app'
 const siteName = 'Accessibility Viewer'
 const siteDescription = 'Experience how websites appear to people with vision impairments. Test your website\'s accessibility with colorblindness, cataracts, glaucoma, and other vision condition simulators. Free tool for designers and developers.'
-// Use dynamic opengraph-image route - generates 1200x630 image (WhatsApp/Facebook preferred size)
-const siteImage = `${siteUrl}/opengraph-image`
+// Use fixed external image URL - more reliable for WhatsApp/Facebook crawlers
+// Static image hosted externally ensures consistent access and proper file extension
+const siteImage = 'https://i.ibb.co/nM1VDCQT/opengraph-image.png'
 
 export const metadata = {
   metadataBase: new URL(siteUrl),
