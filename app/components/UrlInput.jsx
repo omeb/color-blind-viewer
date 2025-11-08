@@ -211,7 +211,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           min-height: 48px;
           height: 48px;
           position: relative;
-          animation: invitePulse 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+          animation: invitePulse 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
         
         @keyframes invitePulse {
@@ -625,7 +625,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
                       0 0 0 0 rgba(110, 198, 255, 0);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          animation: invitePulseDark 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+          animation: invitePulseDark 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
         
         @keyframes invitePulseDark {
