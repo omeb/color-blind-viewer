@@ -1362,6 +1362,17 @@ export default function Home() {
           max-width: 600px;
           margin: 0 auto;
           width: 100%;
+          overflow: visible; /* Ensure button is not clipped */
+        }
+        
+        @media (max-width: 768px) {
+          .url-input-section {
+            overflow: visible; /* Ensure button is visible on mobile */
+          }
+          
+          .hero-content {
+            overflow: visible; /* Ensure button is not clipped */
+          }
         }
         
         .url-input-section .history-section {

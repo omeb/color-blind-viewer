@@ -209,7 +209,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06),
                       0 0 0 1px rgba(0, 0, 0, 0.02);
           min-height: 48px;
-          height: 48px;
+          height: 48px; /* Default height for desktop */
           position: relative;
           animation: invitePulse 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
@@ -558,6 +558,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           .url-input-group {
             flex-direction: column;
             min-height: auto;
+            height: auto; /* Allow container to grow to fit button */
             border-radius: 16px;
             overflow: visible; /* Ensure button is not clipped */
           }
@@ -572,6 +573,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
             border-radius: 16px 16px 0 0;
             transform: none !important;
             height: auto;
+            min-height: 48px; /* Ensure input has minimum height */
             /* No transitions on mobile to prevent cursor movement */
             transition: none !important;
           }
@@ -599,6 +601,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
             width: 100%;
             padding: 0 32px;
             height: 48px;
+            min-height: 48px; /* Ensure button has minimum height */
             border-left: none;
             border-top: 1px solid rgba(0, 0, 0, 0.06);
             border-radius: 0 0 15px 15px;
@@ -609,6 +612,8 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
             display: flex !important; /* Ensure button is visible */
             visibility: visible !important;
             opacity: 1 !important;
+            position: relative; /* Ensure button is positioned correctly */
+            z-index: 1; /* Ensure button is above other elements */
           }
           
           .submit-button::before {
