@@ -208,7 +208,8 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
                       backdrop-filter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06),
                       0 0 0 1px rgba(0, 0, 0, 0.02);
-          min-height: 64px;
+          min-height: 48px;
+          height: 48px;
           position: relative;
           animation: invitePulse 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
@@ -313,7 +314,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           flex: 1;
           border: none;
           background: transparent;
-          padding: 20px 24px;
+          padding: 12px 24px;
           font-size: 16px;
           font-weight: 500;
           color: #1A1A1A;
@@ -325,11 +326,19 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
           /* Only transition non-layout properties to prevent cursor jumping */
           transition: color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-                      background-color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+                      background-color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                      padding 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
           position: relative;
           z-index: 2;
           /* Prevent any transforms that could affect cursor position */
           transform: none;
+          display: flex;
+          align-items: center;
+          height: 48px;
+        }
+        
+        .url-input:focus {
+          padding: 12px 24px;
         }
         
         .url-input::placeholder {
@@ -364,7 +373,8 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           align-items: center;
           justify-content: center;
           gap: 10px;
-          padding: 20px 40px;
+          padding: 0 40px;
+          height: 48px;
           border: none;
           background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
           color: #FFFFFF;
@@ -542,12 +552,14 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           }
           
           .url-input {
-            padding: 16px 20px;
+            padding: 12px 20px;
             border-radius: 16px 16px 0 0;
             transform: none !important;
+            height: auto;
           }
           
           .url-input:focus {
+            padding: 12px 20px;
             transform: none !important;
           }
           
@@ -561,7 +573,8 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           
           .submit-button {
             width: 100%;
-            padding: 18px 32px;
+            padding: 0 32px;
+            height: 48px;
             border-left: none;
             border-top: 1px solid rgba(0, 0, 0, 0.06);
             border-radius: 0 0 15px 15px;

@@ -1577,7 +1577,7 @@ export default function Home() {
         .filter-popover-header {
           display: flex;
           justify-content: space-between;
-          align-items: flex-start;
+          align-items: center;
           padding: var(--spacing-xs) var(--spacing-sm);
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
           flex-shrink: 0;

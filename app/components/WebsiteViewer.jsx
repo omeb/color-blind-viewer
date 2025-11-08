@@ -1552,9 +1552,10 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           }
           
           .control-btn {
-            padding: 8px 16px;
+            padding: 0 16px;
             min-width: 48px;
-            height: 44px;
+            height: 48px;
+            min-height: 48px;
             border-radius: 10px;
             font-size: 0.85rem;
             flex: 0 0 auto;
@@ -1619,23 +1620,37 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           min-width: 0;
         }
         
-        .url-edit-input {
-          flex: 1;
-          min-width: 0;
-          background: rgba(255, 255, 255, 0.95);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          border: 2px solid rgba(74, 144, 226, 0.6);
-          border-radius: 8px;
-          padding: 10px 14px;
-          box-shadow: 0 6px 20px rgba(74, 144, 226, 0.3);
-          animation: expandIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          position: relative;
-        }
-        
         .url-input-wrapper {
           flex: 1;
           position: relative;
+          background: rgba(255, 255, 255, 0.12);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 2px solid rgba(74, 144, 226, 0.25);
+          border-radius: 8px;
+          padding: 12px 14px;
+          min-height: 48px;
+          height: 48px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          display: flex;
+          align-items: center;
+          transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .url-input-wrapper:focus-within {
+          background: rgba(255, 255, 255, 0.95);
+          border-color: rgba(74, 144, 226, 0.6);
+          box-shadow: 0 6px 20px rgba(74, 144, 226, 0.3);
+        }
+        
+        .url-edit-input {
+          flex: 1;
+          min-width: 0;
+          background: transparent;
+          border: none;
+          outline: none;
+          padding: 0;
+          margin: 0;
         }
         
         .history-dropdown {
@@ -1795,13 +1810,20 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
         
         .url-action-btn {
           border: none;
-          border-radius: 4px;
-          padding: 6px 10px;
-          font-size: 1rem;
+          border-radius: 8px;
+          padding: 0;
+          width: 48px;
+          height: 48px;
+          min-width: 48px;
+          min-height: 48px;
+          font-size: 1.2rem;
           cursor: pointer;
           transition: all 0.2s ease;
           line-height: 1;
           font-weight: 600;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         
         .url-action-submit {
@@ -2358,7 +2380,9 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           border: 1px solid rgba(255, 255, 255, 0.15);
           border-radius: 8px;
           color: white;
-          padding: 10px 14px;
+          padding: 0;
+          height: 48px;
+          min-height: 48px;
           font-size: 0.9rem;
           font-weight: 500;
           cursor: pointer;
@@ -2368,8 +2392,9 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
         }
         
         .control-btn:has(.btn-icon:only-child) {
-          padding: 10px 16px;
+          padding: 0 16px;
           min-width: 48px;
+          width: auto;
         }
         
         .control-btn:has(.split-view-popover) {
@@ -2404,14 +2429,16 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
         
         .control-btn:has(.split-view-popover):hover:not(:disabled) {
           transform: none !important;
-          padding: 10px 16px !important;
+          padding: 0 16px !important;
           min-width: 48px !important;
+          height: 48px !important;
         }
         
         .control-btn.active:has(.split-view-popover):hover:not(:disabled) {
           transform: none !important;
-          padding: 10px 16px !important;
+          padding: 0 16px !important;
           min-width: 48px !important;
+          height: 48px !important;
         }
         
         .control-btn.refresh-btn:hover:not(:disabled) {
@@ -2475,22 +2502,25 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           transform: none !important;
           border-width: 1px !important;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-          padding: 10px 16px !important;
+          padding: 0 16px !important;
           min-width: 48px !important;
+          height: 48px !important;
           transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .control-btn.random-btn:active:not(:disabled) {
           transform: none !important;
-          padding: 10px 16px !important;
+          padding: 0 16px !important;
           min-width: 48px !important;
+          height: 48px !important;
           border-width: 1px !important;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
         }
         
         .control-btn.random-btn.pulse-hint:hover:not(:disabled) {
-          padding: 10px 16px !important;
+          padding: 0 16px !important;
           min-width: 48px !important;
+          height: 48px !important;
         }
         
         .random-popover {
@@ -3361,7 +3391,7 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           position: absolute;
           top: 8px;
           z-index: 10;
-          background: rgba(0, 0, 0, 0.9);
+          background: rgba(0, 0, 0, 0.6);
           backdrop-filter: blur(8px);
           -webkit-backdrop-filter: blur(8px);
           color: white;
@@ -3369,9 +3399,15 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           border-radius: 12px;
           font-size: 0.8rem;
           font-weight: 600;
-          pointer-events: none;
+          pointer-events: auto;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
           letter-spacing: 0.3px;
+          transition: background-color 0.3s ease;
+          cursor: default;
+        }
+        
+        .split-label:hover {
+          background: rgba(0, 0, 0, 0.9);
         }
         
         .split-label-left {
@@ -3379,7 +3415,7 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
         }
         
         .split-label-right {
-          right: 8px;
+          left: calc(50% + 8px);
         }
         
         .split-view-wrapper {

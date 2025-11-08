@@ -219,8 +219,9 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
         
         .filter-info-btn {
           position: absolute;
-          top: 6px;
+          top: 50%;
           right: var(--spacing-sm);
+          transform: translateY(-50%);
           background: rgba(110, 198, 255, 0.15);
           border: 1.5px solid rgba(110, 198, 255, 0.4);
           border-radius: 50%;
@@ -250,12 +251,12 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
           background: rgba(110, 198, 255, 0.25);
           border-color: rgba(110, 198, 255, 0.6);
           color: rgba(110, 198, 255, 1);
-          transform: scale(1.15);
+          transform: translateY(-50%) scale(1.15);
           box-shadow: 0 2px 12px rgba(110, 198, 255, 0.35);
         }
         
         .filter-info-btn:active {
-          transform: scale(1.05);
+          transform: translateY(-50%) scale(1.05);
         }
         
         .filter-info-btn svg {
@@ -276,8 +277,9 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
             background: rgba(110, 198, 255, 0.2);
             border: 2px solid rgba(110, 198, 255, 0.5);
             color: rgba(110, 198, 255, 1);
-            top: 4px;
+            top: 50%;
             right: var(--spacing-xs);
+            transform: translateY(-50%);
           }
           
           .filter-item-wrapper:has(.filter-info-btn) .filter-name {
@@ -289,10 +291,14 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
             height: 15px;
           }
           
+          .filter-info-btn:hover {
+            transform: translateY(-50%) scale(1.15);
+          }
+          
           .filter-info-btn:active {
             background: rgba(110, 198, 255, 0.3);
             border-color: rgba(110, 198, 255, 0.7);
-            transform: scale(0.95);
+            transform: translateY(-50%) scale(0.95);
           }
         }
         
