@@ -1029,6 +1029,7 @@ export default function Home() {
                     const isCloseButton = target.closest('.filter-popover-close')
                     if (isCloseButton) {
                       e.stopPropagation()
+                      // Don't call preventDefault() - passive listeners don't allow it
                     }
                   }}
                   aria-hidden="true"
@@ -1072,11 +1073,11 @@ export default function Home() {
                   }}
                   onTouchStart={(e) => {
                     e.stopPropagation()
-                    e.preventDefault()
+                    // Don't call preventDefault() - passive listeners don't allow it
                   }}
                   onTouchEnd={(e) => {
                     e.stopPropagation()
-                    e.preventDefault()
+                    // Don't call preventDefault() - passive listeners don't allow it
                   }}
                   className="filter-popover-close"
                   aria-label="Close"

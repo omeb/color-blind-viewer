@@ -198,6 +198,7 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
           const isCloseButton = target.closest('.popover-close')
           if (!isCloseButton && target !== e.currentTarget && popoverRef.current?.contains(target)) {
             e.stopPropagation()
+            // Don't call preventDefault() - passive listeners don't allow it
           }
         }}
       >
@@ -240,11 +241,11 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
             }}
             onTouchStart={(e) => {
               e.stopPropagation()
-              e.preventDefault()
+              // Don't call preventDefault() - passive listeners don't allow it
             }}
             onTouchEnd={(e) => {
               e.stopPropagation()
-              e.preventDefault()
+              // Don't call preventDefault() - passive listeners don't allow it
             }}
             className="popover-close"
             aria-label="Close"
