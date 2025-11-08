@@ -432,21 +432,58 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
         .submit-button::after {
           content: '';
           position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 0;
-          height: 0;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.3);
-          transform: translate(-50%, -50%);
-          transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                      height 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.15) 25%,
+            rgba(110, 198, 255, 0.35) 50%,
+            rgba(255, 255, 255, 0.15) 75%,
+            transparent 100%
+          );
+          background-size: 200% 100%;
+          background-position: -200% 0;
+          border-radius: 0 16px 16px 0;
           z-index: 0;
+          opacity: 0;
+          pointer-events: none;
         }
         
         .submit-button:hover:not(:disabled)::before {
           opacity: 1;
           animation: none; /* Stop pulse animation on hover */
+        }
+        
+        .submit-button:not(:disabled)::after {
+          opacity: 1;
+          animation: waveFlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes waveFlow {
+          0% {
+            background-position: -200% 0;
+          }
+          100% {
+            background-position: 200% 0;
+          }
+        }
+        
+        .submit-button:hover:not(:disabled)::after {
+          animation: none;
+          background: rgba(255, 255, 255, 0.3);
+          background-size: auto;
+          background-position: center;
+          border-radius: 50%;
+          width: 0;
+          height: 0;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                      height 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         
         .submit-button:hover:not(:disabled)::after {
@@ -534,8 +571,9 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           animation: none; /* No arrow animation when disabled */
         }
         
-        .submit-button:disabled::before {
-          display: none;
+        .submit-button:disabled::after {
+          opacity: 0;
+          animation: none;
         }
         
         .url-input-group:has(.url-input:disabled) {
@@ -838,6 +876,11 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           animation: none; /* No arrow animation when disabled */
         }
         
+        :global([data-theme="dark"]) .submit-button:disabled::after {
+          opacity: 0;
+          animation: none;
+        }
+        
         :global([data-theme="dark"]) .url-input-group:has(.url-input[aria-invalid="true"]) {
           border-color: #F87171;
           box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.25),
@@ -866,9 +909,42 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           background: linear-gradient(135deg, #1A94FF 0%, #0066FF 100%);
         }
         
+        :global([data-theme="dark"]) .submit-button:not(:disabled)::after {
+          background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.2) 25%,
+            rgba(110, 198, 255, 0.45) 50%,
+            rgba(255, 255, 255, 0.2) 75%,
+            transparent 100%
+          );
+          opacity: 1;
+          animation: waveFlow 3s ease-in-out infinite;
+        }
+        
         :global([data-theme="dark"]) .submit-button:hover:not(:disabled)::before {
           opacity: 1;
           animation: none; /* Stop pulse animation on hover */
+        }
+        
+        :global([data-theme="dark"]) .submit-button:hover:not(:disabled)::after {
+          animation: none;
+          background: rgba(255, 255, 255, 0.3);
+          background-size: auto;
+          background-position: center;
+          border-radius: 50%;
+          width: 0;
+          height: 0;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                      height 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        :global([data-theme="dark"]) .submit-button:hover:not(:disabled)::after {
+          width: 300px;
+          height: 300px;
         }
         
         :global([data-theme="dark"]) .submit-button:hover:not(:disabled) {
