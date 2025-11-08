@@ -131,7 +131,7 @@ export default function DarkModeToggle() {
           border-radius: 10px;
           padding: 3px;
           position: relative;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
         }
         
         .theme-option {

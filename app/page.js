@@ -2170,10 +2170,12 @@ export default function Home() {
         }
         
         .footer-content {
-          padding: var(--spacing-sm) var(--spacing-md);
+          padding: var(--spacing-lg) var(--spacing-md);
           display: flex;
           flex-direction: column;
+          justify-content: center;
           gap: var(--spacing-xs);
+          min-height: 200px;
         }
         
         .footer-main {
@@ -2188,6 +2190,7 @@ export default function Home() {
           font-size: 0.9rem;
           font-weight: 600;
           margin: 0;
+          margin-bottom: var(--spacing-md);
           color: rgba(255, 255, 255, 0.95);
           letter-spacing: -0.01em;
           line-height: 1.3;
@@ -2256,7 +2259,7 @@ export default function Home() {
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-top: var(--spacing-sm);
+          margin-top: var(--spacing-xs);
         }
         
         .footer-bottom {
@@ -2303,7 +2306,7 @@ export default function Home() {
         .footer-note {
           font-size: 0.7rem;
           margin: 0;
-          color: rgba(255, 255, 255, 0.85);
+          color: rgba(255, 255, 255, 0.5);
           line-height: 1.6;
           text-align: center;
           max-width: 100%;
