@@ -1007,7 +1007,30 @@ export default function Home() {
               {isMobile && (
                 <div 
                   className="filter-popover-backdrop"
-                  onClick={() => setFilterPopoverInfo(null)}
+                  onClick={(e) => {
+                    // Don't close if clicking on the close button
+                    const target = e.target
+                    const isCloseButton = target.closest('.filter-popover-close')
+                    if (!isCloseButton) {
+                      setFilterPopoverInfo(null)
+                    }
+                  }}
+                  onMouseDown={(e) => {
+                    // Prevent backdrop from capturing mousedown on close button
+                    const target = e.target
+                    const isCloseButton = target.closest('.filter-popover-close')
+                    if (isCloseButton) {
+                      e.stopPropagation()
+                    }
+                  }}
+                  onTouchStart={(e) => {
+                    // Prevent backdrop from capturing touch on close button
+                    const target = e.target
+                    const isCloseButton = target.closest('.filter-popover-close')
+                    if (isCloseButton) {
+                      e.stopPropagation()
+                    }
+                  }}
                   aria-hidden="true"
                 />
               )}
@@ -1057,6 +1080,7 @@ export default function Home() {
                   }}
                   className="filter-popover-close"
                   aria-label="Close"
+                  style={{ position: 'relative', zIndex: 100 }}
                 >
                   ✕
                 </button>
@@ -1718,30 +1742,29 @@ export default function Home() {
           border: none;
           color: rgba(255, 255, 255, 0.7);
           cursor: pointer;
-          padding: 2px;
-          border-radius: 4px;
+          padding: 8px;
+          border-radius: 8px;
           transition: all var(--transition-fast);
-          font-size: 0.9rem;
+          font-size: 1.2rem;
           line-height: 1;
-          width: 20px;
-          height: 20px;
+          width: 36px;
+          height: 36px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-        }
-        
-        @media (min-width: 1024px) {
-          .filter-popover-close {
-            width: 24px;
-            height: 24px;
-            font-size: 1rem;
-          }
+          position: relative;
+          z-index: 100; /* Ensure button is above other elements */
+          pointer-events: auto; /* Ensure button is clickable */
         }
         
         .filter-popover-close:hover {
           background: rgba(255, 255, 255, 0.1);
           color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .filter-popover-close:active {
+          background: rgba(255, 255, 255, 0.15);
         }
         
         .filter-popover-body {
@@ -2002,7 +2025,7 @@ export default function Home() {
             width: 44px;
             height: 44px;
             font-size: 1.5rem;
-            padding: 0;
+            padding: 10px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
             transition: all 0.2s ease;

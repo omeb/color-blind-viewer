@@ -174,15 +174,33 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
   if (!isOpen || !filter) return null
   
   return (
-    <div 
-      className="filter-info-popover-backdrop"
-      onClick={(e) => {
-        // Close if clicking on backdrop (not on popover)
-        if (e.target === e.currentTarget || !popoverRef.current?.contains(e.target)) {
-          onClose()
-        }
-      }}
-    >
+      <div 
+        className="filter-info-popover-backdrop"
+        onClick={(e) => {
+          // Close if clicking on backdrop (not on popover or close button)
+          const target = e.target
+          const isCloseButton = target.closest('.popover-close')
+          if (!isCloseButton && (target === e.currentTarget || !popoverRef.current?.contains(target))) {
+            onClose()
+          }
+        }}
+        onMouseDown={(e) => {
+          // Prevent backdrop from capturing mousedown events
+          const target = e.target
+          const isCloseButton = target.closest('.popover-close')
+          if (!isCloseButton && target !== e.currentTarget && popoverRef.current?.contains(target)) {
+            e.stopPropagation()
+          }
+        }}
+        onTouchStart={(e) => {
+          // Prevent backdrop from capturing touch events
+          const target = e.target
+          const isCloseButton = target.closest('.popover-close')
+          if (!isCloseButton && target !== e.currentTarget && popoverRef.current?.contains(target)) {
+            e.stopPropagation()
+          }
+        }}
+      >
       <div 
         ref={popoverRef}
         className="filter-info-popover" 
@@ -448,22 +466,29 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
           border: none;
           color: rgba(255, 255, 255, 0.7);
           cursor: pointer;
-          padding: 4px;
-          border-radius: 4px;
+          padding: 8px;
+          border-radius: 8px;
           transition: all var(--transition-fast);
-          font-size: 1rem;
+          font-size: 1.2rem;
           line-height: 1;
-          width: 24px;
-          height: 24px;
+          width: 36px;
+          height: 36px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          position: relative;
+          z-index: 100; /* Ensure button is above other elements */
+          pointer-events: auto; /* Ensure button is clickable */
         }
         
         .popover-close:hover {
           background: rgba(255, 255, 255, 0.1);
           color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .popover-close:active {
+          background: rgba(255, 255, 255, 0.15);
         }
         
         .popover-body {
@@ -595,9 +620,10 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
           }
           
           .popover-close {
-            font-size: 1.25rem;
-            width: 32px;
-            height: 32px;
+            font-size: 1.5rem;
+            width: 44px;
+            height: 44px;
+            padding: 10px;
           }
           
           .popover-description {
