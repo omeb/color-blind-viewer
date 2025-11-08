@@ -56,6 +56,8 @@ export default function Home() {
   const [filterPopoverInfo, setFilterPopoverInfo] = React.useState(null)
   const [popoverPosition, setPopoverPosition] = React.useState(null)
   const filterPopoverRef = React.useRef(null)
+  const loadingTimeoutRef = React.useRef(null)
+  const isLoadingRef = React.useRef(false)
   const filterInfoPopoverRef = React.useRef(null)
   const infoIconRef = React.useRef(null)
   const filterPickerContentRef = React.useRef(null)
@@ -85,6 +87,11 @@ export default function Home() {
       const isModalOpen = filterPopoverInfo || showFilterPopover || selectedFilterInfo
       
       const isModifierKey = e.ctrlKey || e.metaKey || e.altKey
+      
+      // Guard against undefined key (can happen with browser autocomplete)
+      if (!e.key) {
+        return
+      }
       
       const isSpecialKey = [
         'Escape', 'Tab', 'Enter', 'ArrowUp', 'ArrowDown', 
@@ -304,6 +311,7 @@ export default function Home() {
     return () => document.removeEventListener('keydown', handleEscape)
   }, [filterPopoverInfo])
   
+  // Load history from localStorage on mount and when returning to initial screen
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -318,7 +326,24 @@ export default function Home() {
         console.error('Failed to load history from localStorage:', error)
       }
     }
-  }, [])
+  }, []) // Load once on mount
+  
+  // Reload history when returning to initial screen
+  React.useEffect(() => {
+    if (!hasLoadedSite && typeof window !== 'undefined') {
+      try {
+        const savedHistory = localStorage.getItem('colorblind-viewer-history')
+        if (savedHistory) {
+          const parsed = JSON.parse(savedHistory)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setHistory(parsed)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to reload history from localStorage:', error)
+      }
+    }
+  }, [hasLoadedSite])
   
   // Save history to localStorage whenever it changes
   React.useEffect(() => {
@@ -447,6 +472,13 @@ export default function Home() {
   }
   
   const handleUrlSubmit = async (url) => {
+    // Clear any existing timeout
+    if (loadingTimeoutRef.current) {
+      clearTimeout(loadingTimeoutRef.current)
+      loadingTimeoutRef.current = null
+    }
+    
+    isLoadingRef.current = true
     setLoading(true)
     setError(null)
     setTargetUrl(url)
@@ -461,12 +493,79 @@ export default function Home() {
     // Add to history
     addToHistory(url)
     
-    // Simulate a brief delay to show loading state
-    setTimeout(() => {
+    // Set up timeout to retry if loading takes too long
+    loadingTimeoutRef.current = setTimeout(() => {
+      // Check if still loading using ref
+      if (isLoadingRef.current) {
+        console.warn('Loading timeout - retrying navigation')
+        // Retry navigation after clearing timeout
+        loadingTimeoutRef.current = null
+        handleUrlSubmit(url)
+      }
+    }, 4000) // 4 seconds
+    
+    // Pre-fetch the proxy URL to check for errors
+    try {
+      const proxyUrl = `/api/proxy?url=${encodeURIComponent(url)}`
+      const response = await fetch(proxyUrl)
+      
+      // Clear timeout since we got a response
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current)
+        loadingTimeoutRef.current = null
+      }
+      
+      isLoadingRef.current = false
+      
+      // Check if response is JSON (error) or HTML (success)
+      const contentType = response.headers.get('content-type') || ''
+      
+      if (contentType.includes('application/json')) {
+        // It's a JSON error response
+        const errorData = await response.json()
+        setError(errorData.error || 'Failed to load website')
+        // Keep loadedUrl and hasLoadedSite set so the URL input remains visible
+        setLoadedUrl(url)
+        setHasLoadedSite(true)
+        setLoading(false)
+        return
+      }
+      
+      if (!response.ok) {
+        setError(`Failed to fetch website: ${response.status} ${response.statusText}`)
+        // Keep loadedUrl and hasLoadedSite set so the URL input remains visible
+        setLoadedUrl(url)
+        setHasLoadedSite(true)
+        setLoading(false)
+        return
+      }
+      
+      // Success - set the loaded URL
       setLoadedUrl(url)
       setLoading(false)
       setHasLoadedSite(true)
-    }, 500)
+    } catch (fetchError) {
+      // Clear timeout since we got an error
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current)
+        loadingTimeoutRef.current = null
+      }
+      
+      isLoadingRef.current = false
+      
+      console.error('Error fetching website:', fetchError)
+      // Keep loadedUrl and hasLoadedSite set so the URL input remains visible
+      setLoadedUrl(url)
+      setHasLoadedSite(true)
+      if (fetchError.name === 'AbortError') {
+        setError('Request timeout: Website took too long to respond')
+      } else if (fetchError.message?.includes('network') || fetchError.message?.includes('fetch')) {
+        setError('Network error: Could not connect to the website')
+      } else {
+        setError('Failed to load website. Please try again')
+      }
+      setLoading(false)
+    }
   }
   
   const handleFilterChange = (filterId) => {
@@ -660,9 +759,9 @@ export default function Home() {
             <div className="glass-card-lg hero-content">
               <h1>See What Others See</h1>
               <p className="hero-subtitle">
-                1 in 12 people experience color vision differences. 
+                1 in 12 people experience color vision differences
                 <br />
-                <span className="highlight">Test your website's accessibility instantly.</span>
+                <span className="highlight">Test your website's accessibility instantly</span>
               </p>
               
               <div className="url-input-section">
@@ -681,6 +780,7 @@ export default function Home() {
                     handleUrlSubmit(url)
                   }}
                   onRemoveUrl={removeFromHistory}
+                  hideRecent={loading}
                 />
               </div>
             </div>
@@ -696,10 +796,16 @@ export default function Home() {
                 <ImpairmentControls
                   activeFilter={activeFilter}
                   onFilterChange={handleFilterChange}
-                  onFilterInfo={(filterId, position) => {
-                    setSelectedFilterInfo(filterId)
-                    setFilterPopoverPosition(position)
-                  }}
+                    onFilterInfo={(filterId, position) => {
+                      // Use the same fullscreen modal as the top info icon
+                      setFilterPopoverInfo({
+                        filterId: filterId,
+                        position: {
+                          x: position.x,
+                          y: position.y
+                        }
+                      })
+                    }}
                 />
                 
               </aside>
@@ -721,9 +827,23 @@ export default function Home() {
                     onSplitViewChange={setIsSplitView}
                     onFilterRemove={() => setActiveFilter('none')}
                     onFilterChange={handleFilterChange}
-                    onFilterInfo={setSelectedFilterInfo}
+                    onFilterInfo={(filterId, position) => {
+                      // Use the same fullscreen modal as the top info icon
+                      setFilterPopoverInfo({
+                        filterId: filterId,
+                        position: {
+                          x: position.x,
+                          y: position.y
+                        }
+                      })
+                    }}
                     onChangeUrl={() => setHasLoadedSite(false)}
                     onUrlChange={handleUrlSubmit}
+                    onFocusUrlInput={() => {
+                      if (viewerUrlInputRef.current) {
+                        viewerUrlInputRef.current.focus()
+                      }
+                    }}
                     history={history}
                     onSelectUrl={handleUrlSubmit}
                     onRemoveUrl={removeFromHistory}
@@ -760,8 +880,8 @@ export default function Home() {
             <div className="footer-bottom">
               <p className="footer-note">
                 <span className="footer-note-text">
-                  Some sites may restrict embedding for security.<br />
-                  Try different URLs if needed.
+                  Some sites may restrict embedding for security<br />
+                  Try different URLs if needed
                 </span>
               </p>
             </div>
@@ -1167,6 +1287,13 @@ export default function Home() {
         .url-input-section {
           max-width: 600px;
           margin: 0 auto;
+          width: 100%;
+        }
+        
+        .url-input-section .history-section {
+          display: block;
+          visibility: visible;
+          opacity: 1;
         }
         
         .main-content {
@@ -1178,6 +1305,12 @@ export default function Home() {
           opacity: 0;
           animation-fill-mode: forwards;
           box-sizing: border-box;
+        }
+        
+        @media (max-width: 768px) {
+          .main-content {
+            padding: 0;
+          }
         }
         
         @keyframes slideIn {
@@ -1195,7 +1328,10 @@ export default function Home() {
           display: grid;
           grid-template-columns: 420px minmax(0, 1fr);
           gap: var(--spacing-lg);
-          max-width: 100%;
+          max-width: 1400px;
+          margin-left: auto;
+          margin-right: auto;
+          width: 100%;
         }
         
         
@@ -1222,7 +1358,7 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           min-width: 0;
-          max-width: 900px;
+          max-width: 100%;
         }
         
         .viewer-section .glass-card {
@@ -1279,6 +1415,11 @@ export default function Home() {
           
           .viewer-section .viewer-subtitle {
             font-size: 0.8rem;
+          }
+          
+          .viewer-section .glass-card {
+            padding: var(--spacing-sm);
+            border-radius: var(--radius-md);
           }
         }
         
@@ -2095,7 +2236,22 @@ export default function Home() {
         
         @media (max-width: 768px) {
           .app-container {
-            padding: var(--spacing-md);
+            padding: var(--spacing-md) var(--spacing-sm);
+          }
+          
+          .main-content {
+            padding: 0;
+          }
+          
+          .content-grid {
+            max-width: 100%;
+            margin-left: 0;
+            margin-right: 0;
+            width: 100%;
+          }
+          
+          .viewer-section {
+            max-width: 100%;
           }
           
           h1 {

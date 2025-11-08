@@ -28,32 +28,38 @@ const EXAMPLE_SITES = [
  * @param {Function} props.onSelectUrl - Callback when URL is clicked
  * @param {Function} props.onRemoveUrl - Callback to remove URL from history
  */
-export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl }) {
+export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl, hideRecent = false }) {
   
-  // Capture initial history on mount and don't update until component remounts
-  const [frozenHistory] = React.useState(() => {
-    if (!history) return []
-    if (!Array.isArray(history)) return []
-    return history.filter(url => url && typeof url === 'string' && url.trim().length > 0)
-  })
+  // Freeze history snapshot when hideRecent is true (during navigation)
+  const frozenHistoryRef = React.useRef(null)
   
-  // Track locally removed items (for UI updates without prop changes)
-  const [removedItems, setRemovedItems] = React.useState([])
+  React.useEffect(() => {
+    if (!hideRecent) {
+      // When not hiding, update the frozen snapshot
+      frozenHistoryRef.current = history
+    }
+    // When hideRecent is true, keep the old snapshot
+  }, [history, hideRecent])
   
-  // Ensure history is an array
-  // Handle cases where history might be null, undefined, or not an array
-  const historyArray = React.useMemo(() => {
-    return frozenHistory.filter(url => !removedItems.includes(url))
-  }, [frozenHistory, removedItems])
+  // Use frozen history if hideRecent is true, otherwise use current history
+  const displayHistory = hideRecent && frozenHistoryRef.current !== null 
+    ? frozenHistoryRef.current 
+    : history
+  
+  // Normalize and filter history prop
+  const normalizedHistory = React.useMemo(() => {
+    if (!displayHistory) return []
+    if (!Array.isArray(displayHistory)) return []
+    return displayHistory.filter(url => url && typeof url === 'string' && url.trim().length > 0)
+  }, [displayHistory])
   
   // Filter out example sites from history to avoid duplicates
   const filteredHistory = React.useMemo(() => {
-    return historyArray.filter(url => !EXAMPLE_SITES.includes(url))
-  }, [historyArray])
+    return normalizedHistory.filter(url => !EXAMPLE_SITES.includes(url))
+  }, [normalizedHistory])
   
-  // Handle removal with local state update
+  // Handle removal - directly call onRemoveUrl, parent state will update
   const handleRemove = (url) => {
-    setRemovedItems(prev => prev.includes(url) ? prev : [...prev, url])
     if (onRemoveUrl) {
       onRemoveUrl(url)
     }
@@ -61,12 +67,7 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
   
   // Handle clear all recent sites
   const handleClearAll = () => {
-    // Add all items to removedItems at once
-    setRemovedItems(prev => {
-      const newSet = new Set([...prev, ...filteredHistory])
-      return Array.from(newSet)
-    })
-    // Call onRemoveUrl for each item
+    // Call onRemoveUrl for each item - parent state will update
     filteredHistory.forEach(url => {
       if (onRemoveUrl) {
         onRemoveUrl(url)
@@ -134,7 +135,7 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
               aria-label="Clear all recent sites"
               title="Clear all"
             >
-              Clear
+              Clear all
             </button>
           </div>
           <div className="history-list">

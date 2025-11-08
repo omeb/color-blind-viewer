@@ -138,3 +138,4 @@
 - Aligns with app's soft gradient aesthetic
 - Tested patterns from high-converting products
 
+

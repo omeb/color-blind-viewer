@@ -203,7 +203,7 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
         }
         
         .filter-item-wrapper:has(.filter-info-btn) .filter-name {
-          padding-right: 36px;
+          padding-right: calc(var(--spacing-sm) + 24px + 8px);
         }
         
         .filter-prevalence {
@@ -220,7 +220,7 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
         .filter-info-btn {
           position: absolute;
           top: 6px;
-          right: 10px;
+          right: var(--spacing-sm);
           background: rgba(110, 198, 255, 0.15);
           border: 1.5px solid rgba(110, 198, 255, 0.4);
           border-radius: 50%;
@@ -233,7 +233,7 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
           justify-content: center;
           padding: 0;
           flex-shrink: 0;
-          z-index: 10;
+          z-index: 0;
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           opacity: 0;
           pointer-events: none;
@@ -277,11 +277,11 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
             border: 2px solid rgba(110, 198, 255, 0.5);
             color: rgba(110, 198, 255, 1);
             top: 4px;
-            right: 8px;
+            right: var(--spacing-xs);
           }
           
           .filter-item-wrapper:has(.filter-info-btn) .filter-name {
-            padding-right: 42px;
+            padding-right: calc(var(--spacing-xs) + 28px + 8px);
           }
           
           .filter-info-btn svg {

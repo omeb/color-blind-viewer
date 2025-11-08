@@ -144,6 +144,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
             ref={inputRef}
             id="website-url"
             type="text"
+            inputMode="url"
             value={url}
             onChange={handleChange}
             placeholder="Enter website URL"
@@ -151,9 +152,9 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
             className="url-input"
             aria-invalid={error ? 'true' : 'false'}
             aria-describedby={error ? 'url-error' : undefined}
-            autoCapitalize="off"
+            autoCapitalize="none"
             autoCorrect="off"
-            autoComplete="off"
+            autoComplete="url"
             spellCheck="false"
           />
           <button
@@ -257,11 +258,13 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
         
         .url-input-group:focus-within {
           border-color: #4A90E2;
-          border-width: 2px;
+          /* Keep border-width constant to prevent layout shift - use box-shadow for visual emphasis */
+          border-width: 1.5px;
           box-shadow: 0 0 0 6px rgba(110, 198, 255, 0.15),
                       0 12px 32px rgba(110, 198, 255, 0.3),
                       0 6px 16px rgba(0, 0, 0, 0.15),
-                      0 0 40px 8px rgba(110, 198, 255, 0.2);
+                      0 0 40px 8px rgba(110, 198, 255, 0.2),
+                      inset 0 0 0 0.5px rgba(74, 144, 226, 0.5);
           animation: focusGlow 2s ease-in-out infinite;
         }
         
@@ -270,13 +273,15 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
             box-shadow: 0 0 0 6px rgba(110, 198, 255, 0.15),
                         0 12px 32px rgba(110, 198, 255, 0.3),
                         0 6px 16px rgba(0, 0, 0, 0.15),
-                        0 0 40px 8px rgba(110, 198, 255, 0.2);
+                        0 0 40px 8px rgba(110, 198, 255, 0.2),
+                        inset 0 0 0 0.5px rgba(74, 144, 226, 0.5);
           }
           50% {
             box-shadow: 0 0 0 6px rgba(110, 198, 255, 0.2),
                         0 12px 32px rgba(110, 198, 255, 0.35),
                         0 6px 16px rgba(0, 0, 0, 0.15),
-                        0 0 50px 10px rgba(110, 198, 255, 0.25);
+                        0 0 50px 10px rgba(110, 198, 255, 0.25),
+                        inset 0 0 0 0.5px rgba(74, 144, 226, 0.5);
           }
         }
         
@@ -286,7 +291,8 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
         }
         
         .url-input-group:focus-within .submit-button {
-          margin: -2px -5px -2px 0;
+          /* Keep margin constant to prevent layout shift */
+          margin: -2px -3px -2px 0;
           animation: buttonPulse 2s ease-in-out infinite;
         }
         
@@ -317,22 +323,30 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           letter-spacing: -0.01em;
           border-radius: 16px 0 0 16px;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+          /* Only transition non-layout properties to prevent cursor jumping */
+          transition: color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                      background-color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
           position: relative;
           z-index: 2;
+          /* Prevent any transforms that could affect cursor position */
+          transform: none;
         }
         
         .url-input::placeholder {
           color: #6B7280;
           font-weight: 400;
-          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+          transition: color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                      opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
           opacity: 1;
+          /* Prevent placeholder transforms that could affect cursor */
+          transform: none;
         }
         
         .url-input:focus::placeholder {
           color: rgba(107, 114, 128, 0.5);
-          transform: translateX(4px);
           opacity: 0.8;
+          /* No transform - prevents cursor jumping */
+          transform: none;
         }
         
         .url-input:disabled {
@@ -631,11 +645,13 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
         
         :global([data-theme="dark"]) .url-input-group:focus-within {
           border-color: #60A5FA;
-          border-width: 2px;
+          /* Keep border-width constant to prevent layout shift */
+          border-width: 1.5px;
           box-shadow: 0 0 0 6px rgba(110, 198, 255, 0.25),
                       0 12px 36px rgba(110, 198, 255, 0.4),
                       0 6px 18px rgba(0, 0, 0, 0.6),
-                      0 0 45px 10px rgba(110, 198, 255, 0.3);
+                      0 0 45px 10px rgba(110, 198, 255, 0.3),
+                      inset 0 0 0 0.5px rgba(96, 165, 250, 0.5);
           animation: focusGlowDark 2s ease-in-out infinite;
         }
         
@@ -644,13 +660,15 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
             box-shadow: 0 0 0 6px rgba(110, 198, 255, 0.25),
                         0 12px 36px rgba(110, 198, 255, 0.4),
                         0 6px 18px rgba(0, 0, 0, 0.6),
-                        0 0 45px 10px rgba(110, 198, 255, 0.3);
+                        0 0 45px 10px rgba(110, 198, 255, 0.3),
+                        inset 0 0 0 0.5px rgba(96, 165, 250, 0.5);
           }
           50% {
             box-shadow: 0 0 0 6px rgba(110, 198, 255, 0.3),
                         0 12px 36px rgba(110, 198, 255, 0.45),
                         0 6px 18px rgba(0, 0, 0, 0.6),
-                        0 0 55px 12px rgba(110, 198, 255, 0.35);
+                        0 0 55px 12px rgba(110, 198, 255, 0.35),
+                        inset 0 0 0 0.5px rgba(96, 165, 250, 0.5);
           }
         }
         
@@ -659,7 +677,8 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
         }
         
         :global([data-theme="dark"]) .url-input-group:focus-within .submit-button {
-          margin: -2px -5px -2px 0;
+          /* Keep margin constant to prevent layout shift */
+          margin: -2px -3px -2px 0;
           animation: buttonPulseDark 2s ease-in-out infinite;
         }
         
@@ -686,6 +705,8 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
         
         :global([data-theme="dark"]) .url-input:focus::placeholder {
           color: rgba(255, 255, 255, 0.45);
+          /* No transform - prevents cursor jumping */
+          transform: none;
         }
         
         :global([data-theme="dark"]) .url-input:disabled {

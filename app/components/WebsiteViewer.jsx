@@ -28,11 +28,12 @@ const EXAMPLE_SITES = [
  * @param {boolean} props.loading - Whether the website is loading
  * @param {string} props.error - Error message if loading failed
  */
-export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'none', isSplitView: isSplitViewProp, onSplitViewChange, onFilterRemove, onFilterChange, onFilterInfo, onChangeUrl, loading = false, error = null, onUrlChange, history = [], onSelectUrl, onRemoveUrl, showQuickFilters = true }, ref) {
+export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'none', isSplitView: isSplitViewProp, onSplitViewChange, onFilterRemove, onFilterChange, onFilterInfo, onChangeUrl, loading = false, error = null, onUrlChange, history = [], onSelectUrl, onRemoveUrl, showQuickFilters = true, onFocusUrlInput }, ref) {
   const [iframeKey, setIframeKey] = React.useState(0)
   const [isSplitView, setIsSplitView] = React.useState(isSplitViewProp || false)
   const [iframeLoading, setIframeLoading] = React.useState(false)
   const [iframeLoaded, setIframeLoaded] = React.useState(false)
+  const [detectedError, setDetectedError] = React.useState(null) // Internal error state for iframe JSON errors
   const [isEditingUrl, setIsEditingUrl] = React.useState(false)
   const [editedUrl, setEditedUrl] = React.useState(url)
   const [showHistoryDropdown, setShowHistoryDropdown] = React.useState(false)
@@ -59,6 +60,8 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
   const hasSeenRandomHintRef = React.useRef(false)
   const [showHoverHint, setShowHoverHint] = React.useState(false)
   const [showSplitViewHover, setShowSplitViewHover] = React.useState(false)
+  const iframeLoadingTimeoutRef = React.useRef(null)
+  const isIframeLoadingRef = React.useRef(false)
   
   // Expose focus method via ref
   React.useImperativeHandle(ref, () => ({
@@ -165,13 +168,23 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
     }
   }
   
-  const handleRandomSite = () => {
+  const handleRandomSite = (e) => {
+    // Prevent any focus behavior
+    e?.preventDefault()
+    e?.stopPropagation()
+    
     // Hide hint when user clicks the button and mark as seen
     setShowRandomHint(false)
     setShowHoverHint(false)
     hasSeenRandomHintRef.current = true
     if (typeof window !== 'undefined') {
       localStorage.setItem('colorblind-random-hint-seen', 'true')
+    }
+    
+    // Ensure URL input is not in editing mode and blur if focused
+    setIsEditingUrl(false)
+    if (urlInputRef.current && document.activeElement === urlInputRef.current) {
+      urlInputRef.current.blur()
     }
     
     const randomIndex = Math.floor(Math.random() * EXAMPLE_SITES.length)
@@ -494,8 +507,12 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
     }
   }
   
-  // Build proxy URL
-  const proxyUrl = url ? `/api/proxy?url=${encodeURIComponent(url)}` : null
+  // Build proxy URL - only if there's no error
+  // Use refs to check error state to prevent race conditions
+  const proxyUrl = React.useMemo(() => {
+    const hasError = error || detectedError
+    return (url && !hasError) ? `/api/proxy?url=${encodeURIComponent(url)}` : null
+  }, [url, error, detectedError])
   
   // Update edited URL when url prop changes
   React.useEffect(() => {
@@ -533,27 +550,166 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
     }
   }, [showHistoryDropdown])
   
-  // Reload iframe when URL changes
+  // Reload iframe when URL changes - but only if there's no error
+  // Use a ref to track error state to prevent dependency-triggered reloads
+  const errorRef = React.useRef({ error: null, detectedError: null })
+  const lastProcessedUrlRef = React.useRef(null)
+  const isInErrorStateRef = React.useRef(false)
+  
   React.useEffect(() => {
-    if (url) {
+    const hasError = error || detectedError
+    errorRef.current = { error, detectedError }
+    isInErrorStateRef.current = hasError
+  }, [error, detectedError])
+  
+  React.useEffect(() => {
+    // Don't process if we're in an error state
+    if (isInErrorStateRef.current) {
+      return
+    }
+    
+    // Only process if URL actually changed
+    if (url === lastProcessedUrlRef.current) {
+      return
+    }
+    
+    lastProcessedUrlRef.current = url
+    
+    // Clear any existing timeout
+    if (iframeLoadingTimeoutRef.current) {
+      clearTimeout(iframeLoadingTimeoutRef.current)
+      iframeLoadingTimeoutRef.current = null
+    }
+    
+    // Check current error state from ref to avoid dependency-triggered reloads
+    const hasError = errorRef.current.error || errorRef.current.detectedError
+    
+    if (url && !hasError) {
       setIframeKey(prev => prev + 1)
+      isIframeLoadingRef.current = true
       setIframeLoading(true)
       setIframeLoaded(false)
-    } else {
+      
+      // Set up timeout to retry if iframe loading takes too long
+      iframeLoadingTimeoutRef.current = setTimeout(() => {
+        // Check if still loading using ref
+        if (isIframeLoadingRef.current && onUrlChange) {
+          console.warn('Iframe loading timeout - retrying navigation')
+          // Retry navigation
+          iframeLoadingTimeoutRef.current = null
+          onUrlChange(url)
+        }
+      }, 4000) // 4 seconds
+    } else if (!url) {
       // Reset loading states when URL is cleared
+      isIframeLoadingRef.current = false
       setIframeLoading(false)
       setIframeLoaded(false)
+      lastProcessedUrlRef.current = null
+    }
+    
+    // Cleanup timeout on unmount or URL change
+    return () => {
+      if (iframeLoadingTimeoutRef.current) {
+        clearTimeout(iframeLoadingTimeoutRef.current)
+        iframeLoadingTimeoutRef.current = null
+      }
+    }
+  }, [url, onUrlChange]) // Only depend on url, not error states
+  
+  // Handle iframe load event
+  const handleIframeLoad = (e) => {
+    // Clear timeout since iframe loaded
+    if (iframeLoadingTimeoutRef.current) {
+      clearTimeout(iframeLoadingTimeoutRef.current)
+      iframeLoadingTimeoutRef.current = null
+    }
+    
+    // Don't process if there's already an error - check ref for latest state
+    if (isInErrorStateRef.current || error || detectedError) {
+      return
+    }
+    
+    // Small delay to ensure content is rendered
+    setTimeout(() => {
+      // Don't process if error was set during the delay - check ref again
+      if (isInErrorStateRef.current || error || detectedError) {
+        return
+      }
+      
+      // Try to detect if the iframe content is a JSON error
+      try {
+        const iframe = e?.target || iframeRef.current || originalIframeRef.current || filteredIframeRef.current
+        if (iframe && iframe.contentWindow) {
+          try {
+            // Try to access iframe content (same-origin proxy should be accessible)
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document
+            const bodyText = iframeDoc?.body?.textContent?.trim() || ''
+            
+            // Check if content looks like JSON error
+            if (bodyText.startsWith('{') && bodyText.includes('"error"')) {
+              try {
+                const errorData = JSON.parse(bodyText)
+                if (errorData.error) {
+                  // Set internal error state to show friendly error UI
+                  setDetectedError(errorData.error)
+                  isInErrorStateRef.current = true
+                  setIframeLoading(false)
+                  setIframeLoaded(false)
+                  return
+                }
+              } catch (parseError) {
+                // Not valid JSON, continue normally
+              }
+            }
+          } catch (crossOriginError) {
+            // Can't access iframe content - this is normal for external sites
+            // Continue with normal load
+          }
+        }
+      } catch (error) {
+        // Error checking iframe content - continue normally
+        console.debug('Could not check iframe content:', error)
+      }
+      
+      // Only clear detected error and mark as loaded if there's no error prop
+      // Don't clear if we're in an error state
+      if (!isInErrorStateRef.current && !error && !detectedError) {
+        isIframeLoadingRef.current = false
+        setDetectedError(null)
+        setIframeLoading(false)
+        setIframeLoaded(true)
+      } else {
+        // If there's an error, keep loading states false
+        isIframeLoadingRef.current = false
+        setIframeLoading(false)
+        setIframeLoaded(false)
+      }
+    }, 300)
+  }
+  
+  // Reset detected error when URL actually changes (not just reference)
+  const lastUrlRef = React.useRef(url)
+  React.useEffect(() => {
+    // Only reset detectedError if URL actually changed, not just reference
+    if (url !== lastUrlRef.current) {
+      lastUrlRef.current = url
+      setDetectedError(null)
+      isInErrorStateRef.current = false
     }
   }, [url])
   
-  // Handle iframe load event
-  const handleIframeLoad = () => {
-    // Small delay to ensure content is rendered
-    setTimeout(() => {
+  // Clear loading states when error occurs and prevent reloads
+  React.useEffect(() => {
+    if (error || detectedError) {
+      isIframeLoadingRef.current = false
+      isInErrorStateRef.current = true
       setIframeLoading(false)
-      setIframeLoaded(true)
-    }, 300)
-  }
+      setIframeLoaded(false)
+      // Don't reset lastProcessedUrlRef - we want to prevent reloads for this URL
+      // Only reset it when URL actually changes (handled in the URL effect above)
+    }
+  }, [error, detectedError])
   
   // Handle refresh
   const handleRefresh = () => {
@@ -1014,8 +1170,8 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
         </div>
       )}
       
-      {/* Show loading state immediately when url exists OR loading is true */}
-      {(loading || iframeLoading || (url && !iframeLoaded)) && (
+      {/* Show loading state immediately when url exists OR loading is true - but not if there's an error */}
+      {(loading || iframeLoading || (url && !iframeLoaded)) && !error && !detectedError && (
         <div className={`loading-state ${iframeLoading ? 'iframe-loading' : 'initial-loading'}`} role="status" aria-live="polite">
           <div className="loading-content">
             {!iframeLoading ? (
@@ -1063,12 +1219,14 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
         </div>
       )}
       
-      {error && (() => {
+      {(error || detectedError) && (() => {
+        // Use detected error from iframe if available, otherwise use prop error
+        const displayError = detectedError || error
         // Parse error message to determine error type
-        const errorLower = error.toLowerCase()
+        const errorLower = displayError.toLowerCase()
         let errorType = 'generic'
         let userFriendlyTitle = 'Unable to Load Website'
-        let userFriendlyMessage = 'We couldn\'t load this website. This might be due to security restrictions or network issues.'
+        let userFriendlyMessage = 'We couldn\'t load this website. This might be due to security restrictions or network issues'
         let suggestions = [
           'Try a different website URL',
           'Check if the website is accessible in your browser',
@@ -1077,84 +1235,171 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
         
         if (errorLower.includes('403') || errorLower.includes('forbidden')) {
           errorType = 'forbidden'
-          userFriendlyTitle = 'Access Restricted'
-          userFriendlyMessage = 'This website has blocked embedding for security reasons. Many sites restrict iframe embedding to protect their content.'
+          userFriendlyTitle = 'Preview Not Available'
+          userFriendlyMessage = 'This website doesn\'t allow embedding, so we can\'t show a preview here. You can still open it directly in your browser to view it'
           suggestions = [
-            'Try opening the site directly in your browser',
-            'Try a different website that allows embedding',
-            'Some sites like social media platforms restrict embedding'
+            'Click the URL above to open it in a new tab',
+            'Try a different website that allows previews',
+            'Many sites restrict embedding for security'
+          ]
+        } else if (errorLower.includes('401') || errorLower.includes('unauthorized')) {
+          errorType = 'unauthorized'
+          userFriendlyTitle = 'Login Required'
+          userFriendlyMessage = 'This page requires you to sign in. You\'ll need to open it in your browser and log in first'
+          suggestions = [
+            'Open the URL above in your browser to sign in',
+            'Try accessing a public page instead',
+            'Some sites require authentication before viewing'
+          ]
+        } else if (errorLower.includes('500') || errorLower.includes('server error') || errorLower.includes('internal server')) {
+          errorType = 'servererror'
+          userFriendlyTitle = 'Temporary Issue'
+          userFriendlyMessage = 'The website\'s server is having a temporary problem. This usually resolves quickly'
+          suggestions = [
+            'Try again in a moment',
+            'The site might be temporarily unavailable',
+            'Check back in a few minutes'
           ]
         } else if (errorLower.includes('404') || errorLower.includes('not found')) {
           errorType = 'notfound'
-          userFriendlyTitle = 'Website Not Found'
-          userFriendlyMessage = 'The website you\'re looking for couldn\'t be found. It may have been moved or doesn\'t exist.'
+          userFriendlyTitle = 'Page Not Found'
+          userFriendlyMessage = 'We couldn\'t find this page. It might have been moved or the URL might have a typo'
           suggestions = [
-            'Double-check the URL for typos',
-            'Try removing www. or adding it',
-            'Verify the website is still active'
+            'Check the URL above for any typos',
+            'Try removing or adding www.',
+            'The page might have been moved or deleted'
           ]
         } else if (errorLower.includes('timeout') || errorLower.includes('too long')) {
           errorType = 'timeout'
-          userFriendlyTitle = 'Request Timed Out'
-          userFriendlyMessage = 'The website took too long to respond. This could be due to slow loading or server issues.'
+          userFriendlyTitle = 'Taking Too Long'
+          userFriendlyMessage = 'The website is taking longer than usual to load. This might be temporary'
           suggestions = [
-            'Try again in a few moments',
+            'Try again in a moment',
             'Check your internet connection',
             'The site might be experiencing high traffic'
           ]
         } else if (errorLower.includes('network') || errorLower.includes('connection')) {
           errorType = 'network'
-          userFriendlyTitle = 'Connection Error'
-          userFriendlyMessage = 'We couldn\'t connect to the website. Please check your internet connection.'
+          userFriendlyTitle = 'Connection Issue'
+          userFriendlyMessage = 'We couldn\'t connect to the website. This might be a temporary network issue'
           suggestions = [
             'Check your internet connection',
             'Try refreshing the page',
-            'Verify the website URL is correct'
+            'Verify the URL is correct'
           ]
         } else if (errorLower.includes('html page') || errorLower.includes('not html')) {
           errorType = 'nothtml'
           userFriendlyTitle = 'Not a Web Page'
-          userFriendlyMessage = 'This URL doesn\'t point to a web page. It might be a file download or API endpoint.'
+          userFriendlyMessage = 'This URL points to a file or API, not a web page. Try using a website URL instead'
           suggestions = [
-            'Make sure you\'re using a website URL, not a file link',
+            'Make sure you\'re using a website URL',
             'Try the main page of the website',
-            'Some URLs point to downloads or APIs, not web pages'
+            'Some URLs point to files or APIs, not web pages'
           ]
+        }
+        
+        // Minimalist, modern error icons - simple and clean
+        const ErrorIcon = () => {
+          const iconSize = 80
+          const strokeWidth = 3
+          
+          switch (errorType) {
+            case 'forbidden':
+              return (
+                <svg width={iconSize} height={iconSize} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="60" cy="60" r="50" fill="rgba(110, 198, 255, 0.08)" className="error-icon-bg"/>
+                  <circle cx="60" cy="60" r="40" stroke="rgba(110, 198, 255, 0.9)" strokeWidth={strokeWidth} className="error-icon-main"/>
+                  <path d="M45 45L75 75M75 45L45 75" stroke="rgba(110, 198, 255, 0.9)" strokeWidth={strokeWidth} strokeLinecap="round" className="error-icon-main"/>
+                </svg>
+              )
+            case 'unauthorized':
+              return (
+                <svg width={iconSize} height={iconSize} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="60" cy="60" r="50" fill="rgba(251, 191, 36, 0.08)" className="error-icon-bg"/>
+                  <circle cx="60" cy="60" r="40" stroke="rgba(251, 191, 36, 0.9)" strokeWidth={strokeWidth} className="error-icon-main"/>
+                  <path d="M60 40V60M60 70V80" stroke="rgba(251, 191, 36, 0.9)" strokeWidth={strokeWidth} strokeLinecap="round" className="error-icon-main"/>
+                  <circle cx="60" cy="50" r="3" fill="rgba(251, 191, 36, 0.9)" className="error-icon-main"/>
+                </svg>
+              )
+            case 'servererror':
+              return (
+                <svg width={iconSize} height={iconSize} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="60" cy="60" r="50" fill="rgba(251, 191, 36, 0.08)" className="error-icon-bg"/>
+                  <rect x="35" y="50" width="50" height="40" rx="4" stroke="rgba(251, 191, 36, 0.9)" strokeWidth={strokeWidth} className="error-icon-main"/>
+                  <path d="M45 60H75M45 70H75M45 80H65" stroke="rgba(251, 191, 36, 0.9)" strokeWidth={strokeWidth} strokeLinecap="round" className="error-icon-main"/>
+                  <path d="M60 30L55 40L65 40Z" fill="rgba(251, 191, 36, 0.9)" className="error-icon-main"/>
+                </svg>
+              )
+            case 'notfound':
+              return (
+                <svg width={iconSize} height={iconSize} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="60" cy="60" r="50" fill="rgba(156, 163, 175, 0.08)" className="error-icon-bg"/>
+                  <circle cx="45" cy="45" r="25" stroke="rgba(156, 163, 175, 0.9)" strokeWidth={strokeWidth} className="error-icon-main"/>
+                  <path d="M65 65L85 85" stroke="rgba(156, 163, 175, 0.9)" strokeWidth={strokeWidth} strokeLinecap="round" className="error-icon-main"/>
+                  <path d="M35 35L50 50M50 35L35 50" stroke="rgba(156, 163, 175, 0.9)" strokeWidth={strokeWidth} strokeLinecap="round" className="error-icon-main"/>
+                </svg>
+              )
+            case 'timeout':
+              return (
+                <svg width={iconSize} height={iconSize} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="60" cy="60" r="50" fill="rgba(251, 191, 36, 0.08)" className="error-icon-bg"/>
+                  <circle cx="60" cy="60" r="40" stroke="rgba(251, 191, 36, 0.9)" strokeWidth={strokeWidth} className="error-icon-main"/>
+                  <path d="M60 30L60 60L75 75" stroke="rgba(251, 191, 36, 0.9)" strokeWidth={strokeWidth} strokeLinecap="round" className="error-icon-main"/>
+                  <circle cx="60" cy="60" r="4" fill="rgba(251, 191, 36, 0.9)" className="error-icon-main"/>
+                </svg>
+              )
+            case 'network':
+              return (
+                <svg width={iconSize} height={iconSize} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="60" cy="60" r="50" fill="rgba(59, 130, 246, 0.08)" className="error-icon-bg"/>
+                  <circle cx="30" cy="55" r="15" stroke="rgba(59, 130, 246, 0.9)" strokeWidth={strokeWidth} className="error-icon-main"/>
+                  <circle cx="60" cy="30" r="15" stroke="rgba(59, 130, 246, 0.9)" strokeWidth={strokeWidth} className="error-icon-main"/>
+                  <circle cx="90" cy="55" r="15" stroke="rgba(59, 130, 246, 0.9)" strokeWidth={strokeWidth} className="error-icon-main"/>
+                  <path d="M45 55L75 55M45 45L60 20M75 45L60 20" stroke="rgba(59, 130, 246, 0.4)" strokeWidth={strokeWidth} strokeDasharray="4 4" strokeLinecap="round" className="error-icon-main"/>
+                </svg>
+              )
+            case 'nothtml':
+              return (
+                <svg width={iconSize} height={iconSize} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="60" cy="60" r="50" fill="rgba(156, 163, 175, 0.08)" className="error-icon-bg"/>
+                  <rect x="35" y="40" width="50" height="60" rx="3" stroke="rgba(156, 163, 175, 0.9)" strokeWidth={strokeWidth} className="error-icon-main"/>
+                  <path d="M35 40L50 40L50 55" stroke="rgba(156, 163, 175, 0.9)" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className="error-icon-main"/>
+                  <path d="M45 65H85M45 75H80M45 85H75" stroke="rgba(156, 163, 175, 0.9)" strokeWidth={strokeWidth} strokeLinecap="round" className="error-icon-main"/>
+                </svg>
+              )
+            default:
+              return (
+                <svg width={iconSize} height={iconSize} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="60" cy="60" r="50" fill="rgba(251, 191, 36, 0.08)" className="error-icon-bg"/>
+                  <circle cx="60" cy="60" r="40" stroke="rgba(251, 191, 36, 0.9)" strokeWidth={strokeWidth} className="error-icon-main"/>
+                  <circle cx="60" cy="50" r="4" fill="rgba(251, 191, 36, 0.9)" className="error-icon-main"/>
+                  <path d="M60 60V85" stroke="rgba(251, 191, 36, 0.9)" strokeWidth={strokeWidth} strokeLinecap="round" className="error-icon-main"/>
+                </svg>
+              )
+          }
         }
         
         return (
           <div className="error-state" role="alert">
             <div className="error-icon">
-              {errorType === 'forbidden' && '🚫'}
-              {errorType === 'notfound' && '🔍'}
-              {errorType === 'timeout' && '⏱️'}
-              {errorType === 'network' && '📡'}
-              {errorType === 'nothtml' && '📄'}
-              {errorType === 'generic' && '⚠️'}
+              <ErrorIcon />
             </div>
             <h3 className="error-title">{userFriendlyTitle}</h3>
             <p className="error-message">{userFriendlyMessage}</p>
-            <div className="error-suggestions">
-              <p className="error-suggestions-title">What you can try:</p>
-              <ul className="error-suggestions-list">
-                {suggestions.map((suggestion, index) => (
-                  <li key={index}>{suggestion}</li>
-                ))}
-              </ul>
-            </div>
-            {onChangeUrl && (
-              <button
-                onClick={() => onChangeUrl()}
-                className="error-action-button"
+            {onFocusUrlInput && (
+              <button 
+                className="error-cta-button"
+                onClick={() => onFocusUrlInput()}
+                type="button"
               >
-                Try a Different URL
+                Try a Different Website
               </button>
             )}
           </div>
         )
       })()}
       
-      {proxyUrl && !loading && !error && (
+      {proxyUrl && !loading && !error && !detectedError && (
         <div className={`iframe-content ${iframeLoading ? 'loading' : ''}`}>
           {isSplitView && activeFilter !== 'none' ? (
             <div className="split-view-wrapper">
@@ -1249,6 +1494,12 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           /* Prevent layout shifts */
           contain: layout style;
           min-width: 0;
+        }
+        
+        @media (max-width: 768px) {
+          .website-viewer-container {
+            border-radius: 0;
+          }
         }
         
         .website-viewer-container.split-view {
@@ -1392,7 +1643,7 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           top: calc(100% + 8px);
           left: 0;
           right: 0;
-          z-index: 1000;
+          z-index: 1500;
           background: rgba(0, 0, 0, 0.95);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
@@ -1512,18 +1763,29 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           background: transparent;
           font-size: 0.95rem;
           font-weight: 500;
-          color: rgba(0, 0, 0, 0.9);
+          color: rgba(255, 255, 255, 0.95);
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
           letter-spacing: -0.01em;
           line-height: 1.5;
           outline: none;
           padding: 0;
+          padding-left: 0;
+          transition: padding-left 0.2s ease, color 0.2s ease;
+        }
+        
+        .url-edit-input:focus {
+          padding-left: 12px;
+          color: rgba(0, 0, 0, 0.9);
         }
         
         .url-edit-input::placeholder {
-          color: rgba(0, 0, 0, 0.5);
+          color: rgba(255, 255, 255, 0.6);
           font-weight: 400;
           letter-spacing: 0;
+        }
+        
+        .url-edit-input:focus::placeholder {
+          color: rgba(0, 0, 0, 0.5);
         }
         
         .url-edit-actions {
@@ -1701,13 +1963,29 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           position: relative;
         }
         
+        /* Only add extra padding-right when there's an info icon */
         div:has(.filter-info-icon-btn) .quick-filter-btn {
-          padding-right: 28px;
+          padding-right: calc(16px + 20px + 8px);
+        }
+        
+        /* Ensure "None" button (direct child of quick-filters-scroll) has symmetric padding */
+        .quick-filters-scroll > .quick-filter-btn {
+          padding-left: 16px !important;
+          padding-right: 16px !important;
         }
         
         @media (max-width: 768px) {
+          .quick-filter-btn {
+            padding: 8px 14px;
+          }
+          
           div:has(.filter-info-icon-btn) .quick-filter-btn {
-            padding-right: 24px;
+            padding-right: calc(14px + 18px + 8px);
+          }
+          
+          .quick-filters-scroll > .quick-filter-btn {
+            padding-left: 14px !important;
+            padding-right: 14px !important;
           }
         }
         
@@ -1730,7 +2008,7 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
         .filter-info-icon-btn {
           position: absolute;
           top: 50%;
-          right: 4px;
+          right: 16px;
           transform: translateY(-50%);
           width: 20px;
           height: 20px;
@@ -1747,7 +2025,7 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           transition: all 0.2s ease;
           padding: 0;
           outline-offset: 2px;
-          z-index: 10;
+          z-index: 0;
         }
         
         .filter-info-icon-btn svg {
@@ -1777,10 +2055,14 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
             font-size: 0.875rem;
           }
           
+          div:has(.filter-info-icon-btn) .quick-filter-btn {
+            padding-right: calc(14px + 18px + 8px);
+          }
+          
           .filter-info-icon-btn {
             width: 18px;
             height: 18px;
-            right: 3px;
+            right: 14px;
           }
           
           .filter-info-icon-btn svg {
@@ -2846,48 +3128,94 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          height: 100%;
-          padding: var(--spacing-xl);
+          min-height: 300px;
+          padding: var(--spacing-lg) var(--spacing-md);
           text-align: center;
-          background: rgba(255, 107, 107, 0.08);
+          background: transparent;
           border-radius: var(--radius-md);
-          border: 1px solid rgba(255, 107, 107, 0.2);
+          border: none;
         }
         
         .error-icon {
-          font-size: 4rem;
           margin-bottom: var(--spacing-md);
           line-height: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 1;
+          filter: drop-shadow(0 2px 6px rgba(110, 198, 255, 0.2));
+        }
+        
+        .error-icon svg {
+          width: 80px;
+          height: 80px;
+          max-width: 100%;
+        }
+        
+        /* Light mode - higher contrast colors */
+        .error-icon-bg {
+          fill: rgba(110, 198, 255, 0.12);
+        }
+        
+        .error-icon-main {
+          /* Default colors work in light mode */
+        }
+        
+        /* Dark mode - enhanced visibility */
+        :global([data-theme="dark"]) .error-icon {
+          filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.4));
+        }
+        
+        :global([data-theme="dark"]) .error-icon-bg {
+          fill: rgba(110, 198, 255, 0.15);
+        }
+        
+        :global([data-theme="dark"]) .error-icon svg .error-icon-main {
+          /* SVG elements will use rgba colors that work in both modes */
+          /* The colors are already theme-aware through opacity adjustments */
+        }
+        
+        /* Ensure sufficient contrast in both modes */
+        @media (prefers-contrast: high) {
+          .error-icon-bg {
+            fill: rgba(110, 198, 255, 0.2) !important;
+          }
+          
+          :global([data-theme="dark"]) .error-icon-bg {
+            fill: rgba(110, 198, 255, 0.25) !important;
+          }
         }
         
         .error-title {
-          font-size: 1.5rem;
+          font-size: 1.25rem;
           font-weight: 700;
           color: rgba(255, 255, 255, 1);
           margin: 0 0 var(--spacing-sm) 0;
+          letter-spacing: -0.3px;
         }
         
         .error-message {
-          font-size: 1rem;
-          color: rgba(255, 255, 255, 0.9);
-          margin: 0 0 var(--spacing-lg) 0;
-          max-width: 500px;
-          line-height: 1.6;
+          font-size: 0.9rem;
+          color: rgba(255, 255, 255, 0.8);
+          margin: 0 0 var(--spacing-md) 0;
+          max-width: 400px;
+          line-height: 1.5;
         }
         
         .error-suggestions {
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: var(--radius-sm);
-          padding: var(--spacing-md);
-          margin-bottom: var(--spacing-lg);
-          max-width: 500px;
+          background: rgba(255, 255, 255, 0.04);
+          border-radius: var(--radius-md);
+          padding: var(--spacing-lg);
+          margin-top: var(--spacing-md);
+          max-width: 520px;
           text-align: left;
+          border: 1px solid rgba(255, 255, 255, 0.08);
         }
         
         .error-suggestions-title {
           font-size: 0.9rem;
           font-weight: 600;
-          color: rgba(255, 255, 255, 0.95);
+          color: rgba(255, 255, 255, 0.9);
           margin: 0 0 var(--spacing-sm) 0;
         }
         
@@ -2918,28 +3246,36 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           margin-bottom: 0;
         }
         
-        .error-action-button {
-          background: rgba(110, 198, 255, 0.2);
-          border: 1px solid rgba(110, 198, 255, 0.4);
+        .error-cta-button {
+          background: rgba(110, 198, 255, 0.9);
+          border: none;
           border-radius: var(--radius-sm);
           color: rgba(255, 255, 255, 1);
-          padding: var(--spacing-sm) var(--spacing-lg);
-          font-size: 0.95rem;
+          padding: var(--spacing-sm) var(--spacing-md);
+          font-size: 0.85rem;
           font-weight: 600;
           cursor: pointer;
-          transition: all var(--transition-fast);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           font-family: inherit;
+          margin-bottom: 0;
+          box-shadow: 0 2px 6px rgba(110, 198, 255, 0.25);
+          letter-spacing: 0.2px;
         }
         
-        .error-action-button:hover {
-          background: rgba(110, 198, 255, 0.3);
-          border-color: rgba(110, 198, 255, 0.6);
+        .error-cta-button:hover {
+          background: rgba(110, 198, 255, 1);
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(110, 198, 255, 0.2);
+          box-shadow: 0 3px 10px rgba(110, 198, 255, 0.35);
         }
         
-        .error-action-button:active {
+        .error-cta-button:active {
           transform: translateY(0);
+          box-shadow: 0 1px 3px rgba(110, 198, 255, 0.25);
+        }
+        
+        .error-cta-button:focus-visible {
+          outline: 2px solid rgba(110, 198, 255, 0.8);
+          outline-offset: 2px;
         }
         
         .iframe-content {
@@ -3075,6 +3411,8 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           color: white;
           padding: 8px 12px;
           border-radius: var(--radius-sm);
+          border-bottom-left-radius: 0;
+          border-bottom-right-radius: 0;
           font-size: 0.85rem;
           font-weight: 600;
           pointer-events: none;
@@ -3126,7 +3464,12 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           }
           
           .error-icon {
-            font-size: 3rem;
+            margin-bottom: var(--spacing-md);
+          }
+          
+          .error-icon svg {
+            width: 90px;
+            height: 90px;
           }
           
           .error-title {
@@ -3152,7 +3495,12 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           }
           
           .error-icon {
-            font-size: 2.5rem;
+            margin-bottom: var(--spacing-sm);
+          }
+          
+          .error-icon svg {
+            width: 80px;
+            height: 80px;
           }
           
           .error-title {
