@@ -689,11 +689,19 @@ export default function Home() {
                   </button>
                 )}
                 {showFilterPopover && (
-                  <div className="filter-picker-popover" data-open={!isPopoverOpening}>
+                  <div 
+                    className="filter-picker-popover" 
+                    data-open={!isPopoverOpening}
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <div className="filter-picker-header">
                       <span>Select Filter</span>
                       <button
-                        onClick={handleCloseFilterPopover}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          e.preventDefault()
+                          handleCloseFilterPopover()
+                        }}
                         className="filter-picker-close"
                         aria-label="Close"
                       >
