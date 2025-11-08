@@ -201,7 +201,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           background: rgba(255, 255, 255, 0.98);
           backdrop-filter: blur(16px);
           -webkit-backdrop-filter: blur(16px);
-          border: 1.5px solid rgba(110, 198, 255, 0.3);
+          border: 1.5px solid rgba(110, 198, 255, 0.5);
           border-radius: 16px;
           overflow: visible;
           transition: background 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -216,17 +216,18 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
         
         @keyframes invitePulse {
           0%, 100% {
-            border-color: rgba(110, 198, 255, 0.35);
+            border-color: rgba(110, 198, 255, 0.5);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06),
                         0 0 0 1px rgba(0, 0, 0, 0.02),
                         0 0 0 0 rgba(110, 198, 255, 0);
           }
           50% {
-            border-color: rgba(74, 144, 226, 0.65);
+            border-color: rgba(74, 144, 226, 0.85);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06),
                         0 0 0 1px rgba(0, 0, 0, 0.02),
-                        0 0 32px 5px rgba(110, 198, 255, 0.3),
-                        0 0 50px 8px rgba(110, 198, 255, 0.12);
+                        0 0 40px 8px rgba(110, 198, 255, 0.5),
+                        0 0 60px 12px rgba(110, 198, 255, 0.25),
+                        0 0 80px 16px rgba(110, 198, 255, 0.1);
           }
         }
         
