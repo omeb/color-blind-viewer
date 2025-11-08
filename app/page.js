@@ -1406,7 +1406,7 @@ export default function Home() {
         
         .hero-subtitle {
           font-size: 1.25rem;
-          margin-bottom: var(--spacing-lg);
+          margin-bottom: var(--spacing-md);
           color: rgba(255, 255, 255, 1);
           line-height: 1.6;
         }
@@ -2173,7 +2173,7 @@ export default function Home() {
           padding: var(--spacing-sm) var(--spacing-md);
           display: flex;
           flex-direction: column;
-          gap: var(--spacing-sm);
+          gap: var(--spacing-xs);
         }
         
         .footer-main {
@@ -2264,8 +2264,26 @@ export default function Home() {
           flex-direction: column;
           align-items: center;
           gap: var(--spacing-xs);
-          padding-top: var(--spacing-sm);
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
+          padding-top: var(--spacing-md);
+          position: relative;
+        }
+        
+        .footer-bottom::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 60%;
+          height: 1px;
+          background: linear-gradient(
+            to right,
+            transparent,
+            rgba(255, 255, 255, 0.15) 20%,
+            rgba(255, 255, 255, 0.2) 50%,
+            rgba(255, 255, 255, 0.15) 80%,
+            transparent
+          );
         }
         
         .footer-credit {

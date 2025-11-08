@@ -1475,6 +1475,7 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           )}
         </div>
       )}
+      
       </div>
       
       <style jsx>{`
@@ -1484,24 +1485,31 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           flex: 1;
           display: flex;
           flex-direction: column;
+          overflow: visible;
         }
         
         
         .website-viewer-container {
           width: 100%;
           max-width: 100%;
-          flex: 1;
+          flex: 0 1 auto;
           min-height: 600px;
+          height: auto;
           background: rgba(255, 255, 255, 0.05);
           border-radius: var(--radius-md);
-          overflow: hidden;
+          overflow: visible;
           position: relative;
           transition: all var(--transition-normal);
           display: flex;
           flex-direction: column;
-          /* Prevent layout shifts */
-          contain: layout style;
           min-width: 0;
+        }
+        
+        .website-viewer-container .iframe-content {
+          overflow: hidden;
+          flex: 1 1 auto;
+          min-height: 600px;
+          max-height: 700px;
         }
         
         @media (max-width: 768px) {
@@ -2827,11 +2835,20 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
         
         .iframe-loading .loading-content {
           flex-direction: column;
+          justify-content: flex-start;
+          gap: var(--spacing-md);
+          padding-top: var(--spacing-lg);
+          padding-bottom: var(--spacing-lg);
+          overflow-y: auto;
+          max-height: 100%;
         }
         
         .iframe-loading .loading-text-wrapper {
           order: -1;
-          margin-bottom: var(--spacing-md);
+          margin-bottom: 0;
+          width: 100%;
+          max-width: 500px;
+          flex-shrink: 0;
         }
         
         /* Smooth transition between loading states */
@@ -2961,6 +2978,10 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           border-radius: 16px;
           backdrop-filter: blur(10px);
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+          margin: 0 auto;
+          flex-shrink: 0;
+          max-height: calc(100% - 120px);
+          overflow-y: auto;
         }
         
         .skeleton-header {
@@ -3109,7 +3130,8 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
         
         /* Progress Bar */
         .loading-progress {
-          width: 240px;
+          width: 100%;
+          max-width: 500px;
           height: 4px;
           background: rgba(200, 200, 220, 0.3);
           border-radius: 2px;
@@ -3317,13 +3339,11 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
         }
         
         .iframe-content {
-          flex: 1;
-          position: absolute;
-          top: 0;
-          left: 0;
+          flex: 1 1 auto;
+          position: relative;
           width: 100%;
-          height: 100%;
-          min-height: 0;
+          min-height: 600px;
+          max-height: 700px;
           overflow: hidden;
           display: flex;
           flex-direction: column;
@@ -3501,6 +3521,11 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
         @media (max-width: 768px) {
           .website-viewer-container {
             min-height: 500px;
+          }
+          
+          .website-viewer-container .iframe-content {
+            min-height: 500px;
+            max-height: 600px;
           }
           
           .error-state {

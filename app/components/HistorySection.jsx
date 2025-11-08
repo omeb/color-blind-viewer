@@ -97,7 +97,7 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl,
   
   // Render a single site item
   const renderSiteItem = (url, index, isExample = false) => (
-    <div key={`${url}-${index}`} className={`history-item ${!isExample ? 'history-item-removable' : ''}`}>
+    <div key={`${url}-${index}`} className={`history-item ${!isExample ? 'history-item-removable history-item-recent' : 'history-item-example'}`}>
       <button
         onClick={() => onSelectUrl(url)}
         className="history-button"
@@ -126,9 +126,9 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl,
     <div className="history-section">
       {/* Recent Sites Section */}
       {filteredHistory.length > 0 && (
-        <div className="history-group">
+        <div className="history-group history-group-recent">
           <div className="history-header">
-            <h3 className="history-title">Recent Sites</h3>
+            <h3 className="history-title history-title-recent">Recent Sites</h3>
             <button
               onClick={handleClearAll}
               className="history-clear-btn"
@@ -145,9 +145,9 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl,
       )}
       
       {/* Example Sites Section */}
-      <div className="history-group">
+      <div className="history-group history-group-example">
         <div className="history-header">
-          <h3 className="history-title">Example Sites</h3>
+          <h3 className="history-title history-title-example">Example Sites</h3>
         </div>
         <div className="history-list">
           {EXAMPLE_SITES.map((url, index) => renderSiteItem(url, index, true))}

@@ -198,18 +198,18 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
         .url-input-group {
           display: flex;
           align-items: stretch;
-          background: rgba(255, 255, 255, 0.98);
+          background: rgba(250, 250, 255, 0.92);
           backdrop-filter: blur(16px);
           -webkit-backdrop-filter: blur(16px);
           border: 1.5px solid rgba(110, 198, 255, 0.5);
-          border-radius: 16px;
+          border-radius: var(--radius-md);
           overflow: visible;
           transition: background 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
                       backdrop-filter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06),
                       0 0 0 1px rgba(0, 0, 0, 0.02);
-          min-height: 48px;
-          height: 48px; /* Default height for desktop */
+          min-height: 38px;
+          height: 38px; /* Default height for desktop */
           position: relative;
           animation: invitePulse 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
@@ -242,7 +242,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           opacity: 0;
           transition: opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
           pointer-events: none;
-          border-radius: 16px;
+          border-radius: var(--radius-md);
         }
         
         .url-input-group:hover:not(:focus-within) {
@@ -294,7 +294,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
         
         .url-input-group:focus-within .submit-button {
           /* Keep margin constant to prevent layout shift */
-          margin: -2px -3px -2px 0;
+          margin: 0 -3px 0 0;
           animation: buttonPulse 2s ease-in-out infinite;
         }
         
@@ -315,7 +315,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           flex: 1;
           border: none;
           background: transparent;
-          padding: 12px 24px;
+          padding: 8px 24px;
           font-size: 16px;
           font-weight: 500;
           color: #1A1A1A;
@@ -323,9 +323,9 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           min-width: 0;
           line-height: 1.5;
           letter-spacing: -0.01em;
-          border-radius: 16px 0 0 16px;
-          border-top-left-radius: 16px;
-          border-bottom-left-radius: 16px;
+          border-radius: var(--radius-md) 0 0 var(--radius-md);
+          border-top-left-radius: var(--radius-md);
+          border-bottom-left-radius: var(--radius-md);
           border-top-right-radius: 0;
           border-bottom-right-radius: 0;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
@@ -337,13 +337,13 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           transform: none;
           display: flex;
           align-items: center;
-          height: 48px;
+          height: 38px;
           /* Ensure standard cursor appearance - no animations */
           caret-color: #007AFF;
         }
         
         .url-input:focus {
-          padding: 12px 24px;
+          padding: 8px 24px;
           /* No transitions when focused to prevent cursor animation */
           transition: none;
           /* Standard caret color - no special styling */
@@ -385,7 +385,8 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           justify-content: center;
           gap: 10px;
           padding: 0 40px;
-          height: 48px;
+          height: 38px;
+          min-height: 38px;
           border: none;
           background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
           color: #FFFFFF;
@@ -396,9 +397,9 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
           white-space: nowrap;
           border-left: 1px solid rgba(255, 255, 255, 0.25);
-          border-radius: 0 16px 16px 0;
-          border-top-right-radius: 16px;
-          border-bottom-right-radius: 16px;
+          border-radius: 0 var(--radius-md) var(--radius-md) 0;
+          border-top-right-radius: var(--radius-md);
+          border-bottom-right-radius: var(--radius-md);
           border-top-left-radius: 0;
           border-bottom-left-radius: 0;
           position: relative;
@@ -406,8 +407,17 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           box-shadow: 0 4px 14px rgba(0, 122, 255, 0.25),
                       0 2px 6px rgba(0, 122, 255, 0.15),
                       inset 0 1px 0 rgba(255, 255, 255, 0.2);
-          margin: -2px -3px -2px 0;
-          overflow: hidden;
+          margin: 0 -3px 0 0;
+          overflow: visible;
+          box-sizing: border-box;
+          align-self: stretch;
+        }
+        
+        .submit-button:focus-visible {
+          outline: 2px solid rgba(0, 122, 255, 0.8);
+          outline-offset: -2px;
+          height: 38px;
+          min-height: 38px;
         }
         
         .submit-button:disabled {
@@ -425,7 +435,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           background: linear-gradient(135deg, #0084FF 0%, #0066FF 100%);
           opacity: 0;
           transition: opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-          border-radius: 0 16px 16px 0;
+          border-radius: 0 var(--radius-md) var(--radius-md) 0;
           z-index: 0;
         }
         
@@ -446,7 +456,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           );
           background-size: 200% 100%;
           background-position: 200% 0;
-          border-radius: 0 16px 16px 0;
+          border-radius: 0 var(--radius-md) var(--radius-md) 0;
           z-index: 0;
           opacity: 0;
           pointer-events: none;
@@ -640,7 +650,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
             flex-direction: column;
             min-height: auto;
             height: auto; /* Allow container to grow to fit button */
-            border-radius: 16px;
+            border-radius: var(--radius-md);
             overflow: visible; /* Ensure button is not clipped */
           }
           
@@ -650,23 +660,23 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           }
           
           .url-input {
-            padding: 12px 20px;
-            border-radius: 16px 16px 0 0;
-            border-top-left-radius: 16px;
-            border-top-right-radius: 16px;
+            padding: 8px 20px;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+            border-top-left-radius: var(--radius-md);
+            border-top-right-radius: var(--radius-md);
             border-bottom-left-radius: 0;
             border-bottom-right-radius: 0;
-            background: rgba(255, 255, 255, 0.98); /* Match container background to cover border-radius */
+            background: rgba(250, 250, 255, 0.92); /* Match container background to cover border-radius */
             transform: none !important;
             height: auto;
-            min-height: 48px; /* Ensure input has minimum height */
+            min-height: 38px; /* Ensure input has minimum height */
             /* No transitions on mobile to prevent cursor movement */
             transition: none !important;
           }
           
           .url-input:focus {
-            padding: 12px 20px;
-            background: rgba(255, 255, 255, 0.98); /* Maintain background on focus */
+            padding: 8px 20px;
+            background: rgba(250, 250, 255, 0.92); /* Maintain background on focus */
             border-top-left-radius: 16px;
             border-top-right-radius: 16px;
             border-bottom-left-radius: 0;
@@ -691,8 +701,8 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           .submit-button {
             width: 100%;
             padding: 0 32px;
-            height: 48px;
-            min-height: 48px; /* Ensure button has minimum height */
+            height: 38px;
+            min-height: 38px; /* Ensure button has minimum height */
             border-left: none;
             border-top: 1px solid rgba(0, 0, 0, 0.06);
             border-radius: 0 0 15px 15px;
@@ -830,7 +840,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
         
         :global([data-theme="dark"]) .url-input-group:focus-within .submit-button {
           /* Keep margin constant to prevent layout shift */
-          margin: -2px -3px -2px 0;
+          margin: 0 -3px 0 0;
           animation: buttonPulseDark 2s ease-in-out infinite;
         }
         

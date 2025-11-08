@@ -96,7 +96,9 @@ body {
     sans-serif;
   line-height: 1.6;
   color: var(--text-primary);
-  background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+  background: 
+    linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
   background-attachment: fixed;
   min-height: 100vh;
 }
@@ -123,7 +125,7 @@ body {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   box-shadow: 0 8px 32px var(--glass-shadow);
   padding: var(--spacing-lg);
 }
@@ -434,6 +436,11 @@ p {
   margin-bottom: 0;
 }
 
+/* Add extra spacing between Recent and Example sections */
+.history-group-recent {
+  margin-bottom: calc(var(--spacing-lg) + var(--spacing-md));
+}
+
 .history-header {
   margin-bottom: 12px;
   display: flex;
@@ -443,9 +450,9 @@ p {
 }
 
 .history-title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 1);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
   margin: 0;
   text-align: left;
   letter-spacing: -0.02em;
@@ -495,18 +502,34 @@ p {
   position: relative;
   display: inline-flex;
   align-items: center;
-  background: rgba(168, 153, 212, 0.4) !important;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
   border-radius: 999px !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: visible;
 }
 
-.history-item:hover {
+/* Recent sites - slightly darker/more muted */
+.history-item-recent {
+  background: rgba(168, 153, 212, 0.35) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+.history-item-recent:hover {
   background: rgba(168, 153, 212, 0.5) !important;
   border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-1px);
+}
+
+/* Example sites - slightly lighter/more vibrant */
+.history-item-example {
+  background: rgba(168, 153, 212, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+}
+
+.history-item-example:hover {
+  background: rgba(168, 153, 212, 0.6) !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
   transform: translateY(-1px);
 }
 
@@ -541,9 +564,7 @@ p {
 }
 
 .history-button:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.8);
-  outline-offset: 2px;
-  border-radius: 999px;
+  outline: none;
 }
 
 .history-icon {
