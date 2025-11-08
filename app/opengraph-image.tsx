@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'Colorblind Viewer - Accessibility Testing Tool'
+export const alt = 'Accessibility Viewer - Accessibility Testing Tool'
 export const size = {
   width: 1200,
   height: 630,
@@ -45,7 +45,7 @@ export default async function Image() {
               letterSpacing: '-0.02em',
             }}
           >
-            Colorblind Viewer
+            Accessibility Viewer
           </div>
           <div
             style={{

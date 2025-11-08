@@ -1,15 +1,15 @@
 import './globals.css'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://color-blind-viewer.vercel.app'
-const siteName = 'Colorblind Viewer'
+const siteName = 'Accessibility Viewer'
 const siteDescription = 'Experience how websites appear to people with vision impairments. Test your website\'s accessibility with colorblindness, cataracts, glaucoma, and other vision condition simulators. Free tool for designers and developers.'
-const siteImage = `${siteUrl}/opengraph-image`
+const siteImage = `${siteUrl}/ogimage.png`
 
 export const metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'Colorblind Viewer - See the Web Through Different Eyes',
-    template: '%s | Colorblind Viewer'
+    default: 'Accessibility Viewer - See the World Through Different Eyes',
+    template: '%s | Accessibility Viewer'
   },
   description: siteDescription,
   keywords: [
@@ -53,20 +53,20 @@ export const metadata = {
     locale: 'en_US',
     url: siteUrl,
     siteName: siteName,
-    title: 'Colorblind Viewer - See the Web Through Different Eyes',
+    title: 'Accessibility Viewer - See the World Through Different Eyes',
     description: siteDescription,
     images: [
       {
         url: siteImage,
         width: 1200,
         height: 630,
-        alt: 'Colorblind Viewer - Accessibility Testing Tool',
+        alt: 'Accessibility Viewer - Accessibility Testing Tool',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Colorblind Viewer - See the Web Through Different Eyes',
+    title: 'Accessibility Viewer - See the World Through Different Eyes',
     description: siteDescription,
     images: [siteImage],
     creator: '@wix',
