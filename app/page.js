@@ -718,20 +718,26 @@ export default function Home() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
-                          e.preventDefault()
+                          // Only call preventDefault if event is cancelable (not passive)
+                          if (e.cancelable) {
+                            e.preventDefault()
+                          }
                           handleCloseFilterPopover()
                         }}
                         onMouseDown={(e) => {
                           e.stopPropagation()
-                          e.preventDefault()
+                          // Only call preventDefault if event is cancelable (not passive)
+                          if (e.cancelable) {
+                            e.preventDefault()
+                          }
                         }}
                         onTouchStart={(e) => {
                           e.stopPropagation()
-                          e.preventDefault()
+                          // Don't call preventDefault() - passive listeners don't allow it
                         }}
                         onTouchEnd={(e) => {
                           e.stopPropagation()
-                          e.preventDefault()
+                          // Don't call preventDefault() - passive listeners don't allow it
                         }}
                         className="filter-picker-close"
                         aria-label="Close"
@@ -744,7 +750,10 @@ export default function Home() {
                         ref={activeFilter === 'none' ? activeFilterItemRef : null}
                         onClick={(e) => {
                           e.stopPropagation()
-                          e.preventDefault()
+                          // Only call preventDefault if event is cancelable (not passive)
+                          if (e.cancelable) {
+                            e.preventDefault()
+                          }
                           handleFilterChange('none')
                           handleCloseFilterPopover()
                         }}
@@ -764,7 +773,10 @@ export default function Home() {
                           ref={activeFilter === filter.id ? activeFilterItemRef : null}
                           onClick={(e) => {
                             e.stopPropagation()
-                            e.preventDefault()
+                            // Only call preventDefault if event is cancelable (not passive)
+                            if (e.cancelable) {
+                              e.preventDefault()
+                            }
                             handleFilterChange(filter.id)
                             handleCloseFilterPopover()
                           }}
@@ -785,7 +797,10 @@ export default function Home() {
                           ref={activeFilter === filter.id ? activeFilterItemRef : null}
                           onClick={(e) => {
                             e.stopPropagation()
-                            e.preventDefault()
+                            // Only call preventDefault if event is cancelable (not passive)
+                            if (e.cancelable) {
+                              e.preventDefault()
+                            }
                             handleFilterChange(filter.id)
                             handleCloseFilterPopover()
                           }}
