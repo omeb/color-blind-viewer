@@ -559,6 +559,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
             flex-direction: column;
             min-height: auto;
             border-radius: 16px;
+            overflow: visible; /* Ensure button is not clipped */
           }
           
           .url-input-group:hover,
@@ -604,7 +605,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
             box-shadow: 0 4px 14px rgba(0, 122, 255, 0.25),
                         0 2px 6px rgba(0, 122, 255, 0.15),
                         inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            margin: 0 -2px -2px -2px;
+            margin: 0; /* Remove negative margins to prevent clipping */
           }
           
           .submit-button::before {
