@@ -324,6 +324,10 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           line-height: 1.5;
           letter-spacing: -0.01em;
           border-radius: 16px 0 0 16px;
+          border-top-left-radius: 16px;
+          border-bottom-left-radius: 16px;
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
           /* Only transition non-layout properties to prevent cursor jumping */
           transition: color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -387,6 +391,10 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           white-space: nowrap;
           border-left: 1px solid rgba(255, 255, 255, 0.25);
           border-radius: 0 16px 16px 0;
+          border-top-right-radius: 16px;
+          border-bottom-right-radius: 16px;
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
           position: relative;
           font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Roboto', sans-serif;
           box-shadow: 0 4px 14px rgba(0, 122, 255, 0.25),
