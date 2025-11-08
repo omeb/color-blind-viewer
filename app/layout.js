@@ -3,8 +3,8 @@ import './globals.css'
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://color-blind-viewer.vercel.app'
 const siteName = 'Accessibility Viewer'
 const siteDescription = 'Experience how websites appear to people with vision impairments. Test your website\'s accessibility with colorblindness, cataracts, glaucoma, and other vision condition simulators. Free tool for designers and developers.'
-// Use absolute URL for OG image - Next.js will serve /og-image.png from public folder
-const siteImage = siteUrl.endsWith('/') ? `${siteUrl}og-image.png` : `${siteUrl}/og-image.png`
+// Use Netlify URL for OG image - it's reliably hosted there
+const siteImage = 'https://color-blind-viewer.netlify.app/og-image.png'
 
 export const metadata = {
   metadataBase: new URL(siteUrl),
