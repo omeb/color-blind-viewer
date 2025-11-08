@@ -1,10 +1,10 @@
 import './globals.css'
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://color-blind-viewer.vercel.app'
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://color-blind-viewer.netlify.app'
 const siteName = 'Accessibility Viewer'
 const siteDescription = 'Experience how websites appear to people with vision impairments. Test your website\'s accessibility with colorblindness, cataracts, glaucoma, and other vision condition simulators. Free tool for designers and developers.'
-// Use static og-image.png file - Facebook/WhatsApp prefer static files with .png extension
-const siteImage = `${siteUrl}/og-image.png`
+// Use dynamic opengraph-image route - generates 1200x630 image (required size for Facebook/WhatsApp)
+const siteImage = `${siteUrl}/opengraph-image`
 
 export const metadata = {
   metadataBase: new URL(siteUrl),
@@ -59,8 +59,8 @@ export const metadata = {
     images: [
       {
         url: siteImage,
-        width: 732,
-        height: 632,
+        width: 1200,
+        height: 630,
         alt: 'Accessibility Viewer - Accessibility Testing Tool',
         type: 'image/png',
         secureUrl: siteImage,
@@ -125,14 +125,22 @@ export default function RootLayout({ children }) {
           }}
         />
         {/* Explicit OG meta tags for better mobile compatibility (Facebook/WhatsApp) */}
+        {/* Essential Open Graph tags - must be in initial HTML, not injected by JS */}
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Accessibility Viewer - See the World Through Different Eyes" />
+        <meta property="og:description" content={siteDescription} />
         <meta property="og:url" content={siteUrl} />
         <meta property="og:image" content={siteImage} />
         <meta property="og:image:url" content={siteImage} />
         <meta property="og:image:secure_url" content={siteImage} />
-        <meta property="og:image:width" content="732" />
-        <meta property="og:image:height" content="632" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta property="og:image:type" content="image/png" />
         <meta property="og:image:alt" content="Accessibility Viewer - Accessibility Testing Tool" />
+        {/* Twitter Card (helps WhatsApp too) */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Accessibility Viewer - See the World Through Different Eyes" />
+        <meta name="twitter:description" content={siteDescription} />
         <meta name="twitter:image" content={siteImage} />
         <meta name="twitter:image:src" content={siteImage} />
         {/* Structured Data for SEO */}

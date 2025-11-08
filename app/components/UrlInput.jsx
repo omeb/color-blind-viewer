@@ -208,19 +208,21 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
                       0 0 0 1px rgba(0, 0, 0, 0.02);
           min-height: 64px;
           position: relative;
-          animation: subtlePulse 3s ease-in-out infinite;
+          animation: invitePulse 2.5s ease-in-out infinite;
         }
         
-        @keyframes subtlePulse {
+        @keyframes invitePulse {
           0%, 100% {
+            border-color: rgba(110, 198, 255, 0.25);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06),
                         0 0 0 1px rgba(0, 0, 0, 0.02),
                         0 0 0 0 rgba(110, 198, 255, 0);
           }
           50% {
+            border-color: rgba(110, 198, 255, 0.4);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06),
                         0 0 0 1px rgba(0, 0, 0, 0.02),
-                        0 0 20px 2px rgba(110, 198, 255, 0.1);
+                        0 0 25px 3px rgba(110, 198, 255, 0.15);
           }
         }
         
@@ -238,13 +240,12 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           border-radius: 16px;
         }
         
-        .url-input-group:hover {
+        .url-input-group:hover:not(:focus-within) {
           border-color: rgba(110, 198, 255, 0.5);
           box-shadow: 0 4px 20px rgba(110, 198, 255, 0.2),
                       0 2px 10px rgba(0, 0, 0, 0.1),
                       0 0 0 1px rgba(110, 198, 255, 0.3),
                       0 0 30px 4px rgba(110, 198, 255, 0.15);
-          transform: translateY(-2px) scale(1.002);
           animation: none;
         }
         
@@ -259,7 +260,6 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
                       0 12px 32px rgba(110, 198, 255, 0.3),
                       0 6px 16px rgba(0, 0, 0, 0.15),
                       0 0 40px 8px rgba(110, 198, 255, 0.2);
-          transform: translateY(-3px) scale(1.005);
           animation: focusGlow 2s ease-in-out infinite;
         }
         
@@ -520,9 +520,27 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
             border-radius: 16px;
           }
           
+          .url-input-group:hover,
+          .url-input-group:focus-within {
+            transform: none !important;
+          }
+          
           .url-input {
             padding: 16px 20px;
             border-radius: 16px 16px 0 0;
+            transform: none !important;
+          }
+          
+          .url-input:focus {
+            transform: none !important;
+          }
+          
+          .url-input::placeholder {
+            transform: none !important;
+          }
+          
+          .url-input:focus::placeholder {
+            transform: none !important;
           }
           
           .submit-button {
@@ -577,19 +595,21 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
                       0 0 0 0 rgba(110, 198, 255, 0);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          animation: subtlePulseDark 3s ease-in-out infinite;
+          animation: invitePulseDark 2.5s ease-in-out infinite;
         }
         
-        @keyframes subtlePulseDark {
+        @keyframes invitePulseDark {
           0%, 100% {
+            border-color: rgba(110, 198, 255, 0.35);
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4),
                         0 0 0 1px rgba(255, 255, 255, 0.08),
                         0 0 0 0 rgba(110, 198, 255, 0);
           }
           50% {
+            border-color: rgba(110, 198, 255, 0.5);
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4),
                         0 0 0 1px rgba(255, 255, 255, 0.08),
-                        0 0 25px 3px rgba(110, 198, 255, 0.15);
+                        0 0 30px 4px rgba(110, 198, 255, 0.2);
           }
         }
         
@@ -597,13 +617,12 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           background: linear-gradient(135deg, rgba(110, 198, 255, 0.08) 0%, rgba(74, 144, 226, 0.08) 100%);
         }
         
-        :global([data-theme="dark"]) .url-input-group:hover {
+        :global([data-theme="dark"]) .url-input-group:hover:not(:focus-within) {
           border-color: rgba(110, 198, 255, 0.6);
           box-shadow: 0 4px 24px rgba(110, 198, 255, 0.3),
                       0 2px 12px rgba(0, 0, 0, 0.5),
                       0 0 0 1px rgba(110, 198, 255, 0.4),
                       0 0 35px 5px rgba(110, 198, 255, 0.2);
-          transform: translateY(-2px) scale(1.002);
           animation: none;
         }
         
@@ -614,7 +633,6 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
                       0 12px 36px rgba(110, 198, 255, 0.4),
                       0 6px 18px rgba(0, 0, 0, 0.6),
                       0 0 45px 10px rgba(110, 198, 255, 0.3);
-          transform: translateY(-3px) scale(1.005);
           animation: focusGlowDark 2s ease-in-out infinite;
         }
         

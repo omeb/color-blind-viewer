@@ -113,7 +113,7 @@ npm run test:e2e   # E2E tests
 ### Why Next.js 14?
 - ✅ Single deployment (frontend + API)
 - ✅ Built-in API routes
-- ✅ Easy Vercel deployment
+- ✅ Easy Netlify deployment
 - ✅ Modern React with Server Components
 - ✅ Excellent performance
 
@@ -166,9 +166,9 @@ npm run test:e2e   # E2E tests
 **Repository**: https://github.com/omeb/color-blind-viewer
 
 **Next Steps**:
-1. Go to [vercel.com](https://vercel.com)
+1. Go to [netlify.com](https://netlify.com)
 2. Import GitHub repository
-3. Click Deploy
+3. Configure build settings and deploy
 4. Done! (Takes ~2 minutes)
 
 See [docs/DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
@@ -235,5 +235,5 @@ Ideas for v2:
 
 **Status**: ✅ Complete and ready to deploy!
 
-**Next Action**: Deploy to Vercel (see DEPLOYMENT.md)
+**Next Action**: Deploy to Netlify (see DEPLOYMENT.md)
 

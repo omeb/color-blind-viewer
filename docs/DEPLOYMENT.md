@@ -2,36 +2,39 @@
 
 This guide will help you deploy the Colorblind Viewer app to production.
 
-## Quick Deploy to Vercel (Recommended - 2 minutes)
+## Quick Deploy to Netlify (Recommended - 2 minutes)
 
-Vercel is the easiest and recommended way to deploy this Next.js app.
+Netlify is the easiest and recommended way to deploy this Next.js app.
 
 ### Option 1: Deploy via GitHub (Automatic Deployments)
 
 1. **Push to GitHub** (already done! ✓)
    - Your repo is at: https://github.com/omeb/color-blind-viewer
 
-2. **Connect to Vercel**
-   - Go to [vercel.com](https://vercel.com)
+2. **Connect to Netlify**
+   - Go to [netlify.com](https://netlify.com)
    - Sign in with GitHub
-   - Click "Add New Project"
-   - Import `omeb/color-blind-viewer`
-   - Click "Deploy"
+   - Click "Add new site" → "Import an existing project"
+   - Select `omeb/color-blind-viewer`
+   - Configure build settings:
+     - Build command: `npm run build`
+     - Publish directory: `.next`
+   - Click "Deploy site"
 
 3. **Done!**
    - Your app will be live in ~2 minutes
-   - You'll get a URL like: `color-blind-viewer.vercel.app`
+   - You'll get a URL like: `color-blind-viewer.netlify.app`
    - Every push to `main` will auto-deploy
 
 ### Option 2: Deploy via CLI
 
 ```bash
-# Install Vercel CLI (one time)
-npm install -g vercel
+# Install Netlify CLI (one time)
+npm install -g netlify-cli
 
 # Deploy
 cd /path/to/colorblind
-vercel --prod
+netlify deploy --prod
 ```
 
 Follow the prompts, and you'll get a live URL instantly.
@@ -40,7 +43,7 @@ Follow the prompts, and you'll get a live URL instantly.
 
 ### Custom Domain
 
-1. In Vercel Dashboard → Your Project → Settings → Domains
+1. In Netlify Dashboard → Your Site → Domain settings
 2. Add your custom domain
 3. Follow DNS instructions
 
@@ -50,15 +53,12 @@ This app doesn't require any environment variables! Everything works out of the 
 
 ## Alternative Deployment Options
 
-### Netlify
+### Vercel
 
-1. Go to [netlify.com](https://netlify.com)
-2. Click "Add new site" → "Import an existing project"
-3. Connect to GitHub and select your repo
-4. Build settings:
-   - Build command: `npm run build`
-   - Publish directory: `.next`
-5. Deploy
+1. Go to [vercel.com](https://vercel.com)
+2. Click "New Project"
+3. Import your GitHub repository
+4. Click "Deploy"
 
 ### Docker
 
@@ -129,8 +129,8 @@ npm start
 
 ### Check Build Logs
 
-- **Vercel**: Dashboard → Deployments → Click deployment → View logs
 - **Netlify**: Site Dashboard → Deploys → Click deploy → View logs
+- **Vercel**: Dashboard → Deployments → Click deployment → View logs
 
 ### Common Issues
 
@@ -145,9 +145,9 @@ npm start
 
 ## Performance Optimization
 
-### Vercel Edge Functions
+### Netlify Functions
 
-Your API routes automatically use Vercel Edge Functions for global performance.
+Your API routes run as Netlify Functions for serverless performance.
 
 ### Caching
 
@@ -166,16 +166,16 @@ headers: {
 - URL validation to block localhost/private IPs
 - CORS headers properly configured
 - No sensitive data stored
-- HTTPS enforced by default on Vercel
+- HTTPS enforced by default on Netlify
 
 ⚠️ **Consider Adding** (for production at scale):
-- Rate limiting (use Vercel's rate limit API)
-- Request logging (use Vercel Analytics)
+- Rate limiting (use Netlify's rate limiting)
+- Request logging (use Netlify Analytics)
 - Error tracking (Sentry, LogRocket)
 
 ## Cost Estimation
 
-### Vercel Free Tier Includes:
+### Netlify Free Tier Includes:
 - Unlimited deployments
 - Automatic HTTPS
 - 100GB bandwidth/month
@@ -187,7 +187,7 @@ headers: {
 ### Scaling
 
 If you need to scale beyond free tier:
-- Vercel Pro: $20/month (1TB bandwidth)
+- Netlify Pro: $19/month (1TB bandwidth)
 - Add rate limiting to prevent abuse
 - Consider CDN for static assets
 
@@ -205,7 +205,7 @@ If you need to scale beyond free tier:
 If you encounter issues:
 1. Check build logs
 2. Test locally with `npm run build && npm start`
-3. Review Vercel/Netlify documentation
+3. Review Netlify documentation
 4. Open a GitHub issue
 
 ## Next Steps

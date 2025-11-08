@@ -96,30 +96,33 @@ npm start
 
 ## 🚀 Deployment
 
-### Deploy to Vercel (Recommended)
+### Deploy to Netlify (Recommended)
 
 1. Push your code to GitHub
-2. Go to [vercel.com](https://vercel.com)
-3. Click "New Project"
-4. Import your GitHub repository
-5. Click "Deploy"
+2. Go to [netlify.com](https://netlify.com)
+3. Click "Add new site" → "Import an existing project"
+4. Connect your GitHub repository
+5. Configure build settings:
+   - Build command: `npm run build`
+   - Publish directory: `.next`
+6. Click "Deploy site"
 
-Done! Vercel will auto-deploy on every push to main.
+Done! Netlify will auto-deploy on every push to main.
 
 ### Deploy via CLI
 
 ```bash
-# Install Vercel CLI
-npm install -g vercel
+# Install Netlify CLI
+npm install -g netlify-cli
 
 # Deploy
-vercel --prod
+netlify deploy --prod
 ```
 
 ### Other Platforms
 
 This is a standard Next.js app and can be deployed to:
-- Netlify
+- Vercel
 - AWS Amplify
 - Google Cloud Run
 - Docker container
@@ -154,7 +157,7 @@ This is a standard Next.js app and can be deployed to:
 - **UI Library**: React 18
 - **Styling**: CSS-in-JS (styled-jsx)
 - **Testing**: Jest + React Testing Library + Playwright
-- **Deployment**: Vercel
+- **Deployment**: Netlify
 
 ## 🎨 Design Philosophy
 

@@ -11,7 +11,7 @@ This document helps AI assistants understand the codebase structure, design deci
 ### Why Next.js?
 - **Single Deployment**: Frontend + backend API in one codebase
 - **API Routes**: Built-in serverless functions for the proxy
-- **Easy Deployment**: Vercel one-click deployment
+- **Easy Deployment**: Netlify one-click deployment
 - **Modern React**: App Router with React Server Components
 
 ### Why Not Separate Backend?
@@ -136,10 +136,11 @@ Maintain WCAG AA contrast ratios
 
 ## Deployment
 
-### Vercel (Recommended)
+### Netlify (Recommended)
 1. Push to GitHub
-2. Import repo in Vercel
-3. Auto-deploys on every commit
+2. Import repo in Netlify
+3. Configure build settings (build command: `npm run build`, publish directory: `.next`)
+4. Auto-deploys on every commit
 
 ### Environment Variables
 None required for basic functionality
