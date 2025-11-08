@@ -927,28 +927,72 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
               None
             </button>
             {getCategorizedFilters().colorblind.map((filter) => (
-              <button
-                key={filter.id}
-                onClick={() => {
-                  onFilterChange && onFilterChange(filter.id)
-                }}
-                className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
-                title="Click to apply filter"
-              >
-                {filter.name}
-              </button>
+              <div key={filter.id} style={{ position: 'relative', display: 'inline-flex' }}>
+                <button
+                  onClick={() => {
+                    onFilterChange && onFilterChange(filter.id)
+                  }}
+                  className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
+                  title="Click to apply filter"
+                >
+                  {filter.name}
+                </button>
+                {onFilterInfo && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      e.preventDefault()
+                      const rect = e.currentTarget.getBoundingClientRect()
+                      onFilterInfo(filter.id, {
+                        x: rect.right + 12,
+                        y: rect.top + rect.height / 2
+                      })
+                    }}
+                    className="filter-info-icon-btn"
+                    aria-label={`Learn more about ${filter.name}`}
+                    title="Learn more"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                      <path d="M7 5V7M7 9H7.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+                )}
+              </div>
             ))}
             {getCategorizedFilters().other.map((filter) => (
-              <button
-                key={filter.id}
-                onClick={() => {
-                  onFilterChange && onFilterChange(filter.id)
-                }}
-                className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
-                title="Click to apply filter"
-              >
-                {filter.name}
-              </button>
+              <div key={filter.id} style={{ position: 'relative', display: 'inline-flex' }}>
+                <button
+                  onClick={() => {
+                    onFilterChange && onFilterChange(filter.id)
+                  }}
+                  className={`quick-filter-btn ${activeFilter === filter.id ? 'active' : ''}`}
+                  title="Click to apply filter"
+                >
+                  {filter.name}
+                </button>
+                {onFilterInfo && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      e.preventDefault()
+                      const rect = e.currentTarget.getBoundingClientRect()
+                      onFilterInfo(filter.id, {
+                        x: rect.right + 12,
+                        y: rect.top + rect.height / 2
+                      })
+                    }}
+                    className="filter-info-icon-btn"
+                    aria-label={`Learn more about ${filter.name}`}
+                    title="Learn more"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                      <path d="M7 5V7M7 9H7.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+                )}
+              </div>
             ))}
           </div>
           {/* Scroll hint - fade gradient */}
@@ -1657,6 +1701,16 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           position: relative;
         }
         
+        div:has(.filter-info-icon-btn) .quick-filter-btn {
+          padding-right: 28px;
+        }
+        
+        @media (max-width: 768px) {
+          div:has(.filter-info-icon-btn) .quick-filter-btn {
+            padding-right: 24px;
+          }
+        }
+        
         .quick-filter-btn:hover {
           background: rgba(255, 255, 255, 0.15);
           border-color: rgba(255, 255, 255, 0.3);
@@ -1675,9 +1729,12 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
         }
         
         .filter-info-icon-btn {
-          flex-shrink: 0;
-          width: 28px;
-          height: 28px;
+          position: absolute;
+          top: 50%;
+          right: 4px;
+          transform: translateY(-50%);
+          width: 20px;
+          height: 20px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1688,22 +1745,27 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           border-radius: 50%;
           color: rgba(110, 198, 255, 1);
           cursor: pointer;
-          font-size: 0.85rem;
-          font-weight: 600;
           transition: all 0.2s ease;
           padding: 0;
           outline-offset: 2px;
+          z-index: 10;
+        }
+        
+        .filter-info-icon-btn svg {
+          width: 12px;
+          height: 12px;
+          display: block;
         }
         
         .filter-info-icon-btn:hover {
           background: rgba(110, 198, 255, 0.3);
           border-color: rgba(110, 198, 255, 0.6);
-          transform: scale(1.1);
+          transform: translateY(-50%) scale(1.1);
           box-shadow: 0 2px 8px rgba(110, 198, 255, 0.4);
         }
         
         .filter-info-icon-btn:active {
-          transform: scale(0.95);
+          transform: translateY(-50%) scale(0.95);
         }
         
         @media (max-width: 768px) {
@@ -1717,9 +1779,14 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
           }
           
           .filter-info-icon-btn {
-            width: 24px;
-            height: 24px;
-            font-size: 0.75rem;
+            width: 18px;
+            height: 18px;
+            right: 3px;
+          }
+          
+          .filter-info-icon-btn svg {
+            width: 10px;
+            height: 10px;
           }
         }
         
