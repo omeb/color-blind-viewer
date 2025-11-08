@@ -151,6 +151,10 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
             className="url-input"
             aria-invalid={error ? 'true' : 'false'}
             aria-describedby={error ? 'url-error' : undefined}
+            autoCapitalize="off"
+            autoCorrect="off"
+            autoComplete="off"
+            spellCheck="false"
           />
           <button
             type="submit"
@@ -327,10 +331,6 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           color: rgba(107, 114, 128, 0.5);
           transform: translateX(4px);
           opacity: 0.8;
-        }
-        
-        .url-input:focus {
-          transform: scale(1.01);
         }
         
         .url-input:disabled {
