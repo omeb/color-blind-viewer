@@ -9,7 +9,7 @@ const EXAMPLE_SITES = [
   'https://rive.app',
   'https://pitch.com',
   'https://superlist.com',
-  'https://nifti.com',
+  'https://news.ycombinator.com',
   'https://www.wix.com'
 ]
 
@@ -29,23 +29,58 @@ const EXAMPLE_SITES = [
  */
 export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl }) {
   
+  // Capture initial history on mount and don't update until component remounts
+  const [frozenHistory] = React.useState(() => {
+    if (!history) return []
+    if (!Array.isArray(history)) return []
+    return history.filter(url => url && typeof url === 'string' && url.trim().length > 0)
+  })
+  
+  // Track locally removed items (for UI updates without prop changes)
+  const [removedItems, setRemovedItems] = React.useState([])
+  
   // Ensure history is an array
   // Handle cases where history might be null, undefined, or not an array
   const historyArray = React.useMemo(() => {
-    if (!history) return []
-    if (!Array.isArray(history)) return []
-    // Filter out any invalid entries
-    return history.filter(url => url && typeof url === 'string' && url.trim().length > 0)
-  }, [history])
+    return frozenHistory.filter(url => !removedItems.includes(url))
+  }, [frozenHistory, removedItems])
   
   // Filter out example sites from history to avoid duplicates
   const filteredHistory = React.useMemo(() => {
     return historyArray.filter(url => !EXAMPLE_SITES.includes(url))
   }, [historyArray])
   
+  // Handle removal with local state update
+  const handleRemove = (url) => {
+    setRemovedItems(prev => prev.includes(url) ? prev : [...prev, url])
+    if (onRemoveUrl) {
+      onRemoveUrl(url)
+    }
+  }
+  
+  // Handle clear all recent sites
+  const handleClearAll = () => {
+    // Add all items to removedItems at once
+    setRemovedItems(prev => {
+      const newSet = new Set([...prev, ...filteredHistory])
+      return Array.from(newSet)
+    })
+    // Call onRemoveUrl for each item
+    filteredHistory.forEach(url => {
+      if (onRemoveUrl) {
+        onRemoveUrl(url)
+      }
+    })
+  }
+  
   // Extract domain name from URL for display
   const getDisplayUrl = (url) => {
     try {
+      // Special case for Hacker News
+      if (url.includes('news.ycombinator.com')) {
+        return 'Hacker News'
+      }
+      
       // Remove protocol
       let domain = url.replace(/^https?:\/\//, '')
       // Remove www. prefix
@@ -73,7 +108,7 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
         <button
           onClick={(e) => {
             e.stopPropagation()
-            onRemoveUrl(url)
+            handleRemove(url)
           }}
           className="history-remove"
           aria-label={`Remove ${url} from history`}
@@ -92,6 +127,14 @@ export default function HistorySection({ history = [], onSelectUrl, onRemoveUrl 
         <div className="history-group">
           <div className="history-header">
             <h3 className="history-title">Recent Sites</h3>
+            <button
+              onClick={handleClearAll}
+              className="history-clear-btn"
+              aria-label="Clear all recent sites"
+              title="Clear all"
+            >
+              Clear
+            </button>
           </div>
           <div className="history-list">
             {filteredHistory.map((url, index) => renderSiteItem(url, index, false))}

@@ -436,16 +436,53 @@ p {
 
 .history-header {
   margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
 }
 
 .history-title {
   font-size: 0.95rem;
   font-weight: 700;
   color: rgba(255, 255, 255, 1);
-  margin: 0 0 12px 0;
+  margin: 0;
   text-align: left;
   letter-spacing: -0.02em;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.history-clear-btn {
+  display: none;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.history-clear-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 1);
+}
+
+.history-clear-btn:active {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(0.98);
+}
+
+.history-clear-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 2px;
 }
 
 .history-list {
@@ -571,6 +608,12 @@ p {
 @media (max-width: 768px) {
   .history-url {
     max-width: 140px;
+  }
+  
+  .history-clear-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 

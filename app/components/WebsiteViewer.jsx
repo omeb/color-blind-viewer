@@ -10,7 +10,7 @@ const EXAMPLE_SITES = [
   'https://rive.app',
   'https://pitch.com',
   'https://superlist.com',
-  'https://nifti.com',
+  'https://news.ycombinator.com',
   'https://www.wix.com'
 ]
 
@@ -137,6 +137,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
   const handleRandomSite = () => {
     // Hide hint when user clicks the button and mark as seen
     setShowRandomHint(false)
+    setShowHoverHint(false)
     hasSeenRandomHintRef.current = true
     if (typeof window !== 'undefined') {
       localStorage.setItem('colorblind-random-hint-seen', 'true')
@@ -248,46 +249,93 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
     
     if (!originalIframe || !filteredIframe) return
     
-    const handleOriginalScroll = () => {
-      if (isScrollingRef.current) return
-      isScrollingRef.current = true
+    let rafId = null
+    let lastOriginalScrollTop = 0
+    let lastOriginalScrollLeft = 0
+    let lastFilteredScrollTop = 0
+    let lastFilteredScrollLeft = 0
+    
+    const syncScroll = (sourceDoc, targetDoc, isFromOriginal) => {
+      if (isScrollingRef.current || !sourceDoc || !targetDoc) return
       
       try {
-        const originalDoc = originalIframe.contentDocument || originalIframe.contentWindow.document
-        const filteredDoc = filteredIframe.contentDocument || filteredIframe.contentWindow.document
+        const sourceScrollTop = sourceDoc.documentElement.scrollTop || sourceDoc.body.scrollTop || 0
+        const sourceScrollLeft = sourceDoc.documentElement.scrollLeft || sourceDoc.body.scrollLeft || 0
         
-        if (originalDoc && filteredDoc) {
-          filteredDoc.documentElement.scrollTop = originalDoc.documentElement.scrollTop
-          filteredDoc.documentElement.scrollLeft = originalDoc.documentElement.scrollLeft
+        // Track last scroll positions separately for each iframe
+        const lastScrollTop = isFromOriginal ? lastOriginalScrollTop : lastFilteredScrollTop
+        const lastScrollLeft = isFromOriginal ? lastOriginalScrollLeft : lastFilteredScrollLeft
+        
+        // Only sync if scroll position actually changed
+        if (Math.abs(sourceScrollTop - lastScrollTop) > 0.5 || Math.abs(sourceScrollLeft - lastScrollLeft) > 0.5) {
+          isScrollingRef.current = true
+          
+          // Use requestAnimationFrame for smooth synchronization
+          if (rafId) {
+            cancelAnimationFrame(rafId)
+          }
+          
+          rafId = requestAnimationFrame(() => {
+            try {
+              targetDoc.documentElement.scrollTop = sourceScrollTop
+              targetDoc.documentElement.scrollLeft = sourceScrollLeft
+              
+              // Also sync body scroll if documentElement doesn't work
+              if (targetDoc.body) {
+                targetDoc.body.scrollTop = sourceScrollTop
+                targetDoc.body.scrollLeft = sourceScrollLeft
+              }
+              
+              // Update the appropriate last scroll position
+              if (isFromOriginal) {
+                lastOriginalScrollTop = sourceScrollTop
+                lastOriginalScrollLeft = sourceScrollLeft
+                // Also update filtered's last position since we just synced it
+                lastFilteredScrollTop = sourceScrollTop
+                lastFilteredScrollLeft = sourceScrollLeft
+              } else {
+                lastFilteredScrollTop = sourceScrollTop
+                lastFilteredScrollLeft = sourceScrollLeft
+                // Also update original's last position since we just synced it
+                lastOriginalScrollTop = sourceScrollTop
+                lastOriginalScrollLeft = sourceScrollLeft
+              }
+            } catch (e) {
+              // Cross-origin restrictions may prevent access
+            }
+            
+            setTimeout(() => {
+              isScrollingRef.current = false
+            }, 10)
+          })
         }
       } catch (e) {
         // Cross-origin restrictions may prevent access
       }
-      
-      setTimeout(() => {
-        isScrollingRef.current = false
-      }, 10)
+    }
+    
+    const handleOriginalScroll = () => {
+      try {
+        const originalDoc = originalIframe.contentDocument || originalIframe.contentWindow?.document
+        const filteredDoc = filteredIframe.contentDocument || filteredIframe.contentWindow?.document
+        if (originalDoc && filteredDoc) {
+          syncScroll(originalDoc, filteredDoc, true)
+        }
+      } catch (e) {
+        // Cross-origin restrictions may prevent access
+      }
     }
     
     const handleFilteredScroll = () => {
-      if (isScrollingRef.current) return
-      isScrollingRef.current = true
-      
       try {
-        const originalDoc = originalIframe.contentDocument || originalIframe.contentWindow.document
-        const filteredDoc = filteredIframe.contentDocument || filteredIframe.contentWindow.document
-        
+        const originalDoc = originalIframe.contentDocument || originalIframe.contentWindow?.document
+        const filteredDoc = filteredIframe.contentDocument || filteredIframe.contentWindow?.document
         if (originalDoc && filteredDoc) {
-          originalDoc.documentElement.scrollTop = filteredDoc.documentElement.scrollTop
-          originalDoc.documentElement.scrollLeft = filteredDoc.documentElement.scrollLeft
+          syncScroll(filteredDoc, originalDoc, false)
         }
       } catch (e) {
         // Cross-origin restrictions may prevent access
       }
-      
-      setTimeout(() => {
-        isScrollingRef.current = false
-      }, 10)
     }
     
     // Wait for iframes to load before attaching listeners
@@ -295,33 +343,80 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
       try {
         const originalWindow = originalIframe.contentWindow
         const filteredWindow = filteredIframe.contentWindow
+        const originalDoc = originalIframe.contentDocument || originalWindow?.document
+        const filteredDoc = filteredIframe.contentDocument || filteredWindow?.document
         
+        if (!originalDoc || !filteredDoc) {
+          return false
+        }
+        
+        // Attach scroll listeners to both window and document
         if (originalWindow) {
           originalWindow.addEventListener('scroll', handleOriginalScroll, { passive: true })
+          if (originalDoc.documentElement) {
+            originalDoc.documentElement.addEventListener('scroll', handleOriginalScroll, { passive: true })
+          }
         }
+        
         if (filteredWindow) {
           filteredWindow.addEventListener('scroll', handleFilteredScroll, { passive: true })
+          if (filteredDoc.documentElement) {
+            filteredDoc.documentElement.addEventListener('scroll', handleFilteredScroll, { passive: true })
+          }
         }
+        
+        return true
       } catch (e) {
         // Cross-origin restrictions may prevent access
+        return false
       }
     }
     
-    // Try to attach listeners immediately and after a delay
-    attachListeners()
-    const timeout = setTimeout(attachListeners, 1000)
+    // Try to attach listeners with retries
+    let retryCount = 0
+    const maxRetries = 10
+    
+    const tryAttach = () => {
+      if (attachListeners() || retryCount >= maxRetries) {
+        return
+      }
+      retryCount++
+      setTimeout(tryAttach, 200)
+    }
+    
+    // Start trying immediately
+    tryAttach()
+    
+    // Also try after iframe loads
+    const timeout = setTimeout(() => {
+      retryCount = 0
+      tryAttach()
+    }, 1000)
     
     return () => {
       clearTimeout(timeout)
+      if (rafId) {
+        cancelAnimationFrame(rafId)
+      }
+      
       try {
         const originalWindow = originalIframe.contentWindow
         const filteredWindow = filteredIframe.contentWindow
+        const originalDoc = originalIframe.contentDocument || originalWindow?.document
+        const filteredDoc = filteredIframe.contentDocument || filteredWindow?.document
         
-        if (originalWindow) {
+        if (originalWindow && originalDoc) {
           originalWindow.removeEventListener('scroll', handleOriginalScroll)
+          if (originalDoc.documentElement) {
+            originalDoc.documentElement.removeEventListener('scroll', handleOriginalScroll)
+          }
         }
-        if (filteredWindow) {
+        
+        if (filteredWindow && filteredDoc) {
           filteredWindow.removeEventListener('scroll', handleFilteredScroll)
+          if (filteredDoc.documentElement) {
+            filteredDoc.documentElement.removeEventListener('scroll', handleFilteredScroll)
+          }
         }
       } catch (e) {
         // Cross-origin restrictions may prevent access
@@ -527,6 +622,25 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
   }
   
   
+  // Format URL for display
+  const getDisplayUrl = (url) => {
+    try {
+      // Special case for Hacker News
+      if (url.includes('news.ycombinator.com')) {
+        return 'Hacker News'
+      }
+      // Remove protocol
+      let domain = url.replace(/^https?:\/\//, '')
+      // Remove www. prefix
+      domain = domain.replace(/^www\./, '')
+      // Remove path, query, hash
+      domain = domain.split('/')[0].split('?')[0].split('#')[0]
+      return domain
+    } catch (e) {
+      return url
+    }
+  }
+  
   return (
     <div className="website-viewer-wrapper">
       {url && (
@@ -572,7 +686,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
                             title={`Load ${historyUrl}`}
                           >
                             <span className="history-item-icon">🌐</span>
-                            <span className="history-item-url">{historyUrl}</span>
+                            <span className="history-item-url">{getDisplayUrl(historyUrl)}</span>
                           </button>
                           {onRemoveUrl && (
                             <button
@@ -700,7 +814,11 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
             
             <button
               onClick={handleRandomSite}
-              onMouseEnter={() => setShowHoverHint(true)}
+              onMouseEnter={() => {
+                if (!hasSeenRandomHintRef.current) {
+                  setShowHoverHint(true)
+                }
+              }}
               onMouseLeave={() => setShowHoverHint(false)}
               className={`control-btn random-btn ${showRandomHint || showHoverHint ? 'pulse-hint' : ''}`}
               aria-label="Load random example site"
@@ -763,15 +881,9 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
               </button>
             ))}
           </div>
-          {/* Scroll hint - fade gradient and arrow */}
+          {/* Scroll hint - fade gradient */}
           <div className="scroll-hint" data-hidden={!showScrollHint}>
             <div className="scroll-hint-gradient"></div>
-            <div className="scroll-hint-arrow">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14"></path>
-                <path d="M12 5l7 7-7 7"></path>
-              </svg>
-            </div>
           </div>
         </div>
       )}
@@ -931,39 +1043,49 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
       {proxyUrl && !loading && !error && (
         <div className={`iframe-content ${iframeLoading ? 'loading' : ''}`}>
           {isSplitView && activeFilter !== 'none' ? (
-            <div className="split-container" ref={splitContainerRef}>
-              <div className="split-pane split-pane-left">
-                {!iframeLoading && <div className="split-label">Original</div>}
-                <iframe
-                  ref={originalIframeRef}
-                  key={`${iframeKey}-original`}
-                  src={proxyUrl}
-                  title="Original website view"
-                  className="website-iframe"
-                  sandbox="allow-scripts allow-same-origin allow-forms"
-                  loading="lazy"
-                  onLoad={handleIframeLoad}
-                />
+            <div className="split-view-wrapper">
+              <div className="split-labels-mobile">
+                <div className="split-label-mobile">Original</div>
+                <div className="split-label-mobile">With Filter</div>
               </div>
-              
-              <div className="split-divider"></div>
-              
-              <div className="split-pane split-pane-right">
-                {!iframeLoading && <div className="split-label">With Filter</div>}
-                <div 
-                  className="iframe-wrapper filtered"
-                  style={{ filter: getFilterStyle(activeFilter) }}
-                >
+              <div className="split-container" ref={splitContainerRef}>
+                {!iframeLoading && (
+                  <>
+                    <div className="split-label split-label-desktop split-label-left">Original</div>
+                    <div className="split-label split-label-desktop split-label-right">With Filter</div>
+                  </>
+                )}
+                <div className="split-pane split-pane-left">
                   <iframe
-                    ref={filteredIframeRef}
-                    key={`${iframeKey}-filtered`}
+                    ref={originalIframeRef}
+                    key={`${iframeKey}-original`}
                     src={proxyUrl}
-                    title="Filtered website view"
+                    title="Original website view"
                     className="website-iframe"
                     sandbox="allow-scripts allow-same-origin allow-forms"
                     loading="lazy"
                     onLoad={handleIframeLoad}
                   />
+                </div>
+                
+                <div className="split-divider"></div>
+                
+                <div className="split-pane split-pane-right">
+                  <div 
+                    className="iframe-wrapper filtered"
+                    style={{ filter: getFilterStyle(activeFilter) }}
+                  >
+                    <iframe
+                      ref={filteredIframeRef}
+                      key={`${iframeKey}-filtered`}
+                      src={proxyUrl}
+                      title="Filtered website view"
+                      className="website-iframe"
+                      sandbox="allow-scripts allow-same-origin allow-forms"
+                      loading="lazy"
+                      onLoad={handleIframeLoad}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1402,14 +1524,14 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           gap: 12px;
           padding-bottom: 4px;
           padding-top: 4px;
-          padding-right: 60px;
+          padding-right: 100px;
           min-width: 0;
           flex: 1;
         }
         
         .scroll-hint {
           position: absolute;
-          right: 4px;
+          right: 32px;
           top: 50%;
           transform: translateY(-50%);
           width: auto;
@@ -1454,56 +1576,6 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         
         :global([data-theme="dark"]) .scroll-hint-gradient {
           background: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.3) 40%, rgba(0, 0, 0, 0.6) 100%);
-        }
-        
-        .scroll-hint-arrow {
-          position: relative;
-          z-index: 1;
-          color: rgba(255, 255, 255, 0.9);
-          animation: scroll-hint-pulse 2s ease-in-out infinite;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 20px;
-          height: 20px;
-          background: rgba(110, 198, 255, 0.25);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          border-radius: 50%;
-          border: 1px solid rgba(110, 198, 255, 0.4);
-          box-shadow: 0 2px 8px rgba(110, 198, 255, 0.3);
-          opacity: 1;
-          transform: scale(1);
-          transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.05s,
-                      transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.05s,
-                      box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.05s;
-        }
-        
-        .scroll-hint[data-hidden="true"] .scroll-hint-arrow {
-          opacity: 0;
-          transform: scale(0.8) translateX(12px);
-          animation: none;
-          box-shadow: 0 0 0 rgba(110, 198, 255, 0);
-          transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-                      transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-                      box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        @keyframes scroll-hint-pulse {
-          0%, 100% {
-            transform: translateX(0) scale(1);
-            opacity: 0.9;
-          }
-          50% {
-            transform: translateX(3px) scale(1.05);
-            opacity: 1;
-          }
-        }
-        
-        .quick-filters:hover .scroll-hint-arrow {
-          animation-duration: 1s;
-          background: rgba(110, 198, 255, 0.35);
-          border-color: rgba(110, 198, 255, 0.5);
         }
         
         .quick-filter-btn {
@@ -2685,16 +2757,85 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         
         .split-label {
           position: absolute;
-          top: var(--spacing-sm);
-          left: var(--spacing-sm);
-          z-index: 5;
+          top: 8px;
+          z-index: 10;
+          background: rgba(0, 0, 0, 0.9);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          color: white;
+          padding: 6px 14px;
+          border-radius: 12px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          pointer-events: none;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+          letter-spacing: 0.3px;
+        }
+        
+        .split-label-left {
+          left: 8px;
+        }
+        
+        .split-label-right {
+          right: 8px;
+        }
+        
+        .split-view-wrapper {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          height: 100%;
+          flex: 1;
+          min-height: 0;
+        }
+        
+        .split-view-wrapper .split-container {
+          flex: 1;
+          min-height: 0;
+        }
+        
+        .split-labels-mobile {
+          display: none;
+          flex-direction: row;
+          gap: 0;
+          width: 100%;
+          margin-bottom: 2px;
+        }
+        
+        .split-label-mobile {
+          flex: 1;
+          text-align: center;
           background: rgba(0, 0, 0, 0.8);
           color: white;
-          padding: 4px 12px;
+          padding: 8px 12px;
           border-radius: var(--radius-sm);
           font-size: 0.85rem;
           font-weight: 600;
           pointer-events: none;
+        }
+        
+        .split-label-mobile:first-child {
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
+        }
+        
+        .split-label-mobile:last-child {
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+        }
+        
+        .split-label-desktop {
+          display: block;
+        }
+        
+        @media (max-width: 768px) {
+          .split-labels-mobile {
+            display: flex;
+          }
+          
+          .split-label-desktop {
+            display: none;
+          }
         }
         
         .split-divider {

@@ -61,6 +61,7 @@ export default function Home() {
   const filterPickerContentRef = React.useRef(null)
   const activeFilterItemRef = React.useRef(null)
   const isInitialMount = React.useRef(true)
+  const isClearingQueryParams = React.useRef(false)
   const [isInitialDelayComplete, setIsInitialDelayComplete] = React.useState(false)
   const [isSidebarVisible, setIsSidebarVisible] = React.useState(false)
   
@@ -355,6 +356,12 @@ export default function Home() {
       return
     }
     
+    // Skip if we're clearing query params
+    if (isClearingQueryParams.current) {
+      isClearingQueryParams.current = false
+      return
+    }
+    
     const newParams = new URLSearchParams()
     
     if (loadedUrl) {
@@ -387,6 +394,12 @@ export default function Home() {
     setTargetUrl(url)
     setUrlInputValue(url) // Update input value
     
+    // If navigating from initial screen, set default filter and split view
+    if (!hasLoadedSite) {
+      setActiveFilter('tritanopia')
+      setIsSplitView(true)
+    }
+    
     // Add to history
     addToHistory(url)
     
@@ -403,16 +416,20 @@ export default function Home() {
   }
   
   const handleClearQueryParams = () => {
+    // Set flag to skip useEffect that updates query params
+    isClearingQueryParams.current = true
+    
     // Clear all state
     setLoadedUrl('')
     setHasLoadedSite(false)
-    setActiveFilter('tritanopia')
-    setIsSplitView(true)
+    setActiveFilter('none')
+    setIsSplitView(false)
     setTargetUrl('')
     setUrlInputValue('')
     setError(null)
+    setHistory([])
     
-    // Clear URL query params
+    // Clear URL query params immediately
     if (typeof window !== 'undefined') {
       window.history.replaceState({}, '', window.location.pathname)
     }
@@ -454,19 +471,17 @@ export default function Home() {
               <div className="top-nav-content">
                 {/* Home button */}
                 <div className="top-nav-left">
-                  {hasQueryParams && (
-                    <button
-                      onClick={handleClearQueryParams}
-                      className="home-button"
-                      aria-label="Return to home"
-                      title="Return to home"
-                    >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                      </svg>
-                    </button>
-                  )}
+                  <button
+                    onClick={handleClearQueryParams}
+                    className="home-button"
+                    aria-label="Return to home"
+                    title="Return to home"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                      <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                  </button>
                 </div>
                 
                 {/* Title */}
@@ -696,7 +711,6 @@ export default function Home() {
             
             <div className="footer-bottom">
               <p className="footer-note">
-                <span className="footer-note-icon">🌐</span>
                 <span className="footer-note-text">
                   Some sites may restrict embedding for security.<br />
                   Try different URLs if needed.
@@ -1086,7 +1100,7 @@ export default function Home() {
         
         .hero-subtitle {
           font-size: 1.25rem;
-          margin-bottom: calc(var(--spacing-xl) * 1.5);
+          margin-bottom: var(--spacing-lg);
           color: rgba(255, 255, 255, 1);
           line-height: 1.6;
         }
@@ -1851,22 +1865,31 @@ export default function Home() {
         }
         
         .footer-link {
-          color: rgba(255, 255, 255, 0.7);
-          text-decoration: none;
+          color: rgba(255, 255, 255, 1);
+          text-decoration: underline;
+          text-underline-offset: 2px;
           font-size: 0.75rem;
           transition: all var(--transition-fast);
           display: inline-flex;
           align-items: center;
           gap: 4px;
           padding: 2px 0;
+          font-weight: 500;
         }
         
         .footer-link:hover {
-          color: rgba(110, 198, 255, 0.9);
+          color: rgba(110, 198, 255, 1);
+          text-decoration: underline;
+        }
+        
+        .footer-link:focus-visible {
+          outline: 2px solid rgba(110, 198, 255, 1);
+          outline-offset: 2px;
+          text-decoration: underline;
         }
         
         .footer-separator {
-          color: rgba(255, 255, 255, 0.25);
+          color: rgba(255, 255, 255, 0.4);
           font-size: 0.75rem;
           margin: 0 4px;
         }
@@ -1874,7 +1897,7 @@ export default function Home() {
         .footer-icon {
           width: 11px;
           height: 11px;
-          opacity: 0.8;
+          opacity: 1;
         }
         
         .footer-theme-toggle {
@@ -1913,16 +1936,7 @@ export default function Home() {
           color: rgba(255, 255, 255, 0.85);
           line-height: 1.6;
           text-align: center;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
           max-width: 100%;
-        }
-        
-        .footer-note-icon {
-          flex-shrink: 0;
-          line-height: 1.6;
         }
         
         .footer-note-text {
@@ -1947,23 +1961,12 @@ export default function Home() {
           .footer-note {
             font-size: 0.7rem;
             line-height: 1.8;
-            gap: 6px;
-            flex-direction: row;
-            align-items: flex-start;
             text-align: center;
-            justify-content: center;
-            flex-wrap: wrap;
-          }
-          
-          .footer-note-icon {
-            margin-top: 2px;
           }
           
           .footer-note-text {
             text-align: center;
             line-height: 1.8;
-            flex: 1;
-            min-width: 200px;
           }
           
           .footer-bottom {
@@ -2027,11 +2030,39 @@ export default function Home() {
           }
           
           h1 {
-            font-size: 2.25rem;
+            font-size: 2rem;
+            margin-bottom: var(--spacing-md);
+            line-height: 1.15;
           }
           
           .hero-subtitle {
-            font-size: 1.1rem;
+            font-size: 1rem;
+            margin-bottom: var(--spacing-md);
+            line-height: 1.5;
+            padding: 0 8px;
+          }
+          
+          .hero-content {
+            padding: var(--spacing-lg) var(--spacing-md) !important;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          h1 {
+            font-size: 1.75rem;
+            margin-bottom: var(--spacing-sm);
+            line-height: 1.2;
+          }
+          
+          .hero-subtitle {
+            font-size: 0.95rem;
+            margin-bottom: var(--spacing-md);
+            line-height: 1.5;
+            padding: 0 4px;
+          }
+          
+          .hero-content {
+            padding: var(--spacing-md) var(--spacing-sm) !important;
           }
         }
       `}</style>

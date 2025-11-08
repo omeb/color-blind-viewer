@@ -129,7 +129,7 @@ export default function UrlInput({ onSubmit, loading = false, value: externalVal
             type="text"
             value={url}
             onChange={handleChange}
-            placeholder="Paste any website URL to test accessibility"
+            placeholder="Enter website URL"
             disabled={loading}
             className="url-input"
             aria-invalid={error ? 'true' : 'false'}
@@ -193,7 +193,6 @@ export default function UrlInput({ onSubmit, loading = false, value: externalVal
           box-shadow: 0 4px 16px rgba(110, 198, 255, 0.15),
                       0 2px 8px rgba(0, 0, 0, 0.1),
                       0 0 0 1px rgba(110, 198, 255, 0.2);
-          transform: translateY(-3px);
         }
         
         .url-input-group:focus-within {
@@ -202,7 +201,10 @@ export default function UrlInput({ onSubmit, loading = false, value: externalVal
           box-shadow: 0 0 0 4px rgba(110, 198, 255, 0.2),
                       0 8px 24px rgba(110, 198, 255, 0.25),
                       0 4px 12px rgba(0, 0, 0, 0.12);
-          transform: translateY(-3px);
+        }
+        
+        .url-input-group:focus-within .submit-button {
+          margin: -2px -5px -2px 0;
         }
         
         .url-input {
@@ -262,6 +264,7 @@ export default function UrlInput({ onSubmit, loading = false, value: externalVal
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
           box-shadow: 0 2px 4px rgba(74, 144, 226, 0.2),
                       inset 0 1px 0 rgba(255, 255, 255, 0.1);
+          margin: -2px -3px -2px 0;
         }
         
         .submit-button::before {
@@ -275,6 +278,7 @@ export default function UrlInput({ onSubmit, loading = false, value: externalVal
           opacity: 0;
           transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           border-radius: 0 16px 16px 0;
+          z-index: 0;
         }
         
         .submit-button:hover:not(:disabled)::before {
@@ -282,13 +286,11 @@ export default function UrlInput({ onSubmit, loading = false, value: externalVal
         }
         
         .submit-button:hover:not(:disabled) {
-          transform: scale(1.03) translateY(-1px);
           box-shadow: 0 4px 12px rgba(74, 144, 226, 0.35),
                       inset 0 1px 0 rgba(255, 255, 255, 0.15);
         }
         
         .submit-button:active:not(:disabled) {
-          transform: scale(0.98) translateY(0);
           box-shadow: 0 1px 2px rgba(74, 144, 226, 0.3),
                       inset 0 2px 4px rgba(0, 0, 0, 0.1);
         }
@@ -396,12 +398,17 @@ export default function UrlInput({ onSubmit, loading = false, value: externalVal
             padding: 16px 24px;
             border-left: none;
             border-top: 1px solid rgba(0, 0, 0, 0.06);
-            border-radius: 0 0 16px 16px;
+            border-radius: 0 0 15px 15px;
             box-shadow: none;
+            margin: 0 -2px -2px -2px;
+          }
+          
+          .submit-button::before {
+            border-radius: 0 0 15px 15px;
           }
           
           .submit-button:hover:not(:disabled) {
-            transform: scale(1.01);
+            box-shadow: none;
           }
         }
         
@@ -449,6 +456,10 @@ export default function UrlInput({ onSubmit, loading = false, value: externalVal
                       0 8px 28px rgba(110, 198, 255, 0.35),
                       0 4px 16px rgba(0, 0, 0, 0.6);
           transform: translateY(-3px);
+        }
+        
+        :global([data-theme="dark"]) .url-input-group:focus-within .submit-button {
+          margin: -2px -5px -2px 0;
         }
         
         :global([data-theme="dark"]) .url-input {
