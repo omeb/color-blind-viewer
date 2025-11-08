@@ -445,7 +445,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
             transparent 100%
           );
           background-size: 200% 100%;
-          background-position: -200% 0;
+          background-position: 200% 0;
           border-radius: 0 16px 16px 0;
           z-index: 0;
           opacity: 0;
@@ -464,10 +464,10 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
         
         @keyframes waveFlow {
           0% {
-            background-position: -200% 0;
+            background-position: 200% 0;
           }
           100% {
-            background-position: 200% 0;
+            background-position: -200% 0;
           }
         }
         
