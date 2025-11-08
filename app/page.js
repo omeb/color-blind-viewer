@@ -43,7 +43,7 @@ export default function Home() {
   const [targetUrl, setTargetUrl] = React.useState('')
   const [urlInputValue, setUrlInputValue] = React.useState('')
   const [loadedUrl, setLoadedUrl] = React.useState('')
-  const [activeFilter, setActiveFilter] = React.useState('tritanopia')
+  const [activeFilter, setActiveFilter] = React.useState('deuteranopia')
   const [isSplitView, setIsSplitView] = React.useState(true)
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState(null)
@@ -486,7 +486,7 @@ export default function Home() {
     
     // If navigating from initial screen, set default filter and split view
     if (!hasLoadedSite) {
-      setActiveFilter('tritanopia')
+      setActiveFilter('deuteranopia')
       setIsSplitView(true)
     }
     
