@@ -232,12 +232,18 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
           <button
             onClick={(e) => {
               e.stopPropagation()
-              e.preventDefault()
+              // Only call preventDefault if event is cancelable (not passive)
+              if (e.cancelable) {
+                e.preventDefault()
+              }
               onClose()
             }}
             onMouseDown={(e) => {
               e.stopPropagation()
-              e.preventDefault()
+              // Only call preventDefault if event is cancelable (not passive)
+              if (e.cancelable) {
+                e.preventDefault()
+              }
             }}
             onTouchStart={(e) => {
               e.stopPropagation()

@@ -1064,12 +1064,18 @@ export default function Home() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
-                    e.preventDefault()
+                    // Only call preventDefault if event is cancelable (not passive)
+                    if (e.cancelable) {
+                      e.preventDefault()
+                    }
                     setFilterPopoverInfo(null)
                   }}
                   onMouseDown={(e) => {
                     e.stopPropagation()
-                    e.preventDefault()
+                    // Only call preventDefault if event is cancelable (not passive)
+                    if (e.cancelable) {
+                      e.preventDefault()
+                    }
                   }}
                   onTouchStart={(e) => {
                     e.stopPropagation()
