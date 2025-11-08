@@ -329,10 +329,8 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           border-top-right-radius: 0;
           border-bottom-right-radius: 0;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-          /* Only transition non-layout properties to prevent cursor jumping */
-          transition: color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-                      background-color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-                      padding 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+          /* No transitions to prevent cursor movement on iOS */
+          transition: none;
           position: relative;
           z-index: 2;
           /* Prevent any transforms that could affect cursor position */
@@ -340,17 +338,23 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           display: flex;
           align-items: center;
           height: 48px;
+          /* Ensure standard cursor appearance - no animations */
+          caret-color: #007AFF;
         }
         
         .url-input:focus {
           padding: 12px 24px;
+          /* No transitions when focused to prevent cursor animation */
+          transition: none;
+          /* Standard caret color - no special styling */
+          caret-color: #007AFF;
         }
         
         .url-input::placeholder {
           color: #6B7280;
           font-weight: 400;
-          transition: color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-                      opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+          /* No transitions to prevent cursor movement */
+          transition: none;
           opacity: 1;
           /* Prevent placeholder transforms that could affect cursor */
           transform: none;
@@ -359,6 +363,8 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
         .url-input:focus::placeholder {
           color: rgba(107, 114, 128, 0.5);
           opacity: 0.8;
+          /* No transitions when focused */
+          transition: none;
           /* No transform - prevents cursor jumping */
           transform: none;
         }
@@ -565,18 +571,26 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
             border-radius: 16px 16px 0 0;
             transform: none !important;
             height: auto;
+            /* No transitions on mobile to prevent cursor movement */
+            transition: none !important;
           }
           
           .url-input:focus {
             padding: 12px 20px;
             transform: none !important;
+            /* No transitions when focused on mobile */
+            transition: none !important;
           }
           
           .url-input::placeholder {
             transform: none !important;
+            /* No transitions on placeholder for mobile */
+            transition: none !important;
           }
           
           .url-input:focus::placeholder {
+            /* No transitions when focused on mobile */
+            transition: none !important;
             transform: none !important;
           }
           
