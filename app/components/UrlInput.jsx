@@ -719,6 +719,14 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
             border-bottom-right-radius: 15px;
           }
           
+          .submit-button::after {
+            border-radius: 0 0 15px 15px;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+          }
+          
           .submit-button:hover:not(:disabled) {
             transform: translateY(-1px) scale(1.01);
             box-shadow: 0 6px 20px rgba(0, 122, 255, 0.3),
