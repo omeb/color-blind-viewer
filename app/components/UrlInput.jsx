@@ -652,6 +652,11 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           .url-input {
             padding: 12px 20px;
             border-radius: 16px 16px 0 0;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            background: rgba(255, 255, 255, 0.98); /* Match container background to cover border-radius */
             transform: none !important;
             height: auto;
             min-height: 48px; /* Ensure input has minimum height */
@@ -661,6 +666,11 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           
           .url-input:focus {
             padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.98); /* Maintain background on focus */
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
             transform: none !important;
             /* No transitions when focused on mobile */
             transition: none !important;
@@ -959,6 +969,14 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
             display: flex !important; /* Ensure button is visible */
             visibility: visible !important;
             opacity: 1 !important;
+          }
+          
+          :global([data-theme="dark"]) .url-input {
+            background: rgba(40, 42, 54, 0.98); /* Match dark container background */
+          }
+          
+          :global([data-theme="dark"]) .url-input:focus {
+            background: rgba(40, 42, 54, 0.98); /* Maintain dark background on focus */
           }
         }
       `}</style>
