@@ -583,7 +583,10 @@ export default function Home() {
                     aria-label="Show filter information"
                     type="button"
                   >
-                    ℹ
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                      <path d="M7 5V7M7 9H7.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                   </button>
                 )}
                 {showFilterPopover && (
@@ -1075,6 +1078,12 @@ export default function Home() {
           min-width: 32px;
           font-size: 0.85rem;
           font-weight: 600;
+        }
+        
+        .filter-control-info-btn svg {
+          width: 14px;
+          height: 14px;
+          display: block;
         }
         
         .filter-control-info-btn:hover {

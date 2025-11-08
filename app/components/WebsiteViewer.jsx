@@ -1714,7 +1714,6 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
         .quick-filter-btn:hover {
           background: rgba(255, 255, 255, 0.15);
           border-color: rgba(255, 255, 255, 0.3);
-          transform: translateY(-2px);
         }
         
         .quick-filter-btn.active {
@@ -1725,7 +1724,7 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
         }
         
         .quick-filter-btn:active {
-          transform: translateY(0);
+          transform: scale(0.98);
         }
         
         .filter-info-icon-btn {

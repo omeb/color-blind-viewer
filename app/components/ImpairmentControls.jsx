@@ -175,12 +175,11 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
         .filter-btn:hover {
           background: rgba(255, 255, 255, 0.25);
           border-color: rgba(255, 255, 255, 0.5);
-          transform: translateY(-3px);
           box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2);
         }
         
         .filter-btn:active {
-          transform: translateY(-1px);
+          transform: scale(0.98);
         }
         
         .filter-btn.active {
@@ -194,13 +193,17 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
           font-weight: 600;
           font-size: 0.9rem;
           margin-bottom: 4px;
-          padding-right: 24px;
+          padding-right: 0;
           line-height: 1.2;
           overflow: hidden;
           text-overflow: ellipsis;
           display: -webkit-box;
           -webkit-line-clamp: 1;
           -webkit-box-orient: vertical;
+        }
+        
+        .filter-item-wrapper:has(.filter-info-btn) .filter-name {
+          padding-right: 36px;
         }
         
         .filter-prevalence {
@@ -217,13 +220,13 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
         .filter-info-btn {
           position: absolute;
           top: 6px;
-          right: 6px;
-          background: rgba(255, 255, 255, 0.1);
-          border: 1px solid rgba(255, 255, 255, 0.15);
+          right: 10px;
+          background: rgba(110, 198, 255, 0.15);
+          border: 1.5px solid rgba(110, 198, 255, 0.4);
           border-radius: 50%;
-          width: 22px;
-          height: 22px;
-          color: rgba(255, 255, 255, 0.7);
+          width: 24px;
+          height: 24px;
+          color: rgba(110, 198, 255, 0.9);
           cursor: pointer;
           display: flex;
           align-items: center;
@@ -244,11 +247,11 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
         }
         
         .filter-info-btn:hover {
-          background: rgba(110, 198, 255, 0.2);
-          border-color: rgba(110, 198, 255, 0.4);
+          background: rgba(110, 198, 255, 0.25);
+          border-color: rgba(110, 198, 255, 0.6);
           color: rgba(110, 198, 255, 1);
-          transform: scale(1.1);
-          box-shadow: 0 2px 12px rgba(110, 198, 255, 0.25);
+          transform: scale(1.15);
+          box-shadow: 0 2px 12px rgba(110, 198, 255, 0.35);
         }
         
         .filter-info-btn:active {
@@ -256,13 +259,40 @@ export default function ImpairmentControls({ activeFilter = 'none', onFilterChan
         }
         
         .filter-info-btn svg {
-          width: 12px;
-          height: 12px;
+          width: 13px;
+          height: 13px;
         }
         
         @media (max-width: 768px) {
           .filter-grid {
             grid-template-columns: 1fr;
+          }
+          
+          .filter-info-btn {
+            opacity: 1;
+            pointer-events: auto;
+            width: 28px;
+            height: 28px;
+            background: rgba(110, 198, 255, 0.2);
+            border: 2px solid rgba(110, 198, 255, 0.5);
+            color: rgba(110, 198, 255, 1);
+            top: 4px;
+            right: 8px;
+          }
+          
+          .filter-item-wrapper:has(.filter-info-btn) .filter-name {
+            padding-right: 42px;
+          }
+          
+          .filter-info-btn svg {
+            width: 15px;
+            height: 15px;
+          }
+          
+          .filter-info-btn:active {
+            background: rgba(110, 198, 255, 0.3);
+            border-color: rgba(110, 198, 255, 0.7);
+            transform: scale(0.95);
           }
         }
         
