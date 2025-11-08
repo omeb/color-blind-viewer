@@ -480,7 +480,19 @@ export default function Home() {
       : window.location.pathname
     
     // Update URL without page reload
-    window.history.replaceState({}, '', newUrl)
+    // Wrap in try-catch to prevent SecurityError if URL is somehow cross-origin
+    try {
+      // Ensure we're only using same-origin URLs
+      if (newUrl.startsWith(window.location.origin) || newUrl.startsWith('/') || !newUrl.includes('://')) {
+        window.history.replaceState({}, '', newUrl)
+      }
+    } catch (error) {
+      // Silently ignore SecurityError for cross-origin URLs
+      // This can happen if somehow a cross-origin URL gets passed
+      if (error.name !== 'SecurityError') {
+        console.error('Error updating history:', error)
+      }
+    }
   }, [loadedUrl, activeFilter, isSplitView])
   
   const removeFromHistory = (url) => {

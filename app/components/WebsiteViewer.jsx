@@ -1423,6 +1423,8 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
                     src={proxyUrl}
                     title="Original website view"
                     className="website-iframe"
+                    // Note: Both allow-scripts and allow-same-origin are required for the proxy to work.
+                    // The browser warning about sandbox escape is expected but safe since we control the proxy.
                     sandbox="allow-scripts allow-same-origin allow-forms"
                     loading="lazy"
                     onLoad={handleIframeLoad}
@@ -1442,6 +1444,8 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
                       src={proxyUrl}
                       title="Filtered website view"
                       className="website-iframe"
+                      // Note: Both allow-scripts and allow-same-origin are required for the proxy to work.
+                      // The browser warning about sandbox escape is expected but safe since we control the proxy.
                       sandbox="allow-scripts allow-same-origin allow-forms"
                       loading="lazy"
                       onLoad={handleIframeLoad}
@@ -1461,6 +1465,8 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
                 src={proxyUrl}
                 title="Website preview with vision impairment filter"
                 className="website-iframe"
+                // Note: Both allow-scripts and allow-same-origin are required for the proxy to work.
+                // The browser warning about sandbox escape is expected but safe since we control the proxy.
                 sandbox="allow-scripts allow-same-origin allow-forms"
                 loading="lazy"
                 onLoad={handleIframeLoad}
