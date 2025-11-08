@@ -200,29 +200,31 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           background: rgba(255, 255, 255, 0.98);
           backdrop-filter: blur(16px);
           -webkit-backdrop-filter: blur(16px);
-          border: 1.5px solid rgba(110, 198, 255, 0.25);
+          border: 1.5px solid rgba(110, 198, 255, 0.3);
           border-radius: 16px;
-          overflow: hidden;
-          transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+          overflow: visible;
+          transition: background 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                      backdrop-filter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06),
                       0 0 0 1px rgba(0, 0, 0, 0.02);
           min-height: 64px;
           position: relative;
-          animation: invitePulse 2.5s ease-in-out infinite;
+          animation: invitePulse 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
         
         @keyframes invitePulse {
           0%, 100% {
-            border-color: rgba(110, 198, 255, 0.25);
+            border-color: rgba(110, 198, 255, 0.35);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06),
                         0 0 0 1px rgba(0, 0, 0, 0.02),
                         0 0 0 0 rgba(110, 198, 255, 0);
           }
           50% {
-            border-color: rgba(110, 198, 255, 0.4);
+            border-color: rgba(74, 144, 226, 0.65);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06),
                         0 0 0 1px rgba(0, 0, 0, 0.02),
-                        0 0 25px 3px rgba(110, 198, 255, 0.15);
+                        0 0 32px 5px rgba(110, 198, 255, 0.3),
+                        0 0 50px 8px rgba(110, 198, 255, 0.12);
           }
         }
         
@@ -595,21 +597,22 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
                       0 0 0 0 rgba(110, 198, 255, 0);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          animation: invitePulseDark 2.5s ease-in-out infinite;
+          animation: invitePulseDark 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
         
         @keyframes invitePulseDark {
           0%, 100% {
-            border-color: rgba(110, 198, 255, 0.35);
+            border-color: rgba(110, 198, 255, 0.45);
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4),
                         0 0 0 1px rgba(255, 255, 255, 0.08),
                         0 0 0 0 rgba(110, 198, 255, 0);
           }
           50% {
-            border-color: rgba(110, 198, 255, 0.5);
+            border-color: rgba(110, 198, 255, 0.7);
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4),
                         0 0 0 1px rgba(255, 255, 255, 0.08),
-                        0 0 30px 4px rgba(110, 198, 255, 0.2);
+                        0 0 38px 7px rgba(110, 198, 255, 0.35),
+                        0 0 60px 10px rgba(110, 198, 255, 0.15);
           }
         }
         
