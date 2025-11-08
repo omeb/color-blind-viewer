@@ -554,7 +554,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           border-width: 0;
         }
         
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
           .url-input-group {
             flex-direction: column;
             min-height: auto;
@@ -606,6 +606,9 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
                         0 2px 6px rgba(0, 122, 255, 0.15),
                         inset 0 1px 0 rgba(255, 255, 255, 0.2);
             margin: 0; /* Remove negative margins to prevent clipping */
+            display: flex !important; /* Ensure button is visible */
+            visibility: visible !important;
+            opacity: 1 !important;
           }
           
           .submit-button::before {
@@ -795,9 +798,12 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
                       inset 0 1px 0 rgba(255, 255, 255, 0.25);
         }
         
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
           :global([data-theme="dark"]) .submit-button {
             border-top-color: rgba(255, 255, 255, 0.15);
+            display: flex !important; /* Ensure button is visible */
+            visibility: visible !important;
+            opacity: 1 !important;
           }
         }
       `}</style>
