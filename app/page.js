@@ -302,6 +302,18 @@ export default function Home() {
   // Close filter info popover on escape key
   React.useEffect(() => {
     const handleEscape = (e) => {
+      // Don't handle Escape if user is editing URL input
+      const activeElement = document.activeElement
+      const isEditingUrl = activeElement && (
+        activeElement.classList.contains('url-edit-input') ||
+        activeElement.closest('.url-edit-form')
+      )
+      
+      if (isEditingUrl) {
+        // Let the input handle Escape itself
+        return
+      }
+      
       if (e.key === 'Escape' && filterPopoverInfo) {
         setFilterPopoverInfo(null)
       }
@@ -693,6 +705,7 @@ export default function Home() {
                     className="filter-picker-popover" 
                     data-open={!isPopoverOpening}
                     onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
                   >
                     <div className="filter-picker-header">
                       <span>Select Filter</span>
@@ -701,6 +714,10 @@ export default function Home() {
                           e.stopPropagation()
                           e.preventDefault()
                           handleCloseFilterPopover()
+                        }}
+                        onMouseDown={(e) => {
+                          e.stopPropagation()
+                          e.preventDefault()
                         }}
                         className="filter-picker-close"
                         aria-label="Close"
@@ -711,10 +728,13 @@ export default function Home() {
                     <div className="filter-picker-content" ref={filterPickerContentRef}>
                       <button
                         ref={activeFilter === 'none' ? activeFilterItemRef : null}
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          e.preventDefault()
                           handleFilterChange('none')
                           handleCloseFilterPopover()
                         }}
+                        onMouseDown={(e) => e.stopPropagation()}
                         className={`filter-picker-item ${activeFilter === 'none' ? 'active' : ''}`}
                       >
                         <span className="filter-picker-name">Original Site</span>
@@ -726,10 +746,13 @@ export default function Home() {
                         <button
                           key={filter.id}
                           ref={activeFilter === filter.id ? activeFilterItemRef : null}
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            e.preventDefault()
                             handleFilterChange(filter.id)
                             handleCloseFilterPopover()
                           }}
+                          onMouseDown={(e) => e.stopPropagation()}
                           className={`filter-picker-item ${activeFilter === filter.id ? 'active' : ''}`}
                         >
                           <span className="filter-picker-name">{filter.name}</span>
@@ -742,10 +765,13 @@ export default function Home() {
                         <button
                           key={filter.id}
                           ref={activeFilter === filter.id ? activeFilterItemRef : null}
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            e.preventDefault()
                             handleFilterChange(filter.id)
                             handleCloseFilterPopover()
                           }}
+                          onMouseDown={(e) => e.stopPropagation()}
                           className={`filter-picker-item ${activeFilter === filter.id ? 'active' : ''}`}
                         >
                           <span className="filter-picker-name">{filter.name}</span>
@@ -969,6 +995,7 @@ export default function Home() {
                 ref={filterInfoPopoverRef}
                 className="filter-info-popover"
                 onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
                 style={isMobile ? {
                   opacity: 1,
                   visibility: 'visible',
@@ -993,6 +1020,10 @@ export default function Home() {
                     e.stopPropagation()
                     e.preventDefault()
                     setFilterPopoverInfo(null)
+                  }}
+                  onMouseDown={(e) => {
+                    e.stopPropagation()
+                    e.preventDefault()
                   }}
                   className="filter-popover-close"
                   aria-label="Close"

@@ -829,6 +829,8 @@ export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'no
   // Handle keydown for escape key and enter
   const handleUrlKeyDown = (e) => {
     if (e.key === 'Escape') {
+      e.preventDefault()
+      e.stopPropagation()
       handleUrlCancel()
       setShowHistoryDropdown(false)
     } else if (e.key === 'Enter') {
