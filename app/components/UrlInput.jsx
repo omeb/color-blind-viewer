@@ -410,6 +410,11 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           overflow: hidden;
         }
         
+        .submit-button:disabled {
+          background: rgba(0, 0, 0, 0.1);
+          animation: none; /* No animation when disabled */
+        }
+        
         .submit-button::before {
           content: '';
           position: absolute;
@@ -441,6 +446,7 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
         
         .submit-button:hover:not(:disabled)::before {
           opacity: 1;
+          animation: none; /* Stop pulse animation on hover */
         }
         
         .submit-button:hover:not(:disabled)::after {
@@ -462,19 +468,51 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         
-        .submit-button svg {
+        .submit-button:not(:disabled) {
+          background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+        }
+        
+        .submit-button:not(:disabled)::before {
+          opacity: 0;
+          animation: gradientPulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes gradientPulse {
+          0%, 100% {
+            opacity: 0;
+          }
+          50% {
+            opacity: 0.6;
+          }
+        }
+        
+        .submit-button:not(:disabled) svg {
           position: relative;
           z-index: 1;
           transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
           filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+          animation: arrowPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes arrowPulse {
+          0%, 100% {
+            transform: translateX(0);
+            opacity: 1;
+          }
+          50% {
+            transform: translateX(3px);
+            opacity: 0.9;
+          }
         }
         
         .submit-button:hover:not(:disabled) svg {
           transform: translateX(6px) scale(1.1);
+          animation: none; /* Stop pulse animation on hover */
         }
         
         .submit-button:active:not(:disabled) svg {
           transform: translateX(2px) scale(1.05);
+          animation: none; /* Stop pulse animation on active */
         }
         
         .submit-button span {
@@ -489,6 +527,11 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           background: rgba(0, 0, 0, 0.1);
           color: rgba(0, 0, 0, 0.4);
           box-shadow: none;
+          animation: none; /* No animation when disabled */
+        }
+        
+        .submit-button:disabled svg {
+          animation: none; /* No arrow animation when disabled */
         }
         
         .submit-button:disabled::before {
@@ -763,10 +806,36 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
           color: rgba(255, 255, 255, 0.35);
         }
         
+        :global([data-theme="dark"]) .submit-button:not(:disabled) {
+          background: linear-gradient(135deg, #0A84FF 0%, #0051D5 100%);
+        }
+        
+        :global([data-theme="dark"]) .submit-button:not(:disabled)::before {
+          animation: gradientPulseDark 3s ease-in-out infinite;
+        }
+        
+        @keyframes gradientPulseDark {
+          0%, 100% {
+            opacity: 0;
+          }
+          50% {
+            opacity: 0.7;
+          }
+        }
+        
+        :global([data-theme="dark"]) .submit-button:not(:disabled) svg {
+          animation: arrowPulse 2s ease-in-out infinite;
+        }
+        
         :global([data-theme="dark"]) .submit-button:disabled {
           background: rgba(255, 255, 255, 0.12);
           color: rgba(255, 255, 255, 0.45);
           border-left-color: rgba(255, 255, 255, 0.1);
+          animation: none; /* No animation when disabled */
+        }
+        
+        :global([data-theme="dark"]) .submit-button:disabled svg {
+          animation: none; /* No arrow animation when disabled */
         }
         
         :global([data-theme="dark"]) .url-input-group:has(.url-input[aria-invalid="true"]) {
@@ -795,6 +864,11 @@ const UrlInput = React.forwardRef(function UrlInput({ onSubmit, loading = false,
         
         :global([data-theme="dark"]) .submit-button::before {
           background: linear-gradient(135deg, #1A94FF 0%, #0066FF 100%);
+        }
+        
+        :global([data-theme="dark"]) .submit-button:hover:not(:disabled)::before {
+          opacity: 1;
+          animation: none; /* Stop pulse animation on hover */
         }
         
         :global([data-theme="dark"]) .submit-button:hover:not(:disabled) {
