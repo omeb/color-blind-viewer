@@ -10,7 +10,8 @@ const EXAMPLE_SITES = [
   'https://pitch.com',
   'https://superlist.com',
   'https://news.ycombinator.com',
-  'https://www.wix.com'
+  'https://www.wix.com',
+  'https://www.imdb.com'
 ]
 
 /**

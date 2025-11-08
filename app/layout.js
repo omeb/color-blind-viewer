@@ -3,7 +3,8 @@ import './globals.css'
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://color-blind-viewer.vercel.app'
 const siteName = 'Accessibility Viewer'
 const siteDescription = 'Experience how websites appear to people with vision impairments. Test your website\'s accessibility with colorblindness, cataracts, glaucoma, and other vision condition simulators. Free tool for designers and developers.'
-const siteImage = `${siteUrl}/og-image.png`
+// Use absolute URL for OG image - Next.js will serve /og-image.png from public folder
+const siteImage = siteUrl.endsWith('/') ? `${siteUrl}og-image.png` : `${siteUrl}/og-image.png`
 
 export const metadata = {
   metadataBase: new URL(siteUrl),
@@ -61,6 +62,7 @@ export const metadata = {
         width: 1200,
         height: 630,
         alt: 'Accessibility Viewer - Accessibility Testing Tool',
+        type: 'image/png',
       },
     ],
   },
@@ -68,7 +70,12 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'Accessibility Viewer - See the World Through Different Eyes',
     description: siteDescription,
-    images: [siteImage],
+    images: [
+      {
+        url: siteImage,
+        alt: 'Accessibility Viewer - Accessibility Testing Tool',
+      },
+    ],
     creator: '@wix',
   },
   alternates: {

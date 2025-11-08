@@ -64,6 +64,64 @@ export default function Home() {
   const isClearingQueryParams = React.useRef(false)
   const [isInitialDelayComplete, setIsInitialDelayComplete] = React.useState(false)
   const [isSidebarVisible, setIsSidebarVisible] = React.useState(false)
+  const heroUrlInputRef = React.useRef(null)
+  const viewerUrlInputRef = React.useRef(null)
+  
+  // Global keyboard listener: focus URL input when user starts typing
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Don't interfere if:
+      // - User is already typing in an input/textarea
+      // - A modal/popover is open
+      // - User is pressing modifier keys (Ctrl/Cmd/Ctrl+Alt for shortcuts)
+      // - It's a special key (Escape, Tab, Arrow keys, etc.)
+      const activeElement = document.activeElement
+      const isInputFocused = activeElement && (
+        activeElement.tagName === 'INPUT' ||
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.isContentEditable
+      )
+      
+      const isModalOpen = filterPopoverInfo || showFilterPopover || selectedFilterInfo
+      
+      const isModifierKey = e.ctrlKey || e.metaKey || e.altKey
+      
+      const isSpecialKey = [
+        'Escape', 'Tab', 'Enter', 'ArrowUp', 'ArrowDown', 
+        'ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 
+        'PageDown', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 
+        'F7', 'F8', 'F9', 'F10', 'F11', 'F12'
+      ].includes(e.key)
+      
+      // Only focus if:
+      // - It's a printable character (length === 1)
+      // - No input is focused
+      // - No modal is open
+      // - No modifier keys
+      // - Not a special key
+      if (
+        e.key.length === 1 &&
+        !isInputFocused &&
+        !isModalOpen &&
+        !isModifierKey &&
+        !isSpecialKey
+      ) {
+        e.preventDefault()
+        
+        // Focus the appropriate input based on whether site is loaded
+        if (hasLoadedSite && viewerUrlInputRef.current) {
+          viewerUrlInputRef.current.focus()
+        } else if (!hasLoadedSite && heroUrlInputRef.current) {
+          heroUrlInputRef.current.focus()
+        }
+      }
+    }
+    
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [hasLoadedSite, filterPopoverInfo, showFilterPopover, selectedFilterInfo])
   
   // Check if sidebar is visible based on viewport width
   React.useEffect(() => {
@@ -606,6 +664,7 @@ export default function Home() {
               
               <div className="url-input-section">
                 <UrlInput 
+                  ref={heroUrlInputRef}
                   onSubmit={handleUrlSubmit} 
                   loading={loading}
                   value={urlInputValue}
@@ -652,6 +711,7 @@ export default function Home() {
                     </div>
                   </div>
                   <WebsiteViewer
+                    ref={viewerUrlInputRef}
                     url={loadedUrl}
                     activeFilter={activeFilter}
                     isSplitView={isSplitView}
@@ -680,25 +740,13 @@ export default function Home() {
             <div className="footer-main">
               <h3 className="footer-title">Making the web accessible for everyone ✨</h3>
               <div className="footer-links">
-                <a 
-                  href="https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html" 
-                  target="_blank" 
+                <a
+                  href="https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="footer-link"
                 >
                   <span className="footer-link-emoji">♿</span><span className="footer-link-text"> WCAG Guidelines</span>
-                </a>
-                <span className="footer-separator">·</span>
-                <a 
-                  href="https://github.com/omeb/color-blind-viewer" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="footer-link"
-                >
-                  <svg className="footer-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-                  </svg>
-                  <span className="footer-link-text">GitHub</span>
                 </a>
               </div>
               <div className="footer-theme-toggle">

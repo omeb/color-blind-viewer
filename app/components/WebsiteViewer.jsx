@@ -11,7 +11,8 @@ const EXAMPLE_SITES = [
   'https://pitch.com',
   'https://superlist.com',
   'https://news.ycombinator.com',
-  'https://www.wix.com'
+  'https://www.wix.com',
+  'https://www.imdb.com'
 ]
 
 /**
@@ -27,7 +28,7 @@ const EXAMPLE_SITES = [
  * @param {boolean} props.loading - Whether the website is loading
  * @param {string} props.error - Error message if loading failed
  */
-export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView: isSplitViewProp, onSplitViewChange, onFilterRemove, onFilterChange, onFilterInfo, onChangeUrl, loading = false, error = null, onUrlChange, history = [], onSelectUrl, onRemoveUrl, showQuickFilters = true }) {
+export default React.forwardRef(function WebsiteViewer({ url, activeFilter = 'none', isSplitView: isSplitViewProp, onSplitViewChange, onFilterRemove, onFilterChange, onFilterInfo, onChangeUrl, loading = false, error = null, onUrlChange, history = [], onSelectUrl, onRemoveUrl, showQuickFilters = true }, ref) {
   const [iframeKey, setIframeKey] = React.useState(0)
   const [isSplitView, setIsSplitView] = React.useState(isSplitViewProp || false)
   const [iframeLoading, setIframeLoading] = React.useState(false)
@@ -35,6 +36,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
   const [isEditingUrl, setIsEditingUrl] = React.useState(false)
   const [editedUrl, setEditedUrl] = React.useState(url)
   const [showHistoryDropdown, setShowHistoryDropdown] = React.useState(false)
+  const [isMobile, setIsMobile] = React.useState(false)
   const historyDropdownRef = React.useRef(null)
   const iframeRef = React.useRef(null)
   const originalIframeRef = React.useRef(null)
@@ -56,6 +58,35 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
   const [showRandomHint, setShowRandomHint] = React.useState(false)
   const hasSeenRandomHintRef = React.useRef(false)
   const [showHoverHint, setShowHoverHint] = React.useState(false)
+  const [showSplitViewHover, setShowSplitViewHover] = React.useState(false)
+  
+  // Expose focus method via ref
+  React.useImperativeHandle(ref, () => ({
+    focus: () => {
+      if (!isEditingUrl) {
+        setIsEditingUrl(true)
+        // Wait for next tick to ensure input is rendered
+        setTimeout(() => {
+          urlInputRef.current?.focus()
+        }, 0)
+      } else {
+        urlInputRef.current?.focus()
+      }
+    }
+  }))
+  
+  // Detect mobile device for filter fallback
+  React.useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth <= 768 || 
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      setIsMobile(mobile)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
   
   // Check localStorage on mount to see if hint was already shown
   React.useEffect(() => {
@@ -570,8 +601,13 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
     
     // Extract domain and path/query
     const pathMatch = rest.match(/^([^/?#]+)(.*)$/)
-    const domain = pathMatch ? pathMatch[1] : rest
+    let domain = pathMatch ? pathMatch[1] : rest
     const path = pathMatch ? pathMatch[2] : ''
+    
+    // If domain has no dot character, append .com
+    if (domain && !domain.includes('.')) {
+      domain = domain + '.com'
+    }
     
     // Check if domain has a subdomain
     const domainParts = domain.split('.')
@@ -782,6 +818,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
             {activeFilter !== 'none' && (
               <button
                 onClick={handleSplitViewToggle}
+                onMouseEnter={() => setShowSplitViewHover(true)}
+                onMouseLeave={() => setShowSplitViewHover(false)}
                 className={`control-btn ${isSplitView ? 'active' : ''}`}
                 aria-label={isSplitView ? 'Exit split view' : 'Compare side-by-side'}
                 title={isSplitView ? 'Exit Split View' : 'Compare Side-by-Side'}
@@ -799,6 +837,9 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
                     </svg>
                   )}
                 </span>
+                {showSplitViewHover && (
+                  <span className="split-view-popover">{isSplitView ? 'Exit Split View' : 'Split View'}</span>
+                )}
               </button>
             )}
             
@@ -834,7 +875,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
             
             <button
               onClick={handleRefresh}
-              className="control-btn"
+              className="control-btn refresh-btn"
               aria-label="Refresh page"
               title="Refresh"
               disabled={loading || iframeLoading}
@@ -844,11 +885,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
             
             <button
               onClick={handleRandomSite}
-              onMouseEnter={() => {
-                if (!hasSeenRandomHintRef.current) {
-                  setShowHoverHint(true)
-                }
-              }}
+              onMouseEnter={() => setShowHoverHint(true)}
               onMouseLeave={() => setShowHoverHint(false)}
               className={`control-btn random-btn ${showRandomHint || showHoverHint ? 'pulse-hint' : ''}`}
               aria-label="Load random example site"
@@ -865,7 +902,10 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
                   <line x1="12" y1="22.08" x2="12" y2="12"></line>
                 </svg>
               </span>
-              {(showRandomHint || showHoverHint) && (
+              {showHoverHint && (
+                <span className="random-popover">Random Site</span>
+              )}
+              {(showRandomHint && !showHoverHint) && (
                 <span className={`random-hint-text ${showHoverHint ? 'hover-hint' : ''}`}>✨ Try a random site!</span>
               )}
             </button>
@@ -1103,7 +1143,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
                 <div className="split-pane split-pane-right">
                   <div 
                     className="iframe-wrapper filtered"
-                    style={{ filter: getFilterStyle(activeFilter) }}
+                    style={{ filter: getFilterStyle(activeFilter, isMobile) }}
                   >
                     <iframe
                       ref={filteredIframeRef}
@@ -1122,7 +1162,7 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           ) : (
             <div 
               className={`iframe-wrapper ${activeFilter !== 'none' ? 'filtered' : ''}`}
-              style={{ filter: getFilterStyle(activeFilter) }}
+              style={{ filter: getFilterStyle(activeFilter, isMobile) }}
             >
               <iframe
                 key={iframeKey}
@@ -1209,11 +1249,11 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
             gap: 8px;
             margin-top: 0;
             padding: 8px;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
           }
           
           .control-btn {
@@ -1234,8 +1274,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           }
           
           :global([data-theme="dark"]) .viewer-controls {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.08);
           }
         }
         
@@ -1601,8 +1641,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         
         .quick-filter-btn {
           flex-shrink: 0;
-          padding: 6px 12px;
-          font-size: 0.75rem;
+          padding: 9px 16px;
+          font-size: 0.9375rem;
           font-weight: 500;
           background: rgba(255, 255, 255, 0.1);
           backdrop-filter: blur(10px);
@@ -1672,8 +1712,8 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           }
           
           .quick-filter-btn {
-            padding: 5px 10px;
-            font-size: 0.7rem;
+            padding: 8px 14px;
+            font-size: 0.875rem;
           }
           
           .filter-info-icon-btn {
@@ -1984,18 +2024,23 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           min-width: 48px;
         }
         
+        .control-btn:has(.split-view-popover) {
+          position: relative;
+          overflow: visible;
+        }
+        
         .control-btn.active {
-          background: rgba(110, 198, 255, 0.2);
-          border-color: rgba(110, 198, 255, 0.5);
-          box-shadow: 0 4px 12px rgba(110, 198, 255, 0.3),
-                      0 0 0 1px rgba(110, 198, 255, 0.2);
+          background: rgba(110, 198, 255, 0.1);
+          border-color: rgba(110, 198, 255, 0.3);
+          box-shadow: 0 2px 8px rgba(110, 198, 255, 0.15),
+                      0 0 0 1px rgba(110, 198, 255, 0.1);
         }
         
         .control-btn.active:hover:not(:disabled) {
-          background: rgba(110, 198, 255, 0.3);
-          border-color: rgba(110, 198, 255, 0.6);
-          box-shadow: 0 6px 16px rgba(110, 198, 255, 0.4),
-                      0 0 0 1px rgba(110, 198, 255, 0.3);
+          background: rgba(110, 198, 255, 0.15);
+          border-color: rgba(110, 198, 255, 0.4);
+          box-shadow: 0 4px 12px rgba(110, 198, 255, 0.2),
+                      0 0 0 1px rgba(110, 198, 255, 0.15);
         }
         
         .control-btn:hover:not(:disabled) {
@@ -2007,6 +2052,22 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         
         .control-btn.active:hover:not(:disabled) {
           transform: translateY(-2px);
+        }
+        
+        .control-btn:has(.split-view-popover):hover:not(:disabled) {
+          transform: none !important;
+          padding: 10px 16px !important;
+          min-width: 48px !important;
+        }
+        
+        .control-btn.active:has(.split-view-popover):hover:not(:disabled) {
+          transform: none !important;
+          padding: 10px 16px !important;
+          min-width: 48px !important;
+        }
+        
+        .control-btn.refresh-btn:hover:not(:disabled) {
+          transform: none !important;
         }
         
         .control-btn:active:not(:disabled) {
@@ -2084,6 +2145,90 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           min-width: 48px !important;
         }
         
+        .random-popover {
+          position: absolute;
+          top: -40px;
+          left: 50%;
+          transform: translateX(-50%) translateY(4px);
+          background: rgba(0, 0, 0, 0.85);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          color: white;
+          padding: 6px 10px;
+          border-radius: 6px;
+          font-size: 0.75rem;
+          font-weight: 500;
+          white-space: nowrap;
+          pointer-events: none;
+          z-index: 100;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3),
+                      0 2px 6px rgba(0, 0, 0, 0.2);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          opacity: 0;
+          transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                      transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .control-btn.random-btn:hover:not(:disabled) .random-popover {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+        
+        .split-view-popover {
+          position: absolute;
+          top: -40px;
+          left: 50%;
+          transform: translateX(-50%) translateY(4px);
+          background: rgba(0, 0, 0, 0.85);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          color: white;
+          padding: 6px 10px;
+          border-radius: 6px;
+          font-size: 0.75rem;
+          font-weight: 500;
+          white-space: nowrap;
+          pointer-events: none;
+          z-index: 100;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3),
+                      0 2px 6px rgba(0, 0, 0, 0.2);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          opacity: 0;
+          transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                      transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .control-btn:hover:not(:disabled) .split-view-popover {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+        
+        .split-view-popover::after {
+          content: '';
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0;
+          height: 0;
+          border-left: 5px solid transparent;
+          border-right: 5px solid transparent;
+          border-top: 5px solid rgba(0, 0, 0, 0.85);
+        }
+        
+        .random-popover::after {
+          content: '';
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0;
+          height: 0;
+          border-left: 5px solid transparent;
+          border-right: 5px solid transparent;
+          border-top: 5px solid rgba(0, 0, 0, 0.85);
+        }
+        
         .random-hint-text {
           position: absolute;
           top: -35px;
@@ -2147,6 +2292,28 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
           }
         }
         
+        :global([data-theme="dark"]) .random-popover {
+          background: rgba(40, 42, 54, 0.95);
+          border-color: rgba(255, 255, 255, 0.15);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5),
+                      0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        :global([data-theme="dark"]) .random-popover::after {
+          border-top-color: rgba(40, 42, 54, 0.95);
+        }
+        
+        :global([data-theme="dark"]) .split-view-popover {
+          background: rgba(40, 42, 54, 0.95);
+          border-color: rgba(255, 255, 255, 0.15);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5),
+                      0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        :global([data-theme="dark"]) .split-view-popover::after {
+          border-top-color: rgba(40, 42, 54, 0.95);
+        }
+        
         :global([data-theme="dark"]) .random-hint-text {
           background: linear-gradient(135deg, rgba(110, 198, 255, 0.98) 0%, rgba(74, 144, 226, 0.98) 100%);
           color: #0a0a1a;
@@ -2159,6 +2326,18 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         }
         
         @media (max-width: 768px) {
+          .random-popover {
+            top: -35px;
+            font-size: 0.7rem;
+            padding: 5px 8px;
+          }
+          
+          .split-view-popover {
+            top: -35px;
+            font-size: 0.7rem;
+            padding: 5px 8px;
+          }
+          
           .random-hint-text {
             top: -30px;
             font-size: 0.7rem;
@@ -2167,17 +2346,17 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
         }
         
         :global([data-theme="dark"]) .control-btn.active {
-          background: rgba(110, 198, 255, 0.25);
-          border-color: rgba(110, 198, 255, 0.6);
-          box-shadow: 0 4px 12px rgba(110, 198, 255, 0.4),
-                      0 0 0 1px rgba(110, 198, 255, 0.3);
+          background: rgba(110, 198, 255, 0.12);
+          border-color: rgba(110, 198, 255, 0.35);
+          box-shadow: 0 2px 8px rgba(110, 198, 255, 0.2),
+                      0 0 0 1px rgba(110, 198, 255, 0.15);
         }
         
         :global([data-theme="dark"]) .control-btn.active:hover:not(:disabled) {
-          background: rgba(110, 198, 255, 0.35);
-          border-color: rgba(110, 198, 255, 0.7);
-          box-shadow: 0 6px 16px rgba(110, 198, 255, 0.5),
-                      0 0 0 1px rgba(110, 198, 255, 0.4);
+          background: rgba(110, 198, 255, 0.18);
+          border-color: rgba(110, 198, 255, 0.45);
+          box-shadow: 0 4px 12px rgba(110, 198, 255, 0.25),
+                      0 0 0 1px rgba(110, 198, 255, 0.2);
         }
         
         .empty-state {
@@ -2934,26 +3113,47 @@ export default function WebsiteViewer({ url, activeFilter = 'none', isSplitView:
       `}</style>
     </div>
   )
-}
+})
 
 /**
  * Get CSS filter style for active filter
  * @param {string} filterId - Filter ID
+ * @param {boolean} isMobileDevice - Whether running on mobile device
  * @returns {string} CSS filter value
  */
-function getFilterStyle(filterId) {
+function getFilterStyle(filterId, isMobileDevice = false) {
+  // Use CSS filters instead of SVG filters on mobile
+  // SVG filters don't work reliably on mobile browsers when applied to iframes
+  const isMobile = isMobileDevice || (typeof window !== 'undefined' && 
+    (window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)))
+  
   // Map filter IDs to CSS filter values
   const filters = {
     none: 'none',
-    protanopia: 'url(#protanopia)',
-    deuteranopia: 'url(#deuteranopia)',
-    tritanopia: 'url(#tritanopia)',
+    // Protanopia: Red-blind - reduce red channel, shift colors
+    protanopia: isMobile 
+      ? 'contrast(1.15) saturate(0.4) brightness(1.05) sepia(0.1) hue-rotate(15deg)' 
+      : 'url(#protanopia)',
+    // Deuteranopia: Green-blind - reduce green channel, shift colors  
+    deuteranopia: isMobile
+      ? 'contrast(1.1) saturate(0.35) brightness(1.05) sepia(0.15) hue-rotate(-10deg)'
+      : 'url(#deuteranopia)',
+    // Tritanopia: Blue-blind - reduce blue/yellow distinction
+    tritanopia: isMobile
+      ? 'contrast(1.1) saturate(0.5) brightness(1.05) sepia(0.2) hue-rotate(25deg)'
+      : 'url(#tritanopia)',
     achromatopsia: 'grayscale(100%)',
     cataracts: 'blur(2px) contrast(0.7) brightness(0.8)',
     lowVision: 'blur(3px)',
     lowContrast: 'contrast(0.5) brightness(0.9)',
-    protanomaly: 'url(#protanomaly)',
-    deuteranomaly: 'url(#deuteranomaly)',
+    // Protanomaly: Red-weak - milder version
+    protanomaly: isMobile
+      ? 'contrast(1.08) saturate(0.6) brightness(1.02) sepia(0.05) hue-rotate(8deg)'
+      : 'url(#protanomaly)',
+    // Deuteranomaly: Green-weak - milder version
+    deuteranomaly: isMobile
+      ? 'contrast(1.05) saturate(0.55) brightness(1.02) sepia(0.08) hue-rotate(-5deg)'
+      : 'url(#deuteranomaly)',
     glaucoma: 'brightness(0.6) contrast(0.7) blur(1px)',
     macularDegeneration: 'blur(4px) contrast(0.6) brightness(0.7)',
     diabeticRetinopathy: 'blur(2px) contrast(0.7) brightness(0.85)',
