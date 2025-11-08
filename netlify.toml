@@ -10,8 +10,10 @@ PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1"
 NPM_FLAGS = "--no-audit"
 NPM_CONFIG_REGISTRY = "https://registry.npmjs.org/"
 
-[[plugins]]
-package = "@netlify/plugin-nextjs"
+# Temporarily commented out due to DNS resolution error (EAI_AGAIN)
+# Uncomment after Netlify resolves the network issue
+# [[plugins]]
+# package = "@netlify/plugin-nextjs"
 
 [functions]
 node_bundler = "esbuild"
