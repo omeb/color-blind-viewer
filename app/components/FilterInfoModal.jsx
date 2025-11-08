@@ -190,6 +190,8 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
         data-positioned={isPositioned ? "true" : "false"}
         onClick={(e) => e.stopPropagation()}
         onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="popover-title"
@@ -215,6 +217,14 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
               onClose()
             }}
             onMouseDown={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+            }}
+            onTouchStart={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+            }}
+            onTouchEnd={(e) => {
               e.stopPropagation()
               e.preventDefault()
             }}

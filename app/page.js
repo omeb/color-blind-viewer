@@ -295,7 +295,11 @@ export default function Home() {
     
     if (showFilterPopover || filterPopoverInfo) {
       document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
+      document.addEventListener('touchstart', handleClickOutside)
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside)
+        document.removeEventListener('touchstart', handleClickOutside)
+      }
     }
   }, [showFilterPopover, filterPopoverInfo])
   
@@ -706,6 +710,8 @@ export default function Home() {
                     data-open={!isPopoverOpening}
                     onClick={(e) => e.stopPropagation()}
                     onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => e.stopPropagation()}
                   >
                     <div className="filter-picker-header">
                       <span>Select Filter</span>
@@ -716,6 +722,14 @@ export default function Home() {
                           handleCloseFilterPopover()
                         }}
                         onMouseDown={(e) => {
+                          e.stopPropagation()
+                          e.preventDefault()
+                        }}
+                        onTouchStart={(e) => {
+                          e.stopPropagation()
+                          e.preventDefault()
+                        }}
+                        onTouchEnd={(e) => {
                           e.stopPropagation()
                           e.preventDefault()
                         }}
@@ -735,6 +749,8 @@ export default function Home() {
                           handleCloseFilterPopover()
                         }}
                         onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        onTouchEnd={(e) => e.stopPropagation()}
                         className={`filter-picker-item ${activeFilter === 'none' ? 'active' : ''}`}
                       >
                         <span className="filter-picker-name">Original Site</span>
@@ -753,6 +769,8 @@ export default function Home() {
                             handleCloseFilterPopover()
                           }}
                           onMouseDown={(e) => e.stopPropagation()}
+                          onTouchStart={(e) => e.stopPropagation()}
+                          onTouchEnd={(e) => e.stopPropagation()}
                           className={`filter-picker-item ${activeFilter === filter.id ? 'active' : ''}`}
                         >
                           <span className="filter-picker-name">{filter.name}</span>
@@ -772,6 +790,8 @@ export default function Home() {
                             handleCloseFilterPopover()
                           }}
                           onMouseDown={(e) => e.stopPropagation()}
+                          onTouchStart={(e) => e.stopPropagation()}
+                          onTouchEnd={(e) => e.stopPropagation()}
                           className={`filter-picker-item ${activeFilter === filter.id ? 'active' : ''}`}
                         >
                           <span className="filter-picker-name">{filter.name}</span>
@@ -996,6 +1016,8 @@ export default function Home() {
                 className="filter-info-popover"
                 onClick={(e) => e.stopPropagation()}
                 onMouseDown={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
+                onTouchEnd={(e) => e.stopPropagation()}
                 style={isMobile ? {
                   opacity: 1,
                   visibility: 'visible',
@@ -1022,6 +1044,14 @@ export default function Home() {
                     setFilterPopoverInfo(null)
                   }}
                   onMouseDown={(e) => {
+                    e.stopPropagation()
+                    e.preventDefault()
+                  }}
+                  onTouchStart={(e) => {
+                    e.stopPropagation()
+                    e.preventDefault()
+                  }}
+                  onTouchEnd={(e) => {
                     e.stopPropagation()
                     e.preventDefault()
                   }}
