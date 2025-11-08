@@ -208,7 +208,11 @@ export default function FilterInfoPopover({ filterId, isOpen, onClose, onApplyFi
             )}
           </div>
           <button
-            onClick={onClose}
+            onClick={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+              onClose()
+            }}
             className="popover-close"
             aria-label="Close"
           >

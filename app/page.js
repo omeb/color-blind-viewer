@@ -960,6 +960,7 @@ export default function Home() {
               <div 
                 ref={filterInfoPopoverRef}
                 className="filter-info-popover"
+                onClick={(e) => e.stopPropagation()}
                 style={isMobile ? {
                   opacity: 1,
                   visibility: 'visible',
@@ -980,7 +981,11 @@ export default function Home() {
                   )}
                 </div>
                 <button
-                  onClick={() => setFilterPopoverInfo(null)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    e.preventDefault()
+                    setFilterPopoverInfo(null)
+                  }}
                   className="filter-popover-close"
                   aria-label="Close"
                 >
