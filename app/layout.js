@@ -3,8 +3,8 @@ import './globals.css'
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://color-blind-viewer.vercel.app'
 const siteName = 'Accessibility Viewer'
 const siteDescription = 'Experience how websites appear to people with vision impairments. Test your website\'s accessibility with colorblindness, cataracts, glaucoma, and other vision condition simulators. Free tool for designers and developers.'
-// Use Netlify URL for OG image - it's reliably hosted there
-const siteImage = 'https://color-blind-viewer.netlify.app/og-image.png'
+// Use same domain for OG image - required for mobile sharing platforms
+const siteImage = `${siteUrl}/opengraph-image`
 
 export const metadata = {
   metadataBase: new URL(siteUrl),
@@ -124,6 +124,13 @@ export default function RootLayout({ children }) {
             `,
           }}
         />
+        {/* Explicit OG meta tags for better mobile compatibility */}
+        <meta property="og:image" content={siteImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:secure_url" content={siteImage} />
+        <meta name="twitter:image" content={siteImage} />
         {/* Structured Data for SEO */}
         <script
           type="application/ld+json"
