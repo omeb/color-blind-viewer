@@ -2,9 +2,16 @@
 
 > Experience the web through the eyes of people with vision impairments
 
-### 🚀 [**Try the Live Demo →**](https://color-blind-viewer.netlify.app/)
+<div align="center">
 
-See any website through different vision impairments in real-time. No signup required—just enter a URL and start exploring!
+### 🚀 **[Try the Live Demo →](https://color-blind-viewer.netlify.app/)**
+
+[![Live Demo](https://img.shields.io/badge/🌐_Try_Live_Demo-4A90E2?style=for-the-badge&logo=netlify&logoColor=white)](https://color-blind-viewer.netlify.app/)
+
+**See any website through different vision impairments in real-time.**  
+No signup required—just enter a URL and start exploring!
+
+</div>
 
 ---
 
