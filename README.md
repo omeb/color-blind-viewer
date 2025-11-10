@@ -2,6 +2,12 @@
 
 > Experience the web through the eyes of people with vision impairments
 
+### 🚀 [**Try the Live Demo →**](https://color-blind-viewer.netlify.app/)
+
+See any website through different vision impairments in real-time. No signup required—just enter a URL and start exploring!
+
+---
+
 A modern web application that helps developers understand how their websites appear to users with various vision impairments. Test your designs for accessibility and create more inclusive web experiences.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)

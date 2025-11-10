@@ -952,6 +952,14 @@ export default function Home() {
                 >
                   <span className="footer-link-emoji">♿</span><span className="footer-link-text"> WCAG Guidelines</span>
                 </a>
+                <a
+                  href="https://github.com/omeb/color-blind-viewer"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="footer-link"
+                >
+                  <span className="footer-link-emoji">🐙</span><span className="footer-link-text"> View on GitHub</span>
+                </a>
               </div>
               <div className="footer-theme-toggle">
                 <DarkModeToggle />
